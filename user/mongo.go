@@ -2,18 +2,16 @@ package user
 
 import (
 	"github.com/elos/data"
-	"github.com/elos/data/mongo"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
-	"time"
 )
 
 type mongoUser struct {
-	EID        bson.ObjectId `json:"id" bson:"_id,omitempty"`
-	ECreatedAt time.Time     `json:"created_at" bson:"created_at"`
-	EUpdatedAt time.Time     `json:"updated_at" bson:"updated_at"`
+	models.MongoID     `bson:",inline"`
+	models.Named       `bson:",inline"`
+	models.Timestamped `bson:",inline"`
 
-	EName         string        `json:"name" bson:"name"`
 	EKey          string        `json:"key" bson:"key"`
 	EventIDs      mongo.IDSet   `json:"event_ids" bson:"event_ids"`
 	TaskIDs       mongo.IDSet   `json:"task_ids" bson:"task_ids"`
@@ -41,10 +39,10 @@ func (u *mongoUser) Valid() bool {
 	return valid
 }
 
-func (u *mongoUser) Save(s data.Store) error {
+func (u *mongoUser) Save(a data.Access) error {
 	valid, err := Validate(u)
 	if valid {
-		return s.Save(u)
+		return a.Save(u)
 	} else {
 		return err
 	}
@@ -99,41 +97,6 @@ func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
 	}
 }
 
-func (u *mongoUser) SetID(id data.ID) {
-	vid, ok := id.(bson.ObjectId)
-	if ok {
-		u.EID = vid
-	}
-}
-
-func (u *mongoUser) ID() data.ID {
-	return u.EID
-}
-
-func (u *mongoUser) SetName(name string) {
-	u.EName = name
-}
-
-func (u *mongoUser) Name() string {
-	return u.EName
-}
-
-func (u *mongoUser) SetCreatedAt(t time.Time) {
-	u.ECreatedAt = t
-}
-
-func (u *mongoUser) CreatedAt() time.Time {
-	return u.ECreatedAt
-}
-
-func (u *mongoUser) SetUpdatedAt(t time.Time) {
-	u.EUpdatedAt = t
-}
-
-func (u *mongoUser) UpdatedAt() time.Time {
-	return u.EUpdatedAt
-}
-
 func (u *mongoUser) SetKey(s string) {
 	u.EKey = s
 }
@@ -146,14 +109,60 @@ func (u *mongoUser) AddEvent(e models.Event) error {
 	return u.Schema().Link(u, e, Events)
 }
 
-func (u *mongoUser) RemoveEvent(e models.Event) error {
+func (u *mongoUser) DropEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, Events)
+}
+
+func (u *mongoUser) Events(a data.Access) (data.RecordIterator, error) {
+	if u.CanWrite(a.Client) {
+		return mongo.NewIDIter(u.EventIDs, a.Store), nil
+	} else {
+		return nil, data.ErrAccessDenial
+	}
 }
 
 func (u *mongoUser) AddTask(t models.Task) error {
 	return u.Schema().Link(u, t, Tasks)
 }
 
-func (u *mongoUser) RemoveTask(t models.Task) error {
+func (u *mongoUser) DropTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, Tasks)
+}
+
+func (u *mongoUser) Tasks(a data.Access) (data.RecordIterator, error) {
+	if u.CanWrite(a.Client) {
+		return mongo.NewIDIter(u.TaskIDs, a.Store), nil
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
+func (u *mongoUser) CanRead(c data.Client) bool {
+	if c.Kind() != models.UserKind {
+		return false
+	}
+
+	if u.EID.Valid() && c.ID().(bson.ObjectId) != u.EID {
+		return false
+	}
+
+	return true
+}
+
+func (u *mongoUser) CanWrite(c data.Client) bool {
+	cid := c.ID()
+	cid, ok := cid.(bson.ObjectId)
+	if ok {
+		if u.EID.Valid() && c.ID().(bson.ObjectId) != u.EID {
+			return false
+		}
+
+		return true
+	} else {
+		if u.EID == "" && c.Kind() == data.Anonymous {
+			return true
+		}
+
+		return false
+	}
 }

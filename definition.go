@@ -15,10 +15,13 @@ type User interface {
 	Key() string
 
 	AddEvent(Event) error
-	RemoveEvent(Event) error
+	DropEvent(Event) error
 
 	AddTask(Task) error
-	RemoveTask(Task) error
+	DropTask(Task) error
+
+	Events(data.Access) (data.RecordIterator, error)
+	Tasks(data.Access) (data.RecordIterator, error)
 }
 
 type Event interface {
@@ -33,12 +36,28 @@ type Task interface {
 	data.Model
 	data.Nameable
 
+	User(data.Access, User) error
 	SetUser(User) error
 
 	AddDependency(Task) error
-	RemoveDependency(Task) error
-	Dependencies(data.Store) data.RecordIterator
+	DropDependency(Task) error
+	Dependencies(data.Access) (data.RecordIterator, error)
 }
+
+type Routine interface {
+	data.Model
+	data.Nameable
+
+	User(User) error
+	SetUser(User) error
+
+	Tasks(data.Access) (data.RecordIterator, error)
+
+	IncludeTask(Task) error
+	ExcludeTask(Task) error
+}
+
+// Experimental
 
 type Ontology interface {
 	AddClass(Class) error

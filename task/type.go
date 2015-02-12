@@ -2,20 +2,20 @@ package task
 
 import (
 	"github.com/elos/data"
-	"github.com/elos/data/mongo"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 var (
-	User         data.LinkName
-	Dependencies data.LinkName
+	User         data.LinkName = models.TaskUser
+	Dependencies data.LinkName = models.TaskDependencies
 )
 
 var (
-	kind    data.Kind
-	schema  data.Schema
-	version int
+	kind    data.Kind   = models.TaskKind
+	schema  data.Schema = models.Schema
+	version int         = models.DataVersion
 )
 
 func Setup(s data.Schema, k data.Kind, v int) {

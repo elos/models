@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/elos/data"
-	"github.com/elos/data/mongo"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -14,7 +14,7 @@ import (
 	If the second return value is true, the user's credentials have been validated
 	otherwise, the user's credentials were malformed.
 */
-func Authenticate(s data.Store, id string, key string) (models.User, bool, error) {
+func Authenticate(s data.Store, id string, key string) (data.Client, bool, error) {
 	user, err := Find(s, mongo.NewObjectIDFromHex(id))
 
 	if err != nil {

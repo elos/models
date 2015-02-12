@@ -1,31 +1,26 @@
 package user
 
 import (
-	"github.com/elos/data"
-	"github.com/elos/data/mongo"
-	"github.com/elos/models"
-	"github.com/elos/server/util"
-	"gopkg.in/mgo.v2/bson"
 	"time"
+
+	"github.com/elos/data"
+	"github.com/elos/models"
+	"github.com/elos/mongo"
+	"github.com/elos/stack/util"
+	"gopkg.in/mgo.v2/bson"
 )
 
 var (
-	Events      data.LinkName
-	Tasks       data.LinkName
-	CurrentTask data.LinkName
+	Events      data.LinkName = models.UserEvents
+	Tasks       data.LinkName = models.UserTasks
+	CurrentTask data.LinkName = models.UserCurrentTask
 )
 
 var (
-	kind    data.Kind
-	schema  data.Schema
-	version int
+	kind    data.Kind   = models.UserKind
+	schema  data.Schema = models.Schema
+	version int         = models.DataVersion
 )
-
-// Configure the kind dataKind, the schema, and version
-// to which this model package is tied
-func Setup(s data.Schema, k data.Kind, v int) {
-	kind, schema, version = k, s, v
-}
 
 func NewM(s data.Store) (data.Model, error) {
 	return New(s)
