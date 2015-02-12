@@ -11,11 +11,13 @@ type MongoID struct {
 	EID bson.ObjectId `json:"id" bson:"_id,omitempty"`
 }
 
-func (m *MongoID) SetID(id data.ID) {
+func (m *MongoID) SetID(id data.ID) error {
 	vid, ok := id.(bson.ObjectId)
-	if ok {
-		m.EID = vid
+	if !ok {
+		return data.ErrInvalidID
 	}
+	m.EID = vid
+	return nil
 }
 
 func (m *MongoID) ID() data.ID {

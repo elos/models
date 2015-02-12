@@ -7,7 +7,6 @@ import (
 	"github.com/elos/models"
 	"github.com/elos/mongo"
 	"github.com/elos/stack/util"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (
@@ -48,20 +47,30 @@ func Create(s data.Store, a data.AttrMap) (models.User, error) {
 		return user, err
 	}
 
-	if id, ok := a["id"].(bson.ObjectId); ok {
-		user.SetID(id)
+	id, present := a["id"]
+	id, valid := id.(data.ID)
+	if present && valid {
+		if err := user.SetID(id.(data.ID)); err != nil {
+			return user, err
+		}
 	} else {
-		user.SetID(mongo.NewObjectID().(bson.ObjectId))
+		if err := user.SetID(s.NewID()); err != nil {
+			return user, err
+		}
 	}
 
-	if ca, ok := a["created_at"].(time.Time); ok {
-		user.SetCreatedAt(ca)
+	ca, present := a["created_at"]
+	ca, valid = ca.(time.Time)
+	if present && valid {
+		user.SetCreatedAt(ca.(time.Time))
 	} else {
 		user.SetCreatedAt(time.Now())
 	}
 
-	if n, ok := a["name"].(string); ok {
-		user.SetName(n)
+	n, present := a["name"]
+	n, valid = n.(string)
+	if present && valid {
+		user.SetName(n.(string))
 	}
 
 	user.SetKey(util.RandomString(64))

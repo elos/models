@@ -4,7 +4,6 @@ import (
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 var (
@@ -41,17 +40,21 @@ func Create(s data.Store, a data.AttrMap) (models.Task, error) {
 		return task, err
 	}
 
-	switch s.Type() {
-	case mongo.DBType:
-		if id, ok := a["id"].(bson.ObjectId); ok {
-			task.SetID(id)
-		} else {
-			task.SetID(mongo.NewObjectID().(bson.ObjectId))
+	id, present := a["id"]
+	id, valid := id.(data.ID)
+	if present && valid {
+		if err := task.SetID(id.(data.ID)); err != nil {
+			return task, err
 		}
-
-	default:
-		return task, data.ErrInvalidDBType
+	} else {
+		if err := task.SetID(s.NewID()); err != nil {
+			return task, err
+		}
 	}
 
-	return task, nil
+	if err := s.Save(task); err != nil {
+		return task, err
+	} else {
+		return task, nil
+	}
 }
