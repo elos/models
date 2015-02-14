@@ -17,10 +17,12 @@ const (
 const (
 	UserEvents        data.LinkName = "events"
 	UserTasks         data.LinkName = "tasks"
+	UserActions       data.LinkName = "actions"
 	UserCurrentAction data.LinkName = "current_action"
 	EventUser         data.LinkName = "user"
 	TaskUser          data.LinkName = "user"
 	TaskDependencies  data.LinkName = "dependencies"
+	ActionUser        data.LinkName = "user"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{
@@ -36,6 +38,12 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.MulLink,
 			Other:   TaskKind,
 			Inverse: TaskUser,
+		},
+		UserActions: data.Link{
+			Name:    UserActions,
+			Kind:    data.MulLink,
+			Other:   ActionKind,
+			Inverse: ActionUser,
 		},
 		UserCurrentAction: data.Link{
 			Name:  UserCurrentAction,
@@ -62,6 +70,14 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Name:  TaskDependencies,
 			Kind:  data.MulLink,
 			Other: TaskKind,
+		},
+	},
+	ActionKind: {
+		ActionUser: data.Link{
+			Name:    ActionUser,
+			Kind:    data.OneLink,
+			Other:   UserKind,
+			Inverse: UserActions,
 		},
 	},
 }

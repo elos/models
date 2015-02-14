@@ -116,3 +116,25 @@ func (o *UserOwned) User(s data.Access, u User) error {
 	u.SetID(o.EUserID)
 	return s.PopulateByID(u)
 }
+
+func (o *UserOwned) Concerned() []data.ID {
+	concerns := make([]data.ID, 1)
+	concerns[0] = o.UserID()
+	return concerns
+}
+
+func (o *UserOwned) CanRead(c data.Client) bool {
+	if c.Kind() != UserKind {
+		return false
+	}
+
+	if o.UserID().Valid() && c.ID() != o.UserID() {
+		return false
+	}
+
+	return true
+}
+
+func (o *UserOwned) CanWrite(c data.Client) bool {
+	return o.CanRead(c)
+}

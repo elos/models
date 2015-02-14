@@ -40,7 +40,7 @@ type Action interface {
 	data.Nameable
 	data.Timeable
 
-	SetUser(User) User
+	SetUser(User) error
 	User(data.Access, User) error
 }
 

@@ -38,16 +38,16 @@ func Create(s data.Store, a data.AttrMap) (models.Event, error) {
 		return event, err
 	}
 
-	switch s.Type() {
-	case mongo.DBType:
-		if id, ok := a["id"].(bson.ObjectId); ok {
-			event.SetID(id)
-		} else {
-			event.SetID(mongo.NewObjectID().(bson.ObjectId))
+	id, present := a["id"]
+	id, valid := id.(data.ID)
+	if present && valid {
+		if err := event.SetID(id.(data.ID)); err != nil {
+			return event, err
 		}
-
-	default:
-		return event, data.ErrInvalidDBType
+	} else {
+		if err := event.SetID(s.NewID()); err != nil {
+			return event, err
+		}
 	}
 
 	if ca, ok := a["created_at"].(time.Time); ok {

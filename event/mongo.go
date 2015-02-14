@@ -35,12 +35,6 @@ func (u *mongoEvent) DBType() data.DBType {
 	return mongo.DBType
 }
 
-func (e *mongoEvent) Concerned() []data.ID {
-	a := make([]data.ID, 1)
-	a[0] = e.UserID()
-	return a
-}
-
 func (e *mongoEvent) SetUser(u models.User) error {
 	return e.Schema().Link(e, u, User)
 }
@@ -63,22 +57,4 @@ func (e *mongoEvent) Unlink(m data.Model, l data.Link) error {
 	}
 
 	return nil
-}
-
-// Accessors
-
-func (e *mongoEvent) CanRead(c data.Client) bool {
-	if c.Kind() != models.UserKind {
-		return false
-	}
-
-	if e.UserID().Valid() && c.ID() != e.UserID() {
-		return false
-	}
-
-	return true
-}
-
-func (e *mongoEvent) CanWrite(c data.Client) bool {
-	return e.CanRead(c)
 }
