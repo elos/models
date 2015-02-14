@@ -12,6 +12,7 @@ const (
 	EventKind   data.Kind = "event"
 	TaskKind    data.Kind = "task"
 	ActionKind  data.Kind = "action"
+	RoutineKind data.Kind = "routine"
 )
 
 const (
@@ -19,10 +20,20 @@ const (
 	UserTasks         data.LinkName = "tasks"
 	UserActions       data.LinkName = "actions"
 	UserCurrentAction data.LinkName = "current_action"
-	EventUser         data.LinkName = "user"
-	TaskUser          data.LinkName = "user"
-	TaskDependencies  data.LinkName = "dependencies"
-	ActionUser        data.LinkName = "user"
+	UserRoutines      data.LinkName = "routines"
+
+	EventUser data.LinkName = "user"
+
+	TaskUser         data.LinkName = "user"
+	TaskDependencies data.LinkName = "dependencies"
+
+	ActionUser data.LinkName = "user"
+	ActionTask data.LinkName = "task"
+
+	RoutineUser           data.LinkName = "user"
+	RoutineTasks          data.LinkName = "tasks"
+	RoutineCompletedTasks data.LinkName = "completed_tasks"
+	RoutineActions        data.LinkName = "actions"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{
@@ -49,6 +60,12 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Name:  UserCurrentAction,
 			Kind:  data.OneLink,
 			Other: ActionKind,
+		},
+		UserRoutines: data.Link{
+			Name:    UserRoutines,
+			Kind:    data.MulLink,
+			Other:   RoutineKind,
+			Inverse: RoutineUser,
 		},
 	},
 	EventKind: {
@@ -78,6 +95,34 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.OneLink,
 			Other:   UserKind,
 			Inverse: UserActions,
+		},
+		ActionTask: data.Link{
+			Name:  ActionTask,
+			Kind:  data.OneLink,
+			Other: TaskKind,
+		},
+	},
+	RoutineKind: {
+		RoutineUser: data.Link{
+			Name:    RoutineUser,
+			Kind:    data.OneLink,
+			Other:   UserKind,
+			Inverse: UserActions,
+		},
+		RoutineTasks: data.Link{
+			Name:  RoutineTasks,
+			Kind:  data.MulLink,
+			Other: TaskKind,
+		},
+		RoutineCompletedTasks: data.Link{
+			Name:  RoutineCompletedTasks,
+			Kind:  data.MulLink,
+			Other: TaskKind,
+		},
+		RoutineActions: data.Link{
+			Name:  RoutineActions,
+			Kind:  data.MulLink,
+			Other: ActionKind,
 		},
 	},
 }

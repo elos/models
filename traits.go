@@ -112,9 +112,9 @@ func (o *UserOwned) UserID() data.ID {
 	return o.EUserID
 }
 
-func (o *UserOwned) User(s data.Access, u User) error {
+func (o *UserOwned) User(a *data.Access, u User) error {
 	u.SetID(o.EUserID)
-	return s.PopulateByID(u)
+	return a.PopulateByID(u)
 }
 
 func (o *UserOwned) Concerned() []data.ID {

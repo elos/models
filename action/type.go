@@ -8,6 +8,7 @@ import (
 
 var (
 	User data.LinkName = models.ActionUser
+	Task data.LinkName = models.ActionTask
 )
 
 var (

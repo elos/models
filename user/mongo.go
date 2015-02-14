@@ -108,7 +108,7 @@ func (u *mongoUser) DropEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, Events)
 }
 
-func (u *mongoUser) Events(a data.Access) (data.RecordIterator, error) {
+func (u *mongoUser) Events(a *data.Access) (data.RecordIterator, error) {
 	if u.CanWrite(a.Client) {
 		return mongo.NewIDIter(u.EventIDs, a.Store), nil
 	} else {
@@ -124,7 +124,7 @@ func (u *mongoUser) DropTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, Tasks)
 }
 
-func (u *mongoUser) Tasks(a data.Access) (data.RecordIterator, error) {
+func (u *mongoUser) Tasks(a *data.Access) (data.RecordIterator, error) {
 	if u.CanWrite(a.Client) {
 		return mongo.NewIDIter(u.TaskIDs, a.Store), nil
 	} else {
@@ -136,7 +136,7 @@ func (u *mongoUser) SetCurrentAction(a models.Action) {
 	u.Schema().Link(u, a, CurrentAction)
 }
 
-func (u *mongoUser) CurrentAction(a data.Access, action models.Action) error {
+func (u *mongoUser) CurrentAction(a *data.Access, action models.Action) error {
 	action.SetID(u.CurrentActionID)
 	return a.PopulateByID(action)
 }
@@ -146,7 +146,7 @@ func (u *mongoUser) SetCurrentActionable(a models.Actionable) {
 	u.ActionableID = a.ID().(bson.ObjectId)
 }
 
-func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) {
+func (u *mongoUser) CurrentActionable(a *data.Access) (models.Actionable, error) {
 	m, err := a.ModelFor(u.ActionableKind)
 	if err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) 
 
 	actionable, ok := m.(models.Actionable)
 	if !ok {
-		return nil, errors.New("asdf")
+		return nil, errors.New("idk")
 	} else {
 		return actionable, nil
 	}

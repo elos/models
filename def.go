@@ -20,39 +20,44 @@ type User interface {
 	AddTask(Task) error
 	DropTask(Task) error
 
-	Events(data.Access) (data.RecordIterator, error)
-	Tasks(data.Access) (data.RecordIterator, error)
+	Events(*data.Access) (data.RecordIterator, error)
+	Tasks(*data.Access) (data.RecordIterator, error)
 
 	SetCurrentAction(Action)
-	CurrentAction(data.Access, Action) error
+	CurrentAction(*data.Access, Action) error
 
 	SetCurrentActionable(Actionable)
-	CurrentActionable(data.Access) (Actionable, error)
+	CurrentActionable(*data.Access) (Actionable, error)
 }
 
 type Userable interface {
 	SetUser(User) error
-	User(data.Access, User) error
+	User(*data.Access, User) error
+	UserID() data.ID
+	SetUserID(data.ID) error
 }
 
 type Actionable interface {
 	data.Model
-	Action() Action
+	Userable
+	ActionCount() int
+	NextAction(*data.Access) (Action, bool)
 }
 
 type Action interface {
 	data.Model
 	data.Nameable
 	data.Timeable
-
 	Userable
+
+	SetTask(Task) error
+	Task(*data.Access, Task) error
 }
 
 type Event interface {
 	data.Model
 	data.Nameable
 	data.Timeable
-
 	Userable
 }
 
@@ -60,12 +65,11 @@ type Task interface {
 	data.Model
 	data.Nameable
 	data.Timeable
-
 	Userable
 
 	AddDependency(Task) error
 	DropDependency(Task) error
-	Dependencies(data.Access) (data.RecordIterator, error)
+	Dependencies(*data.Access) (data.RecordIterator, error)
 }
 
 type Routine interface {
@@ -73,11 +77,21 @@ type Routine interface {
 	data.Nameable
 	data.Timeable
 
-	Userable
-
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
-	Tasks(data.Access) (data.RecordIterator, error)
+	Tasks(*data.Access) (data.RecordIterator, error)
+	TaskIDs() []data.ID
+
+	CompleteTask(Task) error
+	UncompleteTask(Task) error
+	CompletedTasks(*data.Access) (data.RecordIterator, error)
+	CompletedTaskIDs() []data.ID
+
+	IncompleteTaskIDs() []data.ID
+
+	ActionIDs() []data.ID
+	AddAction(Action) error
+	DropAction(Action) error
 }
 
 // Experimental

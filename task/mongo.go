@@ -81,7 +81,7 @@ func (t *mongoTask) DropDependency(other models.Task) error {
 	return t.Schema().Unlink(t, other, Dependencies)
 }
 
-func (t *mongoTask) Dependencies(a data.Access) (data.RecordIterator, error) {
+func (t *mongoTask) Dependencies(a *data.Access) (data.RecordIterator, error) {
 	if t.CanRead(a.Client) {
 		return mongo.NewIDIter(t.TaskIDs, a.Store), nil
 	} else {
