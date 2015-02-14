@@ -22,6 +22,26 @@ type User interface {
 
 	Events(data.Access) (data.RecordIterator, error)
 	Tasks(data.Access) (data.RecordIterator, error)
+
+	SetCurrentAction(Action)
+	CurrentAction(data.Access, Action) error
+
+	SetCurrentActionable(Actionable)
+	CurrentActionable(data.Access) (Actionable, error)
+}
+
+type Actionable interface {
+	data.Model
+	Action() Action
+}
+
+type Action interface {
+	data.Model
+	data.Nameable
+	data.Timeable
+
+	SetUser(User) User
+	User(data.Access, User) error
 }
 
 type Event interface {
@@ -35,6 +55,7 @@ type Event interface {
 type Task interface {
 	data.Model
 	data.Nameable
+	data.Timeable
 
 	User(data.Access, User) error
 	SetUser(User) error
@@ -45,16 +66,16 @@ type Task interface {
 }
 
 type Routine interface {
-	data.Model
+	Actionable
 	data.Nameable
+	data.Timeable
 
-	User(User) error
+	User(data.Access, User) error
 	SetUser(User) error
-
-	Tasks(data.Access) (data.RecordIterator, error)
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
+	Tasks(data.Access) (data.RecordIterator, error)
 }
 
 // Experimental

@@ -1,6 +1,8 @@
 package user
 
 import (
+	"errors"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -12,10 +14,12 @@ type mongoUser struct {
 	models.Named       `bson:",inline"`
 	models.Timestamped `bson:",inline"`
 
-	EKey          string        `json:"key" bson:"key"`
-	EventIDs      mongo.IDSet   `json:"event_ids" bson:"event_ids"`
-	TaskIDs       mongo.IDSet   `json:"task_ids" bson:"task_ids"`
-	CurrentTaskID bson.ObjectId `json:"current_task" bson:"current_task,omitempty"`
+	EKey            string        `json:"key" bson:"key"`
+	EventIDs        mongo.IDSet   `json:"event_ids" bson:"event_ids"`
+	TaskIDs         mongo.IDSet   `json:"task_ids" bson:"task_ids"`
+	CurrentActionID bson.ObjectId `json:"current_action" bson:"current_action,omitempty"`
+	ActionableKind  data.Kind     `json:"-" bson:"actionable_kind"`
+	ActionableID    bson.ObjectId `json:"-" bson:"actionable_id,omitempty"`
 }
 
 func (u *mongoUser) DBType() data.DBType {
@@ -37,15 +41,6 @@ func (u *mongoUser) Version() int {
 func (u *mongoUser) Valid() bool {
 	valid, _ := Validate(u)
 	return valid
-}
-
-func (u *mongoUser) Save(a data.Access) error {
-	valid, err := Validate(u)
-	if valid {
-		return a.Save(u)
-	} else {
-		return err
-	}
 }
 
 func (u *mongoUser) Concerned() []data.ID {
@@ -71,8 +66,8 @@ func (u *mongoUser) Link(m data.Model, l data.Link) error {
 	case Tasks:
 		u.TaskIDs = mongo.AddID(u.TaskIDs, m.ID().(bson.ObjectId))
 		return nil
-	case CurrentTask:
-		u.CurrentTaskID = m.ID().(bson.ObjectId)
+	case CurrentAction:
+		u.CurrentActionID = m.ID().(bson.ObjectId)
 		return nil
 	default:
 		return data.NewLinkError(u, m, l)
@@ -86,9 +81,9 @@ func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
 	case Tasks:
 		u.TaskIDs = mongo.DropID(u.TaskIDs, m.ID().(bson.ObjectId))
 		return nil
-	case CurrentTask:
-		if u.CurrentTaskID == m.ID().(bson.ObjectId) {
-			u.CurrentTaskID = *new(bson.ObjectId)
+	case CurrentAction:
+		if u.CurrentActionID == m.ID().(bson.ObjectId) {
+			u.CurrentActionID = *new(bson.ObjectId)
 		}
 
 		return nil
@@ -134,6 +129,39 @@ func (u *mongoUser) Tasks(a data.Access) (data.RecordIterator, error) {
 		return mongo.NewIDIter(u.TaskIDs, a.Store), nil
 	} else {
 		return nil, data.ErrAccessDenial
+	}
+}
+
+func (u *mongoUser) SetCurrentAction(a models.Action) {
+	u.Schema().Link(u, a, CurrentAction)
+}
+
+func (u *mongoUser) CurrentAction(a data.Access, action models.Action) error {
+	action.SetID(u.CurrentActionID)
+	return a.PopulateByID(action)
+}
+
+func (u *mongoUser) SetCurrentActionable(a models.Actionable) {
+	u.ActionableKind = a.Kind()
+	u.ActionableID = a.ID().(bson.ObjectId)
+}
+
+func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) {
+	m, err := a.ModelFor(u.ActionableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(u.ActionableID)
+	if err = a.PopulateByID(m); err != nil {
+		return nil, err
+	}
+
+	actionable, ok := m.(models.Actionable)
+	if !ok {
+		return nil, errors.New("asdf")
+	} else {
+		return actionable, nil
 	}
 }
 

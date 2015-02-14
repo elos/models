@@ -11,15 +11,16 @@ const (
 	UserKind    data.Kind = "user"
 	EventKind   data.Kind = "event"
 	TaskKind    data.Kind = "task"
+	ActionKind  data.Kind = "action"
 )
 
 const (
-	UserEvents       data.LinkName = "events"
-	UserTasks        data.LinkName = "tasks"
-	UserCurrentTask  data.LinkName = "current_task"
-	EventUser        data.LinkName = "user"
-	TaskUser         data.LinkName = "user"
-	TaskDependencies data.LinkName = "dependencies"
+	UserEvents        data.LinkName = "events"
+	UserTasks         data.LinkName = "tasks"
+	UserCurrentAction data.LinkName = "current_action"
+	EventUser         data.LinkName = "user"
+	TaskUser          data.LinkName = "user"
+	TaskDependencies  data.LinkName = "dependencies"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{
@@ -36,10 +37,10 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other:   TaskKind,
 			Inverse: TaskUser,
 		},
-		UserCurrentTask: data.Link{
-			Name:  UserCurrentTask,
+		UserCurrentAction: data.Link{
+			Name:  UserCurrentAction,
 			Kind:  data.OneLink,
-			Other: TaskKind,
+			Other: ActionKind,
 		},
 	},
 	EventKind: {

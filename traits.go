@@ -24,6 +24,18 @@ func (m *MongoID) ID() data.ID {
 	return m.EID
 }
 
+type Loaded struct {
+	loadedAt time.Time
+}
+
+func (l *Loaded) SetLoadedAt(t time.Time) {
+	l.loadedAt = t
+}
+
+func (l *Loaded) LoadedAt() time.Time {
+	return l.loadedAt
+}
+
 type Timestamped struct {
 	ECreatedAt time.Time `json:"created_at" bson:"created_at"`
 	EUpdatedAt time.Time `json:"updated_at" bson:"updated_at"`

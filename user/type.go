@@ -10,9 +10,9 @@ import (
 )
 
 var (
-	Events      data.LinkName = models.UserEvents
-	Tasks       data.LinkName = models.UserTasks
-	CurrentTask data.LinkName = models.UserCurrentTask
+	Events        data.LinkName = models.UserEvents
+	Tasks         data.LinkName = models.UserTasks
+	CurrentAction data.LinkName = models.UserCurrentAction
 )
 
 var (
