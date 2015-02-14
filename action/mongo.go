@@ -38,11 +38,6 @@ func (a *mongoAction) SetUser(u models.User) error {
 	return a.Schema().Link(a, u, User)
 }
 
-func (a *mongoAction) User(access data.Access, u models.User) error {
-	u.SetID(a.UserID())
-	return access.PopulateByID(u)
-}
-
 func (a *mongoAction) Link(m data.Model, l data.Link) error {
 	switch l.Name {
 	case User:

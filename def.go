@@ -30,6 +30,11 @@ type User interface {
 	CurrentActionable(data.Access) (Actionable, error)
 }
 
+type Userable interface {
+	SetUser(User) error
+	User(data.Access, User) error
+}
+
 type Actionable interface {
 	data.Model
 	Action() Action
@@ -40,8 +45,7 @@ type Action interface {
 	data.Nameable
 	data.Timeable
 
-	SetUser(User) error
-	User(data.Access, User) error
+	Userable
 }
 
 type Event interface {
@@ -49,7 +53,7 @@ type Event interface {
 	data.Nameable
 	data.Timeable
 
-	SetUser(User) error
+	Userable
 }
 
 type Task interface {
@@ -57,8 +61,7 @@ type Task interface {
 	data.Nameable
 	data.Timeable
 
-	User(data.Access, User) error
-	SetUser(User) error
+	Userable
 
 	AddDependency(Task) error
 	DropDependency(Task) error
@@ -70,8 +73,7 @@ type Routine interface {
 	data.Nameable
 	data.Timeable
 
-	User(data.Access, User) error
-	SetUser(User) error
+	Userable
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error

@@ -41,12 +41,6 @@ func (t *mongoTask) Save(s data.Store) error {
 	return s.Save(t)
 }
 
-func (t *mongoTask) Concerned() []data.ID {
-	a := make([]data.ID, 1)
-	a[0] = t.UserID()
-	return a
-}
-
 func (t *mongoTask) Link(m data.Model, l data.Link) error {
 	switch l.Name {
 	case User:
@@ -93,20 +87,4 @@ func (t *mongoTask) Dependencies(a data.Access) (data.RecordIterator, error) {
 	} else {
 		return nil, data.ErrAccessDenial
 	}
-}
-
-func (t *mongoTask) CanRead(c data.Client) bool {
-	if c.Kind() != models.UserKind {
-		return false
-	}
-
-	if t.UserID().Valid() && c.ID() != t.UserID() {
-		return false
-	}
-
-	return true
-}
-
-func (t *mongoTask) CanWrite(c data.Client) bool {
-	return t.CanRead(c)
 }
