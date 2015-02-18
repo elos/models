@@ -22,6 +22,10 @@ func NewActionRoutine(a *data.Access, r models.Routine) *ActionRoutine {
 // Actionable
 func (r *ActionRoutine) Next() (models.Action, bool) {
 	ids := r.Routine.IncompleteTaskIDs()
+	if len(ids) < 1 {
+		return nil, false
+	}
+
 	i := rand.Intn(len(ids))
 	id := ids[i]
 
@@ -40,6 +44,7 @@ func (r *ActionRoutine) Next() (models.Action, bool) {
 	action.SetUserID(r.UserID())
 
 	r.Routine.AddAction(action)
+	r.Routine.SetCurrentAction(action)
 
 	r.Save(r.Routine)
 	r.Save(action)

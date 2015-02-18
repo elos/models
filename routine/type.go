@@ -11,6 +11,7 @@ var (
 	Tasks          data.LinkName = models.RoutineTasks
 	CompletedTasks data.LinkName = models.RoutineCompletedTasks
 	Actions        data.LinkName = models.RoutineActions
+	CurrentAction  data.LinkName = models.RoutineCurrentAction
 )
 
 var (

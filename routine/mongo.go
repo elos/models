@@ -14,9 +14,10 @@ type mongoRoutine struct {
 	models.Timed       `bson:",inline"`
 	models.UserOwned   `bson:",inline"`
 
-	ETaskIDs          mongo.IDSet `json:"tasks" bson:"tasks"`
-	ECompletedTaskIDs mongo.IDSet `json:"completed_tasks", bson:"completed_tasks"`
-	EActionIDs        mongo.IDSet `json:"actions" bson:"actions"`
+	ETaskIDs          mongo.IDSet   `json:"task_ids" bson:"task_ids"`
+	ECompletedTaskIDs mongo.IDSet   `json:"completed_task_ids" bson:"completed_task_ids"`
+	EActionIDs        mongo.IDSet   `json:"action_ids" bson:"action_ids"`
+	ECurrentActionID  bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
 }
 
 func (r *mongoRoutine) Kind() data.Kind {
@@ -105,6 +106,30 @@ func (r *mongoRoutine) AddAction(a models.Action) error {
 
 func (r *mongoRoutine) DropAction(a models.Action) error {
 	return r.Schema().Unlink(r, a, Actions)
+}
+
+func (r *mongoRoutine) SetCurrentAction(a models.Action) {
+	r.Schema().Link(r, a, CurrentAction)
+}
+
+func (r *mongoRoutine) CurrentAction(a *data.Access, action models.Action) error {
+	action.SetID(r.ECurrentActionID)
+	return a.PopulateByID(action)
+}
+
+func (r *mongoRoutine) CompleteAction(access *data.Access, a models.Action) {
+	if a.ID() == r.ECurrentActionID {
+		r.ECurrentActionID = ""
+	}
+
+	a.Complete()
+	m, _ := access.ModelFor(models.TaskKind)
+	task := m.(models.Task)
+	a.Task(access, task)
+	r.CompleteTask(task)
+	access.Save(a)
+	access.Save(task)
+	access.Save(r)
 }
 
 func (r *mongoRoutine) Link(m data.Model, l data.Link) error {
