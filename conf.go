@@ -34,6 +34,7 @@ const (
 	RoutineTasks          data.LinkName = "tasks"
 	RoutineCompletedTasks data.LinkName = "completed_tasks"
 	RoutineActions        data.LinkName = "actions"
+	RoutineCurrentAction  data.LinkName = "current_action"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{

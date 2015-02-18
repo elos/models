@@ -42,6 +42,7 @@ type Actionable interface {
 	Userable
 	ActionCount() int
 	NextAction(*data.Access) (Action, bool)
+	CompleteAction(*data.Access, Action)
 }
 
 type Action interface {
@@ -52,6 +53,8 @@ type Action interface {
 
 	SetTask(Task) error
 	Task(*data.Access, Task) error
+	Completed() bool
+	Complete()
 }
 
 type Event interface {
@@ -92,6 +95,9 @@ type Routine interface {
 	ActionIDs() []data.ID
 	AddAction(Action) error
 	DropAction(Action) error
+
+	SetCurrentAction(Action)
+	CurrentAction(*data.Access, Action) error
 }
 
 // Experimental

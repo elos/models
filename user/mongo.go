@@ -17,9 +17,9 @@ type mongoUser struct {
 	EKey            string        `json:"key" bson:"key"`
 	EventIDs        mongo.IDSet   `json:"event_ids" bson:"event_ids"`
 	TaskIDs         mongo.IDSet   `json:"task_ids" bson:"task_ids"`
-	CurrentActionID bson.ObjectId `json:"current_action" bson:"current_action,omitempty"`
-	ActionableKind  data.Kind     `json:"-" bson:"actionable_kind"`
-	ActionableID    bson.ObjectId `json:"-" bson:"actionable_id,omitempty"`
+	CurrentActionID bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
+	ActionableKind  data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
+	ActionableID    bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
 }
 
 func (u *mongoUser) DBType() data.DBType {

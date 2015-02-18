@@ -1,6 +1,8 @@
 package action
 
 import (
+	"time"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -14,7 +16,8 @@ type mongoAction struct {
 	models.Timed       `bson:",inline"`
 	models.UserOwned   `bson:",inline"`
 
-	ETaskID bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
+	ECompleted bool          `json:"completed" bson:"completed"`
+	ETaskID    bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
 }
 
 func (a *mongoAction) Kind() data.Kind {
@@ -48,6 +51,15 @@ func (a *mongoAction) SetTask(t models.Task) error {
 func (a *mongoAction) Task(access *data.Access, t models.Task) error {
 	t.SetID(a.ETaskID)
 	return access.PopulateByID(t)
+}
+
+func (a *mongoAction) Completed() bool {
+	return a.ECompleted
+}
+
+func (a *mongoAction) Complete() {
+	a.SetEndTime(time.Now())
+	a.ECompleted = true
 }
 
 func (a *mongoAction) Link(m data.Model, l data.Link) error {
