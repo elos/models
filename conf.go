@@ -7,12 +7,15 @@ import (
 )
 
 const (
-	DataVersion           = 1
-	UserKind    data.Kind = "user"
-	EventKind   data.Kind = "event"
-	TaskKind    data.Kind = "task"
-	ActionKind  data.Kind = "action"
-	RoutineKind data.Kind = "routine"
+	DataVersion            = 1
+	UserKind     data.Kind = "user"
+	EventKind    data.Kind = "event"
+	TaskKind     data.Kind = "task"
+	ActionKind   data.Kind = "action"
+	RoutineKind  data.Kind = "routine"
+	SetKind      data.Kind = "set"
+	ScheduleKind data.Kind = "schedule"
+	FixtureKind  data.Kind = "fixture"
 )
 
 const (
@@ -35,6 +38,15 @@ const (
 	RoutineCompletedTasks data.LinkName = "completed_tasks"
 	RoutineActions        data.LinkName = "actions"
 	RoutineCurrentAction  data.LinkName = "current_action"
+
+	SetUser   data.LinkName = "user"
+	SetModels data.LinkName = "models"
+
+	ScheduleUser     data.LinkName = "user"
+	ScheduleFixtures data.LinkName = "fixtures"
+
+	FixtureUser     data.LinkName = "user"
+	FixtureSchedule data.LinkName = "schedule"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{
@@ -69,6 +81,7 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Inverse: RoutineUser,
 		},
 	},
+
 	EventKind: {
 		EventUser: data.Link{
 			Name:    EventUser,
@@ -77,6 +90,7 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Inverse: UserEvents,
 		},
 	},
+
 	TaskKind: {
 		TaskUser: data.Link{
 			Name:    TaskUser,
@@ -90,6 +104,7 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other: TaskKind,
 		},
 	},
+
 	ActionKind: {
 		ActionUser: data.Link{
 			Name:    ActionUser,
@@ -103,6 +118,7 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other: TaskKind,
 		},
 	},
+
 	RoutineKind: {
 		RoutineUser: data.Link{
 			Name:    RoutineUser,
@@ -124,6 +140,47 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Name:  RoutineActions,
 			Kind:  data.MulLink,
 			Other: ActionKind,
+		},
+	},
+
+	SetKind: {
+		SetUser: data.Link{
+			Name:  SetUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+		SetModels: data.Link{
+			Name: SetModels,
+			Kind: data.MulLink,
+		},
+	},
+
+	ScheduleKind: {
+		ScheduleUser: data.Link{
+			Name:  ScheduleUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+		ScheduleFixtures: data.Link{
+			Name:    ScheduleFixtures,
+			Kind:    data.MulLink,
+			Other:   FixtureKind,
+			Inverse: FixtureSchedule,
+		},
+	},
+
+	FixtureKind: {
+		FixtureUser: data.Link{
+			Name:  FixtureUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+
+		FixtureSchedule: data.Link{
+			Name:    FixtureSchedule,
+			Kind:    data.OneLink,
+			Other:   ScheduleKind,
+			Inverse: ScheduleFixtures,
 		},
 	},
 }

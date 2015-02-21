@@ -4,8 +4,22 @@ import (
 	"time"
 
 	"github.com/elos/data"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
+
+type MongoModel struct {
+	MongoID     `bson:",inline"`
+	Timestamped `bson:",inline"`
+}
+
+func (m *MongoModel) DBType() data.DBType {
+	return mongo.DBType
+}
+
+func (m *MongoModel) Valid() bool {
+	return true
+}
 
 type MongoID struct {
 	EID bson.ObjectId `json:"id" bson:"_id,omitempty"`

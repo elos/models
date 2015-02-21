@@ -5,16 +5,14 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
-	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoAction struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	models.Timed       `bson:",inline"`
-	models.UserOwned   `bson:",inline"`
+	models.MongoModel `bson:",inline"`
+	models.Named      `bson:",inline"`
+	models.Timed      `bson:",inline"`
+	models.UserOwned  `bson:",inline"`
 
 	ECompleted bool          `json:"completed" bson:"completed"`
 	ETaskID    bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
@@ -30,14 +28,6 @@ func (a *mongoAction) Schema() data.Schema {
 
 func (a *mongoAction) Version() int {
 	return version
-}
-
-func (a *mongoAction) DBType() data.DBType {
-	return mongo.DBType
-}
-
-func (a *mongoAction) Valid() bool {
-	return true
 }
 
 func (a *mongoAction) SetUser(u models.User) error {

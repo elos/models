@@ -5,7 +5,11 @@
 */
 package models
 
-import "github.com/elos/data"
+import (
+	"time"
+
+	"github.com/elos/data"
+)
 
 type User interface {
 	data.Model
@@ -57,6 +61,14 @@ type Action interface {
 	Complete()
 }
 
+type Set interface {
+	data.Model
+
+	IncludeModel(data.Model) error
+	ExcludeModel(data.Model) error
+	ElementKind() data.Kind
+}
+
 type Event interface {
 	data.Model
 	data.Nameable
@@ -98,6 +110,58 @@ type Routine interface {
 
 	SetCurrentAction(Action)
 	CurrentAction(*data.Access, Action) error
+}
+
+type GeoPoint interface {
+	data.Model
+	Lat() float64
+	Lon() float64
+
+	Latitude() float64
+	Longitude() float64
+}
+
+type Location interface {
+	GeoPoint
+	data.Nameable
+}
+
+type Fixture interface {
+	data.Model
+	data.Timeable
+	Userable
+
+	SetSchedule(Schedule) error
+	Schedule(data.Access, Schedule) error
+
+	SetDescription(string)
+	Description() string
+}
+
+type Schedule interface {
+	data.Model
+	data.Timeable
+	Userable
+
+	IncludeFixture(Fixture) error
+	ExcludeFixture(Fixture) error
+}
+
+type Calendar interface {
+	data.Model
+	Userable
+
+	Base() Schedule
+	Monday() Schedule
+	Tuesday() Schedule
+	Wednesday() Schedule
+	Thursday() Schedule
+	Friday() Schedule
+	Saturday() Schedule
+	Sunday() Schedule
+
+	AddSchedule(Schedule, time.Time)
+	Schedules(*data.Access) (data.RecordIterator, error)
 }
 
 // Experimental
