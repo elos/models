@@ -6,8 +6,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/elos/data"
 )
 
@@ -151,16 +149,26 @@ type Calendar interface {
 	data.Model
 	Userable
 
-	Base() Schedule
-	Monday() Schedule
-	Tuesday() Schedule
-	Wednesday() Schedule
-	Thursday() Schedule
-	Friday() Schedule
-	Saturday() Schedule
-	Sunday() Schedule
+	Base(*data.Access, Schedule) error
+	Monday(*data.Access, Schedule) error
+	Tuesday(*data.Access, Schedule) error
+	Wednesday(*data.Access, Schedule) error
+	Thursday(*data.Access, Schedule) error
+	Friday(*data.Access, Schedule) error
+	Saturday(*data.Access, Schedule) error
+	Sunday(*data.Access, Schedule) error
 
-	AddSchedule(Schedule, time.Time)
+	SetBase(Schedule) error
+	SetMonday(Schedule) error
+	SetTuesday(Schedule) error
+	SetWednesday(Schedule) error
+	SetThursday(Schedule) error
+	SetFriday(Schedule) error
+	SetSaturday(Schedule) error
+	SetSunday(Schedule) error
+
+	IncludeSchedule(Schedule) error
+	ExcludeSchedule(Schedule) error
 	Schedules(*data.Access) (data.RecordIterator, error)
 }
 
@@ -175,25 +183,53 @@ type Ontology interface {
 }
 
 type Class interface {
-	AddTrait()
+	data.Nameable
+
+	IncludeTrait(Trait)
+	ExcludeTrait(Trait)
+
+	IncludeLink(l Link)
+	ExcludeLink(l Link)
 }
 
 type Trait interface {
-	Name()
-	Type()
+	data.Model
+	data.Nameable
+
+	Type() string
+	SetType(string)
+}
+
+type Link interface {
+	data.Model
+	data.Nameable
+
+	LinkKind() string
+	OtherKind() string
+	Inverse() string
+
+	SetLinkKind(string)
+	SetOtherKind(string)
+	SetInverse(string)
 }
 
 type Object interface {
+	data.Model
+
+	SetClass(Class)
+	Class() Class
+
 	AddAttribute(string, string)
 	AddRelationship(Relationship)
 }
 
 type Attribute interface {
-	Trait()
-	Value()
+	data.Model
+
+	Trait() Trait
+	Value() string
 }
 
 type Relationship interface {
-	Trait()
-	Tail()
+	data.Model
 }

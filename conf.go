@@ -16,6 +16,7 @@ const (
 	SetKind      data.Kind = "set"
 	ScheduleKind data.Kind = "schedule"
 	FixtureKind  data.Kind = "fixture"
+	CalendarKind data.Kind = "calendar"
 )
 
 const (
@@ -24,6 +25,7 @@ const (
 	UserActions       data.LinkName = "actions"
 	UserCurrentAction data.LinkName = "current_action"
 	UserRoutines      data.LinkName = "routines"
+	UserCalendar      data.LinkName = "calendar"
 
 	EventUser data.LinkName = "user"
 
@@ -41,6 +43,17 @@ const (
 
 	SetUser   data.LinkName = "user"
 	SetModels data.LinkName = "models"
+
+	CalendarUser      data.LinkName = "user"
+	CalendarBase      data.LinkName = "base"
+	CalendarMon       data.LinkName = "monday"
+	CalendarTue       data.LinkName = "tuesday"
+	CalendarWed       data.LinkName = "wednesday"
+	CalendarThu       data.LinkName = "thursday"
+	CalendarFri       data.LinkName = "friday"
+	CalendarSat       data.LinkName = "saturday"
+	CalendarSun       data.LinkName = "sunday"
+	CalendarSchedules data.LinkName = "schedules"
 
 	ScheduleUser     data.LinkName = "user"
 	ScheduleFixtures data.LinkName = "fixtures"
@@ -79,6 +92,12 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.MulLink,
 			Other:   RoutineKind,
 			Inverse: RoutineUser,
+		},
+		UserCalendar: data.Link{
+			Name:    UserCalendar,
+			Kind:    data.OneLink,
+			Other:   CalendarKind,
+			Inverse: CalendarUser,
 		},
 	},
 
@@ -181,6 +200,60 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.OneLink,
 			Other:   ScheduleKind,
 			Inverse: ScheduleFixtures,
+		},
+	},
+
+	CalendarKind: {
+		CalendarUser: data.Link{
+			Name:    CalendarUser,
+			Kind:    data.OneLink,
+			Other:   UserKind,
+			Inverse: UserCalendar,
+		},
+		CalendarBase: data.Link{
+			Name:  CalendarBase,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarMon: data.Link{
+			Name:  CalendarMon,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarTue: data.Link{
+			Name:  CalendarTue,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarWed: data.Link{
+			Name:  CalendarWed,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarThu: data.Link{
+			Name:  CalendarThu,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarFri: data.Link{
+			Name:  CalendarFri,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarSat: data.Link{
+			Name:  CalendarSat,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarSun: data.Link{
+			Name:  CalendarSun,
+			Kind:  data.OneLink,
+			Other: ScheduleKind,
+		},
+		CalendarSchedules: data.Link{
+			Name:  CalendarSchedules,
+			Kind:  data.MulLink,
+			Other: ScheduleKind,
 		},
 	},
 }
