@@ -181,34 +181,53 @@ type Calendar interface {
 // Experimental
 
 type Ontology interface {
+	data.Model
+	Userable
+
 	AddClass(Class) error
 	DropClass(Class) error
 
 	AddObject(Object) error
 	DropObject(Object) error
+
+	Classes(data.Access) (data.ModelIterator, error)
+	Objects(data.Access) (data.ModelIterator, error)
 }
 
 type Class interface {
+	data.Model
 	data.Nameable
+	Userable
+
+	SetOntology(Ontology) error
+	Ontology(data.Access, Ontology) error
 
 	IncludeTrait(Trait)
 	ExcludeTrait(Trait)
+	Traits(data.Access) (data.ModelIterator, error)
 
 	IncludeLink(l Link)
 	ExcludeLink(l Link)
+	Links(data.Access) (data.ModelIterator, error)
 }
 
 type Trait interface {
 	data.Model
 	data.Nameable
 
-	Type() string
+	SetClass(Class) error
+	Class(data.Access, Class) error
+
 	SetType(string)
+	Type() string
 }
 
 type Link interface {
 	data.Model
 	data.Nameable
+
+	SetClass(Class) error
+	Class(data.Access, Class) error
 
 	LinkKind() string
 	OtherKind() string
@@ -226,16 +245,5 @@ type Object interface {
 	Class() Class
 
 	AddAttribute(string, string)
-	AddRelationship(Relationship)
-}
-
-type Attribute interface {
-	data.Model
-
-	Trait() Trait
-	Value() string
-}
-
-type Relationship interface {
-	data.Model
+	AddRelationship(string, data.Model)
 }
