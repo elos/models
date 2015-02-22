@@ -16,18 +16,24 @@ type User interface {
 	SetKey(string)
 	Key() string
 
-	AddEvent(Event) error
-	DropEvent(Event) error
+	IncludeEvent(Event) error
+	ExcludeEvent(Event) error
 
-	AddTask(Task) error
-	DropTask(Task) error
+	IncludeTask(Task) error
+	ExcludeTask(Task) error
+
+	IncludeRoutine(Routine) error
+	ExcludeRoutine(Routine) error
 
 	Events(*data.Access) (data.RecordIterator, error)
 	Tasks(*data.Access) (data.RecordIterator, error)
+	Routines(*data.Access) (data.RecordIterator, error)
+
+	SetCalendar(Calendar) error
+	Calendar(*data.Access, Calendar) error
 
 	SetCurrentAction(Action)
 	CurrentAction(*data.Access, Action) error
-
 	SetCurrentActionable(Actionable)
 	CurrentActionable(*data.Access) (Actionable, error)
 }

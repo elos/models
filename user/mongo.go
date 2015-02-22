@@ -13,10 +13,13 @@ type mongoUser struct {
 	models.MongoID     `bson:",inline"`
 	models.Named       `bson:",inline"`
 	models.Timestamped `bson:",inline"`
+	EKey               string `json:"key" bson:"key"`
 
-	EKey            string        `json:"key" bson:"key"`
-	EventIDs        mongo.IDSet   `json:"event_ids" bson:"event_ids"`
-	TaskIDs         mongo.IDSet   `json:"task_ids" bson:"task_ids"`
+	EventIDs   mongo.IDSet `json:"event_ids" bson:"event_ids"`
+	TaskIDs    mongo.IDSet `json:"task_ids" bson:"task_ids"`
+	RoutineIDs mongo.IDSet `json:"routine_ids", bson:"routine_ids"`
+
+	CalendarID      bson.ObjectId `json:"calendar_id" bson:"calendar_id,omitempty"`
 	CurrentActionID bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
 	ActionableKind  data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
 	ActionableID    bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
