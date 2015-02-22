@@ -12,7 +12,9 @@ import (
 var (
 	Events        data.LinkName = models.UserEvents
 	Tasks         data.LinkName = models.UserTasks
+	Routines      data.LinkName = models.UserRoutines
 	CurrentAction data.LinkName = models.UserCurrentAction
+	Calendar      data.LinkName = models.UserCalendar
 )
 
 var (

@@ -19,7 +19,7 @@ type mongoUser struct {
 	TaskIDs    mongo.IDSet `json:"task_ids" bson:"task_ids"`
 	RoutineIDs mongo.IDSet `json:"routine_ids", bson:"routine_ids"`
 
-	CalendarID      bson.ObjectId `json:"calendar_id" bson:"calendar_id,omitempty"`
+	ECalendarID     bson.ObjectId `json:"calendar_id" bson:"calendar_id,omitempty"`
 	CurrentActionID bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
 	ActionableKind  data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
 	ActionableID    bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
@@ -63,36 +63,52 @@ func (u *mongoUser) UnlinkEvent(eventID bson.ObjectId) error {
 }
 
 func (u *mongoUser) Link(m data.Model, l data.Link) error {
+	if !data.Compatible(u, m) {
+		return data.ErrIncompatibleModels
+	}
+
 	switch l.Name {
 	case Events:
 		return u.LinkEvent(m.ID().(bson.ObjectId))
 	case Tasks:
 		u.TaskIDs = mongo.AddID(u.TaskIDs, m.ID().(bson.ObjectId))
-		return nil
+	case Routines:
+		u.RoutineIDs = mongo.AddID(u.RoutineIDs, m.ID().(bson.ObjectId))
+	case Calendar:
+		u.ECalendarID = m.ID().(bson.ObjectId)
 	case CurrentAction:
 		u.CurrentActionID = m.ID().(bson.ObjectId)
-		return nil
 	default:
 		return data.NewLinkError(u, m, l)
 	}
+	return nil
 }
 
 func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
+	if !data.Compatible(u, m) {
+		return data.ErrIncompatibleModels
+	}
+
 	switch l.Name {
 	case Events:
 		return u.UnlinkEvent(m.ID().(bson.ObjectId))
 	case Tasks:
 		u.TaskIDs = mongo.DropID(u.TaskIDs, m.ID().(bson.ObjectId))
-		return nil
+	case Routines:
+		u.RoutineIDs = mongo.DropID(u.RoutineIDs, m.ID().(bson.ObjectId))
+	case Calendar:
+		if u.ECalendarID == m.ID().(bson.ObjectId) {
+			u.ECalendarID = *new(bson.ObjectId)
+		}
 	case CurrentAction:
 		if u.CurrentActionID == m.ID().(bson.ObjectId) {
 			u.CurrentActionID = *new(bson.ObjectId)
 		}
 
-		return nil
 	default:
 		return data.ErrUndefinedLink
 	}
+	return nil
 }
 
 func (u *mongoUser) SetKey(s string) {
@@ -103,11 +119,11 @@ func (u *mongoUser) Key() string {
 	return u.EKey
 }
 
-func (u *mongoUser) AddEvent(e models.Event) error {
+func (u *mongoUser) IncludeEvent(e models.Event) error {
 	return u.Schema().Link(u, e, Events)
 }
 
-func (u *mongoUser) DropEvent(e models.Event) error {
+func (u *mongoUser) ExcludeEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, Events)
 }
 
@@ -119,11 +135,11 @@ func (u *mongoUser) Events(a *data.Access) (data.RecordIterator, error) {
 	}
 }
 
-func (u *mongoUser) AddTask(t models.Task) error {
+func (u *mongoUser) IncludeTask(t models.Task) error {
 	return u.Schema().Link(u, t, Tasks)
 }
 
-func (u *mongoUser) DropTask(t models.Task) error {
+func (u *mongoUser) ExcludeTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, Tasks)
 }
 
@@ -132,6 +148,39 @@ func (u *mongoUser) Tasks(a *data.Access) (data.RecordIterator, error) {
 		return mongo.NewIDIter(u.TaskIDs, a.Store), nil
 	} else {
 		return nil, data.ErrAccessDenial
+	}
+}
+
+func (u *mongoUser) Routines(a *data.Access) (data.RecordIterator, error) {
+	if u.CanRead(a.Client) {
+		return mongo.NewIDIter(u.RoutineIDs, a.Store), nil
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
+func (u *mongoUser) IncludeRoutine(r models.Routine) error {
+	return u.Schema().Link(u, r, Routines)
+}
+
+func (u *mongoUser) ExcludeRoutine(r models.Routine) error {
+	return u.Schema().Unlink(u, r, Routines)
+}
+
+func (u *mongoUser) SetCalendar(c models.Calendar) error {
+	return u.Schema().Link(u, c, Calendar)
+}
+
+func (u *mongoUser) Calendar(a *data.Access, c models.Calendar) error {
+	if u.CanRead(a.Client) {
+		if !data.Compatible(u, c) {
+			return data.ErrIncompatibleModels
+		}
+
+		c.SetID(u.ECalendarID)
+		return a.PopulateByID(c)
+	} else {
+		return data.ErrAccessDenial
 	}
 }
 
