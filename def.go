@@ -25,22 +25,22 @@ type User interface {
 	IncludeRoutine(Routine) error
 	ExcludeRoutine(Routine) error
 
-	Events(*data.Access) (data.RecordIterator, error)
-	Tasks(*data.Access) (data.RecordIterator, error)
-	Routines(*data.Access) (data.RecordIterator, error)
+	Events(data.Access) (data.ModelIterator, error)
+	Tasks(data.Access) (data.ModelIterator, error)
+	Routines(data.Access) (data.ModelIterator, error)
 
 	SetCalendar(Calendar) error
-	Calendar(*data.Access, Calendar) error
+	Calendar(data.Access, Calendar) error
 
 	SetCurrentAction(Action)
-	CurrentAction(*data.Access, Action) error
+	CurrentAction(data.Access, Action) error
 	SetCurrentActionable(Actionable)
-	CurrentActionable(*data.Access) (Actionable, error)
+	CurrentActionable(data.Access) (Actionable, error)
 }
 
 type Userable interface {
 	SetUser(User) error
-	User(*data.Access, User) error
+	User(data.Access, User) error
 	UserID() data.ID
 	SetUserID(data.ID) error
 }
@@ -49,8 +49,8 @@ type Actionable interface {
 	data.Model
 	Userable
 	ActionCount() int
-	NextAction(*data.Access) (Action, bool)
-	CompleteAction(*data.Access, Action)
+	NextAction(data.Access) (Action, bool)
+	CompleteAction(data.Access, Action)
 }
 
 type Action interface {
@@ -60,7 +60,7 @@ type Action interface {
 	Userable
 
 	SetTask(Task) error
-	Task(*data.Access, Task) error
+	Task(data.Access, Task) error
 	Completed() bool
 	Complete()
 }
@@ -88,7 +88,7 @@ type Task interface {
 
 	AddDependency(Task) error
 	DropDependency(Task) error
-	Dependencies(*data.Access) (data.RecordIterator, error)
+	Dependencies(data.Access) (data.ModelIterator, error)
 }
 
 type Routine interface {
@@ -98,12 +98,12 @@ type Routine interface {
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
-	Tasks(*data.Access) (data.RecordIterator, error)
+	Tasks(data.Access) (data.ModelIterator, error)
 	TaskIDs() []data.ID
 
 	CompleteTask(Task) error
 	UncompleteTask(Task) error
-	CompletedTasks(*data.Access) (data.RecordIterator, error)
+	CompletedTasks(data.Access) (data.ModelIterator, error)
 	CompletedTaskIDs() []data.ID
 
 	IncompleteTaskIDs() []data.ID
@@ -113,7 +113,7 @@ type Routine interface {
 	DropAction(Action) error
 
 	SetCurrentAction(Action)
-	CurrentAction(*data.Access, Action) error
+	CurrentAction(data.Access, Action) error
 }
 
 type GeoPoint interface {
@@ -155,14 +155,14 @@ type Calendar interface {
 	data.Model
 	Userable
 
-	Base(*data.Access, Schedule) error
-	Monday(*data.Access, Schedule) error
-	Tuesday(*data.Access, Schedule) error
-	Wednesday(*data.Access, Schedule) error
-	Thursday(*data.Access, Schedule) error
-	Friday(*data.Access, Schedule) error
-	Saturday(*data.Access, Schedule) error
-	Sunday(*data.Access, Schedule) error
+	Base(data.Access, Schedule) error
+	Monday(data.Access, Schedule) error
+	Tuesday(data.Access, Schedule) error
+	Wednesday(data.Access, Schedule) error
+	Thursday(data.Access, Schedule) error
+	Friday(data.Access, Schedule) error
+	Saturday(data.Access, Schedule) error
+	Sunday(data.Access, Schedule) error
 
 	SetBase(Schedule) error
 	SetMonday(Schedule) error
@@ -175,7 +175,7 @@ type Calendar interface {
 
 	IncludeSchedule(Schedule) error
 	ExcludeSchedule(Schedule) error
-	Schedules(*data.Access) (data.RecordIterator, error)
+	Schedules(data.Access) (data.ModelIterator, error)
 }
 
 // Experimental

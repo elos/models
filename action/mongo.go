@@ -38,7 +38,7 @@ func (a *mongoAction) SetTask(t models.Task) error {
 	return a.Schema().Link(a, t, Task)
 }
 
-func (a *mongoAction) Task(access *data.Access, t models.Task) error {
+func (a *mongoAction) Task(access data.Access, t models.Task) error {
 	t.SetID(a.ETaskID)
 	return access.PopulateByID(t)
 }

@@ -10,11 +10,12 @@ import (
 )
 
 type mongoUser struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	EKey               string `json:"key" bson:"key"`
+	models.MongoModel `bson:",inline"`
+	models.Named      `bson:",inline"`
 
+	EKey string `json:"key" bson:"key"`
+
+	ActionIDs  mongo.IDSet `json:"action_ids" bson:"action_ids"`
 	EventIDs   mongo.IDSet `json:"event_ids" bson:"event_ids"`
 	TaskIDs    mongo.IDSet `json:"task_ids" bson:"task_ids"`
 	RoutineIDs mongo.IDSet `json:"routine_ids", bson:"routine_ids"`
@@ -127,9 +128,9 @@ func (u *mongoUser) ExcludeEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, Events)
 }
 
-func (u *mongoUser) Events(a *data.Access) (data.RecordIterator, error) {
-	if u.CanWrite(a.Client) {
-		return mongo.NewIDIter(u.EventIDs, a.Store), nil
+func (u *mongoUser) Events(a data.Access) (data.ModelIterator, error) {
+	if u.CanWrite(a.Client()) {
+		return mongo.NewIDIter(u.EventIDs, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}
@@ -143,17 +144,17 @@ func (u *mongoUser) ExcludeTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, Tasks)
 }
 
-func (u *mongoUser) Tasks(a *data.Access) (data.RecordIterator, error) {
-	if u.CanWrite(a.Client) {
-		return mongo.NewIDIter(u.TaskIDs, a.Store), nil
+func (u *mongoUser) Tasks(a data.Access) (data.ModelIterator, error) {
+	if u.CanWrite(a.Client()) {
+		return mongo.NewIDIter(u.TaskIDs, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}
 }
 
-func (u *mongoUser) Routines(a *data.Access) (data.RecordIterator, error) {
-	if u.CanRead(a.Client) {
-		return mongo.NewIDIter(u.RoutineIDs, a.Store), nil
+func (u *mongoUser) Routines(a data.Access) (data.ModelIterator, error) {
+	if u.CanRead(a.Client()) {
+		return mongo.NewIDIter(u.RoutineIDs, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}
@@ -171,8 +172,8 @@ func (u *mongoUser) SetCalendar(c models.Calendar) error {
 	return u.Schema().Link(u, c, Calendar)
 }
 
-func (u *mongoUser) Calendar(a *data.Access, c models.Calendar) error {
-	if u.CanRead(a.Client) {
+func (u *mongoUser) Calendar(a data.Access, c models.Calendar) error {
+	if u.CanRead(a.Client()) {
 		if !data.Compatible(u, c) {
 			return data.ErrIncompatibleModels
 		}
@@ -188,7 +189,7 @@ func (u *mongoUser) SetCurrentAction(a models.Action) {
 	u.Schema().Link(u, a, CurrentAction)
 }
 
-func (u *mongoUser) CurrentAction(a *data.Access, action models.Action) error {
+func (u *mongoUser) CurrentAction(a data.Access, action models.Action) error {
 	action.SetID(u.CurrentActionID)
 	return a.PopulateByID(action)
 }
@@ -198,7 +199,7 @@ func (u *mongoUser) SetCurrentActionable(a models.Actionable) {
 	u.ActionableID = a.ID().(bson.ObjectId)
 }
 
-func (u *mongoUser) CurrentActionable(a *data.Access) (models.Actionable, error) {
+func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) {
 	m, err := a.ModelFor(u.ActionableKind)
 	if err != nil {
 		return nil, err

@@ -52,9 +52,9 @@ func (r *mongoRoutine) ExcludeTask(t models.Task) error {
 	return r.Schema().Unlink(r, t, Tasks)
 }
 
-func (r *mongoRoutine) Tasks(a *data.Access) (data.RecordIterator, error) {
-	if r.CanRead(a.Client) {
-		return mongo.NewIDIter(r.ETaskIDs, a.Store), nil
+func (r *mongoRoutine) Tasks(a data.Access) (data.ModelIterator, error) {
+	if r.CanRead(a.Client()) {
+		return mongo.NewIDIter(r.ETaskIDs, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}
@@ -68,9 +68,9 @@ func (r *mongoRoutine) UncompleteTask(t models.Task) error {
 	return r.Schema().Unlink(r, t, CompletedTasks)
 }
 
-func (r *mongoRoutine) CompletedTasks(a *data.Access) (data.RecordIterator, error) {
-	if r.CanRead(a.Client) {
-		return mongo.NewIDIter(r.ECompletedTaskIDs, a.Store), nil
+func (r *mongoRoutine) CompletedTasks(a data.Access) (data.ModelIterator, error) {
+	if r.CanRead(a.Client()) {
+		return mongo.NewIDIter(r.ECompletedTaskIDs, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}
@@ -80,7 +80,7 @@ func (r *mongoRoutine) ActionCount() int {
 	return len(r.ETaskIDs) - len(r.ECompletedTaskIDs)
 }
 
-func (r *mongoRoutine) NextAction(a *data.Access) (models.Action, bool) {
+func (r *mongoRoutine) NextAction(a data.Access) (models.Action, bool) {
 	return NewActionRoutine(a, r).Next()
 }
 
@@ -112,12 +112,12 @@ func (r *mongoRoutine) SetCurrentAction(a models.Action) {
 	r.Schema().Link(r, a, CurrentAction)
 }
 
-func (r *mongoRoutine) CurrentAction(a *data.Access, action models.Action) error {
+func (r *mongoRoutine) CurrentAction(a data.Access, action models.Action) error {
 	action.SetID(r.ECurrentActionID)
 	return a.PopulateByID(action)
 }
 
-func (r *mongoRoutine) CompleteAction(access *data.Access, a models.Action) {
+func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) {
 	if a.ID() == r.ECurrentActionID {
 		r.ECurrentActionID = ""
 	}

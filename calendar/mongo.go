@@ -72,7 +72,7 @@ func (c *mongoCalendar) SetSunday(s models.Schedule) error {
 	return c.Schema().Link(c, s, Sun)
 }
 
-func (c *mongoCalendar) Base(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Base(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -81,7 +81,7 @@ func (c *mongoCalendar) Base(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Monday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Monday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -90,7 +90,7 @@ func (c *mongoCalendar) Monday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Tuesday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Tuesday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -99,7 +99,7 @@ func (c *mongoCalendar) Tuesday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Wednesday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Wednesday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -108,7 +108,7 @@ func (c *mongoCalendar) Wednesday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Thursday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Thursday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -117,7 +117,7 @@ func (c *mongoCalendar) Thursday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Friday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Friday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -126,7 +126,7 @@ func (c *mongoCalendar) Friday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Saturday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Saturday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -135,7 +135,7 @@ func (c *mongoCalendar) Saturday(a *data.Access, s models.Schedule) error {
 	return a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) Sunday(a *data.Access, s models.Schedule) error {
+func (c *mongoCalendar) Sunday(a data.Access, s models.Schedule) error {
 	if !data.Compatible(c, s) {
 		return data.ErrIncompatibleModels
 	}
@@ -152,14 +152,14 @@ func (c *mongoCalendar) ExcludeSchedule(s models.Schedule) error {
 	return c.Schema().Unlink(c, s, Schedules)
 }
 
-func (c *mongoCalendar) Schedules(a *data.Access) (data.RecordIterator, error) {
+func (c *mongoCalendar) Schedules(a data.Access) (data.ModelIterator, error) {
 	ids := make(mongo.IDSet, 0)
 	for _, id := range c.ESchedules {
 		ids = mongo.AddID(ids, id)
 	}
 
-	if c.CanRead(a.Client) {
-		return mongo.NewIDIter(ids, a.Store), nil
+	if c.CanRead(a.Client()) {
+		return mongo.NewIDIter(ids, a), nil
 	} else {
 		return nil, data.ErrAccessDenial
 	}

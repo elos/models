@@ -9,10 +9,10 @@ import (
 
 type ActionRoutine struct {
 	models.Routine
-	*data.Access
+	data.Access
 }
 
-func NewActionRoutine(a *data.Access, r models.Routine) *ActionRoutine {
+func NewActionRoutine(a data.Access, r models.Routine) *ActionRoutine {
 	return &ActionRoutine{
 		Access:  a,
 		Routine: r,
