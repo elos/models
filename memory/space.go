@@ -45,6 +45,45 @@ func (s *Space) Expose(o *otto.Otto) {
 	o.Set("FindTask", s.FindTask)
 	o.Set("FindFixture", s.FindFixture)
 	o.Set("FindSchedule", s.FindSchedule)
+	o.Set("FindOntology", s.FindOntology)
+	o.Set("FindClass", s.FindClass)
+	o.Set("FindObject", s.FindObject)
+
+	o.Set("User", func() *User {
+		return NewUser(s)
+	})
+
+	o.Set("Action", func() *Action {
+		return NewAction(s)
+	})
+
+	o.Set("Routine", func() *Routine {
+		return NewRoutine(s)
+	})
+
+	o.Set("Task", func() *Task {
+		return NewTask(s)
+	})
+
+	o.Set("Fixture", func() *Fixture {
+		return NewFixture(s)
+	})
+
+	o.Set("Schedule", func() *Schedule {
+		return NewSchedule(s)
+	})
+
+	o.Set("Ontology", func() *Ontology {
+		return NewOntology(s)
+	})
+
+	o.Set("Class", func() *Class {
+		return NewClass(s)
+	})
+
+	o.Set("EObject", func() *Object {
+		return NewObject(s)
+	})
 
 	o.Set("me", s.User)
 	o.Set("StartAction", s.StartAction)
