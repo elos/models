@@ -29,6 +29,8 @@ func New(s data.Store) (models.Class, error) {
 	case mongo.DBType:
 		c := &mongoClass{}
 		c.SetID(s.NewID())
+		c.ETraits = make(map[string]*models.Trait)
+		c.ERelationships = make(map[string]*models.Relationship)
 		return c, nil
 	default:
 		return nil, data.ErrInvalidDBType

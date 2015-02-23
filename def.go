@@ -207,43 +207,29 @@ type Class interface {
 
 	IncludeTrait(Trait) error
 	ExcludeTrait(Trait) error
-	Traits(data.Access) (data.ModelIterator, error)
+	Traits() []*Trait
 
 	IncludeRelationship(Relationship) error
 	ExcludeRelationship(Relationship) error
-	Relationships(data.Access) (data.ModelIterator, error)
+	Relationships() []*Relationship
 
 	IncludeObject(Object) error
 	ExcludeObject(Object) error
 	Objects(data.Access) (data.ModelIterator, error)
 
-	HasTrait(data.Access, string) bool
-	RelationshipWithName(data.Access, string) (Relationship, error)
+	Trait(string) (*Trait, bool)
+	Relationship(string) (*Relationship, bool)
 }
 
-type Trait interface {
-	data.Model
-	data.Nameable
-
-	SetClass(Class) error
-	Class(data.Access, Class) error
-
-	SetType(string)
-	Type() string
+type Trait struct {
+	Name string
+	Type string
 }
 
-type Relationship interface {
-	data.Model
-	data.Nameable
-
-	SetClass(Class) error
-	Class(data.Access) (Class, error)
-
-	SetOther(string)
-	Other() string
-
-	SetInverse(string)
-	Inverse() string
+type Relationship struct {
+	Name    string
+	Other   string
+	Inverse string
 }
 
 type Object interface {

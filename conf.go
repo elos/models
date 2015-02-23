@@ -18,11 +18,9 @@ const (
 	FixtureKind  data.Kind = "fixture"
 	CalendarKind data.Kind = "calendar"
 
-	OntologyKind     data.Kind = "ontology"
-	ClassKind        data.Kind = "class"
-	ObjectKind       data.Kind = "object"
-	TraitKind        data.Kind = "trait"
-	RelationshipKind data.Kind = "link"
+	OntologyKind data.Kind = "ontology"
+	ClassKind    data.Kind = "class"
+	ObjectKind   data.Kind = "object"
 )
 
 const (
@@ -78,12 +76,6 @@ const (
 	ClassObjects       data.LinkName = "objects"
 	ClassTraits        data.LinkName = "traits"
 	ClassRelationships data.LinkName = "relationships"
-
-	TraitUser  data.LinkName = "user"
-	TraitClass data.LinkName = "class"
-
-	RelationshipUser  data.LinkName = "user"
-	RelationshipClass data.LinkName = "class"
 
 	ObjectUser     data.LinkName = "user"
 	ObjectClass    data.LinkName = "class"
@@ -324,18 +316,6 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other:   OntologyKind,
 			Inverse: OntologyClasses,
 		},
-		ClassTraits: data.Link{
-			Name:    ClassTraits,
-			Kind:    data.MulLink,
-			Other:   TraitKind,
-			Inverse: TraitClass,
-		},
-		ClassRelationships: data.Link{
-			Name:    ClassRelationships,
-			Kind:    data.MulLink,
-			Other:   RelationshipKind,
-			Inverse: RelationshipClass,
-		},
 		ClassObjects: data.Link{
 			Name:    ClassObjects,
 			Kind:    data.MulLink,
@@ -344,32 +324,23 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 		},
 	},
 
-	TraitKind: {
-		TraitUser: data.Link{
-			Name:  TraitUser,
+	ObjectKind: {
+		ObjectUser: data.Link{
+			Name:  ObjectUser,
 			Kind:  data.OneLink,
 			Other: UserKind,
 		},
-		TraitClass: data.Link{
-			Name:    TraitClass,
+		ObjectClass: data.Link{
+			Name:    ObjectClass,
 			Kind:    data.OneLink,
 			Other:   ClassKind,
-			Inverse: ClassTraits,
+			Inverse: ClassObjects,
 		},
-	},
-
-	RelationshipKind: {
-		RelationshipUser: data.Link{
-			Name:  RelationshipUser,
-			Kind:  data.OneLink,
-			Other: UserKind,
-		},
-
-		RelationshipClass: data.Link{
-			Name:    RelationshipClass,
+		ObjectOntology: data.Link{
+			Name:    ObjectOntology,
 			Kind:    data.OneLink,
-			Other:   ClassKind,
-			Inverse: ClassRelationships,
+			Other:   OntologyKind,
+			Inverse: OntologyObjects,
 		},
 	},
 }

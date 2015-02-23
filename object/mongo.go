@@ -10,42 +10,42 @@ import (
 )
 
 type mongoObject struct {
-	models.MongoModel `bson:,inline"`
+	models.MongoModel `bson:",inline"`
 	models.UserOwned  `bson:",inline"`
 	models.Named      `bson:",inline"`
 
-	EClassID      bson.ObjectId `json:"class_id" bson:"class_id,omitempty"`
-	EOntologyID   bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
-	Traits        map[string]string
-	Relationships map[string]mongo.IDSet
+	EClassID      bson.ObjectId          `json:"class_id" bson:"class_id,omitempty"`
+	EOntologyID   bson.ObjectId          `json:"ontology_id" bson:"ontology_id,omitempty"`
+	Traits        map[string]string      `json:"traits", bson:"traits"`
+	Relationships map[string]mongo.IDSet `json:"relationships" bson:"relationships"`
 }
 
-func (t *mongoObject) Kind() data.Kind {
+func (o *mongoObject) Kind() data.Kind {
 	return kind
 }
 
-func (t *mongoObject) Version() int {
+func (o *mongoObject) Version() int {
 	return version
 }
 
-func (t *mongoObject) Schema() data.Schema {
+func (o *mongoObject) Schema() data.Schema {
 	return schema
 }
 
-func (t *mongoObject) SetUser(u models.User) error {
-	return t.Schema().Link(t, u, User)
+func (o *mongoObject) SetUser(u models.User) error {
+	return o.Schema().Link(o, u, User)
 }
 
-func (t *mongoObject) SetClass(c models.Class) error {
-	return t.Schema().Link(t, c, Class)
+func (o *mongoObject) SetClass(c models.Class) error {
+	return o.Schema().Link(o, c, Class)
 }
 
-func (t *mongoObject) Class(a data.Access) (models.Class, error) {
+func (o *mongoObject) Class(a data.Access) (models.Class, error) {
 	m, _ := a.ModelFor(models.ClassKind)
 	c := m.(models.Class)
 
-	if t.CanRead(a.Client()) {
-		c.SetID(t.EClassID)
+	if o.CanRead(a.Client()) {
+		c.SetID(o.EClassID)
 		err := a.PopulateByID(c)
 		return c, err
 	} else {
@@ -53,55 +53,55 @@ func (t *mongoObject) Class(a data.Access) (models.Class, error) {
 	}
 }
 
-func (t *mongoObject) SetOntology(o models.Ontology) error {
-	return t.Schema().Link(t, o, Ontology)
+func (o *mongoObject) SetOntology(ont models.Ontology) error {
+	return o.Schema().Link(o, ont, Ontology)
 }
 
-func (t *mongoObject) Ontology(a data.Access, o models.Ontology) error {
-	if !data.Compatible(t, o) {
+func (o *mongoObject) Ontology(a data.Access, ont models.Ontology) error {
+	if !data.Compatible(o, ont) {
 		return data.ErrIncompatibleModels
 	}
 
-	if t.CanRead(a.Client()) {
-		o.SetID(t.EClassID)
-		return a.PopulateByID(o)
+	if o.CanRead(a.Client()) {
+		ont.SetID(o.EOntologyID)
+		return a.PopulateByID(ont)
 	} else {
 		return data.ErrAccessDenial
 	}
 }
 
-func (t *mongoObject) Link(m data.Model, l data.Link) error {
-	if !data.Compatible(t, m) {
+func (o *mongoObject) Link(m data.Model, l data.Link) error {
+	if !data.Compatible(o, m) {
 		return data.ErrIncompatibleModels
 	}
 
 	switch l.Name {
 	case User:
-		t.DropUserID()
+		o.DropUserID()
 	case Class:
-		t.EClassID = m.ID().(bson.ObjectId)
+		o.EClassID = m.ID().(bson.ObjectId)
 	case Ontology:
-		t.EOntologyID = m.ID().(bson.ObjectId)
+		o.EOntologyID = m.ID().(bson.ObjectId)
 	default:
-		return data.NewLinkError(t, m, l)
+		return data.NewLinkError(o, m, l)
 	}
 	return nil
 }
 
-func (t *mongoObject) Unlink(m data.Model, l data.Link) error {
-	if !data.Compatible(t, m) {
+func (o *mongoObject) Unlink(m data.Model, l data.Link) error {
+	if !data.Compatible(o, m) {
 		return data.ErrIncompatibleModels
 	}
 
 	switch l.Name {
 	case User:
-		t.DropUserID()
+		o.DropUserID()
 	case Class:
-		t.EClassID = *new(bson.ObjectId)
+		o.EClassID = *new(bson.ObjectId)
 	case Ontology:
-		t.EOntologyID = *new(bson.ObjectId)
+		o.EOntologyID = *new(bson.ObjectId)
 	default:
-		return data.NewLinkError(t, m, l)
+		return data.NewLinkError(o, m, l)
 	}
 	return nil
 }
@@ -109,7 +109,8 @@ func (t *mongoObject) Unlink(m data.Model, l data.Link) error {
 func (o *mongoObject) SetTrait(a data.Access, name string, value string) error {
 	c, _ := o.Class(a)
 
-	if c.HasTrait(a, name) {
+	_, ok := c.Trait(name)
+	if ok {
 		o.Traits[name] = value
 		return nil
 	} else {
@@ -120,16 +121,12 @@ func (o *mongoObject) SetTrait(a data.Access, name string, value string) error {
 func (o *mongoObject) AddRelationship(a data.Access, name string, other models.Object) error {
 	c, _ := o.Class(a)
 
-	r, err := c.RelationshipWithName(a, name)
-	if err != nil {
-		return err
-	}
-
-	if r == nil {
+	r, ok := c.Relationship(name)
+	if !ok || r == nil {
 		return errors.New("Invalid relationship name")
 	}
 
-	if r.Other() != other.Name() {
+	if r.Other != other.Name() {
 		return errors.New("Invalid other kind")
 	}
 
@@ -146,17 +143,13 @@ func (o *mongoObject) AddRelationship(a data.Access, name string, other models.O
 func (o *mongoObject) DropRelationship(a data.Access, name string, other models.Object) error {
 	c, _ := o.Class(a)
 
-	r, err := c.RelationshipWithName(a, name)
+	r, ok := c.Relationship(name)
 
-	if err != nil {
-		return err
-	}
-
-	if r == nil {
+	if !ok || r == nil {
 		return errors.New("Invalid relationship name")
 	}
 
-	if r.Other() != other.Name() {
+	if r.Other != other.Name() {
 		return errors.New("Invalid other kind")
 	}
 

@@ -27,6 +27,8 @@ func New(s data.Store) (models.Object, error) {
 	case mongo.DBType:
 		o := &mongoObject{}
 		o.SetID(s.NewID())
+		o.Traits = make(map[string]string)
+		o.Relationships = make(map[string]mongo.IDSet)
 		return o, nil
 	default:
 		return nil, data.ErrInvalidDBType

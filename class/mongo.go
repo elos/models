@@ -12,11 +12,13 @@ type mongoClass struct {
 	models.UserOwned  `bson:",inline"`
 	models.Named      `bson:",inline"`
 
-	EOntologyID bson.ObjectId `json:"ontology_id" bson:"ontology_id,inline"`
-	ObjectIDs   mongo.IDSet   `json:"object_ids" bson:"object_ids"`
+	EOntologyID     bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
+	ObjectIDs       mongo.IDSet   `json:"object_ids" bson:"object_ids"`
+	TraitIDs        mongo.IDSet   `json:"trait_ids" bson:"trait_ids"`
+	RelationshipIDs mongo.IDSet   `json:"relationship_ids" bson:"relationship_ids"`
 
-	TraitIDs        mongo.IDSet `json:"trait_ids" bson:"trait_ids"`
-	RelationshipIDs mongo.IDSet `json:"relationship_ids" bson:"relationship_ids"`
+	ETraits        map[string]*models.Trait        `json:"traits" bson:"traits"`
+	ERelationships map[string]*models.Relationship `json:"relationships" bson:"relationships"`
 }
 
 func (c *mongoClass) Kind() data.Kind {
@@ -53,35 +55,39 @@ func (c *mongoClass) Ontology(a data.Access, o models.Ontology) error {
 }
 
 func (c *mongoClass) IncludeTrait(t models.Trait) error {
-	return c.Schema().Link(c, t, Traits)
+	c.ETraits[t.Name] = &t
+	return nil
 }
 
 func (c *mongoClass) ExcludeTrait(t models.Trait) error {
-	return c.Schema().Unlink(c, t, Traits)
+	delete(c.ETraits, t.Name)
+	return nil
 }
 
-func (c *mongoClass) Traits(a data.Access) (data.ModelIterator, error) {
-	if c.CanRead(a.Client()) {
-		return mongo.NewIDIter(c.TraitIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
+func (c *mongoClass) Traits() []*models.Trait {
+	ts := make([]*models.Trait, 0)
+	for _, val := range c.ETraits {
+		ts = append(ts, val)
 	}
+	return ts
 }
 
 func (c *mongoClass) IncludeRelationship(r models.Relationship) error {
-	return c.Schema().Link(c, r, Relationships)
+	c.ERelationships[r.Name] = &r
+	return nil
 }
 
 func (c *mongoClass) ExcludeRelationship(r models.Relationship) error {
-	return c.Schema().Unlink(c, r, Relationships)
+	delete(c.ERelationships, r.Name)
+	return nil
 }
 
-func (c *mongoClass) Relationships(a data.Access) (data.ModelIterator, error) {
-	if c.CanRead(a.Client()) {
-		return mongo.NewIDIter(c.RelationshipIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
+func (c *mongoClass) Relationships() []*models.Relationship {
+	rs := make([]*models.Relationship, 0)
+	for _, val := range c.ERelationships {
+		rs = append(rs, val)
 	}
+	return rs
 }
 
 func (c *mongoClass) IncludeObject(o models.Object) error {
@@ -105,59 +111,53 @@ func (c *mongoClass) Link(m data.Model, l data.Link) error {
 		return data.ErrIncompatibleModels
 	}
 
+	id := m.ID().(bson.ObjectId)
+
 	switch l.Name {
 	case User:
-		return c.SetUserID(m.ID())
+		return c.SetUserID(id)
+	case Objects:
+		c.ObjectIDs = mongo.AddID(c.ObjectIDs, id)
+	case Traits:
+		c.TraitIDs = mongo.AddID(c.TraitIDs, id)
+	case Relationships:
+		c.RelationshipIDs = mongo.AddID(c.RelationshipIDs, id)
 	default:
 		return data.NewLinkError(c, m, l)
 	}
+
 	return nil
 }
 
 func (c *mongoClass) Unlink(m data.Model, l data.Link) error {
-
 	if !data.Compatible(c, m) {
 		return data.ErrIncompatibleModels
 	}
 
+	id := m.ID().(bson.ObjectId)
+
 	switch l.Name {
 	case User:
 		c.DropUserID()
+	case Objects:
+		c.ObjectIDs = mongo.DropID(c.ObjectIDs, id)
+	case Traits:
+		c.TraitIDs = mongo.DropID(c.TraitIDs, id)
+	case Relationships:
+		c.RelationshipIDs = mongo.DropID(c.RelationshipIDs, id)
 	default:
 		return data.NewLinkError(c, m, l)
 	}
+
 	return nil
 }
 
-func (c *mongoClass) HasTrait(a data.Access, name string) bool {
-	m, _ := a.ModelFor(models.TraitKind)
-	t := m.(models.Trait)
-	iter, _ := c.Traits(a)
-
-	for iter.Next(t) {
-		if t.Name() == name {
-			iter.Close()
-			return true
-		}
-	}
-
-	iter.Close()
-	return false
+func (c *mongoClass) Relationship(name string) (*models.Relationship, bool) {
+	r, ok := c.ERelationships[name]
+	return r, ok
 }
 
-func (c *mongoClass) RelationshipWithName(a data.Access, name string) (models.Relationship, error) {
-	m, _ := a.ModelFor(models.RelationshipKind)
-	r := m.(models.Relationship)
-
-	iter, err := c.Relationships(a)
-
-	for iter.Next(r) {
-		if r.Name() == name {
-			return r, nil
-		}
-	}
-
-	err = iter.Close()
-
-	return nil, err
+func (c *mongoClass) Trait(name string) (*models.Trait, bool) {
+	t, ok := c.ETraits[name]
+	return t, ok
 }
