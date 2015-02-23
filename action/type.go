@@ -24,7 +24,9 @@ func NewM(s data.Store) (data.Model, error) {
 func New(s data.Store) (models.Action, error) {
 	switch s.Type() {
 	case mongo.DBType:
-		return &mongoAction{}, nil
+		a := &mongoAction{}
+		a.SetID(s.NewID())
+		return a, nil
 	default:
 		return nil, data.ErrInvalidDBType
 	}

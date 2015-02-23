@@ -15,6 +15,7 @@ var (
 	Routines      data.LinkName = models.UserRoutines
 	CurrentAction data.LinkName = models.UserCurrentAction
 	Calendar      data.LinkName = models.UserCalendar
+	Ontology      data.LinkName = models.UserOntology
 )
 
 var (
@@ -34,7 +35,9 @@ func NewM(s data.Store) (data.Model, error) {
 func New(s data.Store) (models.User, error) {
 	switch s.Type() {
 	case mongo.DBType:
-		return &mongoUser{}, nil
+		u := &mongoUser{}
+		u.SetID(s.NewID())
+		return u, nil
 	default:
 		return nil, data.ErrInvalidDBType
 	}

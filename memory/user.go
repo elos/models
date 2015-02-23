@@ -20,6 +20,7 @@ type User struct {
 	CurrentActionID string   `json:"current_action_id"`
 	ActionableKind  string   `json:"actionable_kind"`
 	ActionableID    string   `json:"actionable_id"`
+	OntologyID      string   `json:"ontology_id"`
 }
 
 func UserModel(s *Space, m models.User) *User {

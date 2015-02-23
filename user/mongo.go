@@ -20,6 +20,7 @@ type mongoUser struct {
 	TaskIDs    mongo.IDSet `json:"task_ids" bson:"task_ids"`
 	RoutineIDs mongo.IDSet `json:"routine_ids", bson:"routine_ids"`
 
+	EOntologyID     bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
 	ECalendarID     bson.ObjectId `json:"calendar_id" bson:"calendar_id,omitempty"`
 	CurrentActionID bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
 	ActionableKind  data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
@@ -63,6 +64,23 @@ func (u *mongoUser) UnlinkEvent(eventID bson.ObjectId) error {
 	return nil
 }
 
+func (u *mongoUser) SetOntology(o models.Ontology) error {
+	return u.Schema().Link(u, o, Ontology)
+}
+
+func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
+	m, _ := a.ModelFor(models.OntologyKind)
+	o := m.(models.Ontology)
+
+	if u.CanRead(a.Client()) {
+		o.SetID(u.EOntologyID)
+		err := a.PopulateByID(o)
+		return o, err
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
 func (u *mongoUser) Link(m data.Model, l data.Link) error {
 	if !data.Compatible(u, m) {
 		return data.ErrIncompatibleModels
@@ -75,6 +93,8 @@ func (u *mongoUser) Link(m data.Model, l data.Link) error {
 		u.TaskIDs = mongo.AddID(u.TaskIDs, m.ID().(bson.ObjectId))
 	case Routines:
 		u.RoutineIDs = mongo.AddID(u.RoutineIDs, m.ID().(bson.ObjectId))
+	case Ontology:
+		u.EOntologyID = m.ID().(bson.ObjectId)
 	case Calendar:
 		u.ECalendarID = m.ID().(bson.ObjectId)
 	case CurrentAction:
@@ -100,6 +120,10 @@ func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
 	case Calendar:
 		if u.ECalendarID == m.ID().(bson.ObjectId) {
 			u.ECalendarID = *new(bson.ObjectId)
+		}
+	case Ontology:
+		if u.EOntologyID == m.ID().(bson.ObjectId) {
+			u.EOntologyID = *new(bson.ObjectId)
 		}
 	case CurrentAction:
 		if u.CurrentActionID == m.ID().(bson.ObjectId) {

@@ -24,7 +24,10 @@ func NewM(s data.Store) (data.Model, error) {
 func New(s data.Store) (models.Fixture, error) {
 	switch s.Type() {
 	case mongo.DBType:
-		return &mongoFixture{}, nil
+		f := &mongoFixture{}
+		f.SetID(s.NewID())
+
+		return f, nil
 	default:
 		return nil, data.ErrInvalidDBType
 	}

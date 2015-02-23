@@ -1,4 +1,4 @@
-package schedule
+package ontology
 
 import (
 	"github.com/elos/data"
@@ -7,12 +7,13 @@ import (
 )
 
 var (
-	User     data.LinkName = models.ScheduleUser
-	Fixtures data.LinkName = models.ScheduleFixtures
+	User    data.LinkName = models.OntologyUser
+	Classes data.LinkName = models.OntologyClasses
+	Objects data.LinkName = models.OntologyObjects
 )
 
 var (
-	kind    data.Kind   = models.ScheduleKind
+	kind    data.Kind   = models.OntologyKind
 	schema  data.Schema = models.Schema
 	version int         = models.DataVersion
 )
@@ -21,12 +22,12 @@ func NewM(s data.Store) (data.Model, error) {
 	return New(s)
 }
 
-func New(s data.Store) (models.Schedule, error) {
+func New(s data.Store) (models.Ontology, error) {
 	switch s.Type() {
 	case mongo.DBType:
-		sched := &mongoSchedule{}
-		sched.SetID(s.NewID())
-		return sched, nil
+		o := &mongoOntology{}
+		o.SetID(s.NewID())
+		return o, nil
 	default:
 		return nil, data.ErrInvalidDBType
 	}

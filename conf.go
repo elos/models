@@ -17,6 +17,12 @@ const (
 	ScheduleKind data.Kind = "schedule"
 	FixtureKind  data.Kind = "fixture"
 	CalendarKind data.Kind = "calendar"
+
+	OntologyKind     data.Kind = "ontology"
+	ClassKind        data.Kind = "class"
+	ObjectKind       data.Kind = "object"
+	TraitKind        data.Kind = "trait"
+	RelationshipKind data.Kind = "link"
 )
 
 const (
@@ -26,6 +32,7 @@ const (
 	UserCurrentAction data.LinkName = "current_action"
 	UserRoutines      data.LinkName = "routines"
 	UserCalendar      data.LinkName = "calendar"
+	UserOntology      data.LinkName = "ontology"
 
 	EventUser data.LinkName = "user"
 
@@ -60,6 +67,27 @@ const (
 
 	FixtureUser     data.LinkName = "user"
 	FixtureSchedule data.LinkName = "schedule"
+
+	// Experimental
+	OntologyUser    data.LinkName = "user"
+	OntologyClasses data.LinkName = "classes"
+	OntologyObjects data.LinkName = "objects"
+
+	ClassUser          data.LinkName = "user"
+	ClassOntology      data.LinkName = "ontology"
+	ClassObjects       data.LinkName = "objects"
+	ClassTraits        data.LinkName = "traits"
+	ClassRelationships data.LinkName = "relationships"
+
+	TraitUser  data.LinkName = "user"
+	TraitClass data.LinkName = "class"
+
+	RelationshipUser  data.LinkName = "user"
+	RelationshipClass data.LinkName = "class"
+
+	ObjectUser     data.LinkName = "user"
+	ObjectClass    data.LinkName = "class"
+	ObjectOntology data.LinkName = "ontology"
 )
 
 var RMap data.RelationshipMap = data.RelationshipMap{
@@ -98,6 +126,12 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.OneLink,
 			Other:   CalendarKind,
 			Inverse: CalendarUser,
+		},
+		UserOntology: data.Link{
+			Name:    UserOntology,
+			Kind:    data.OneLink,
+			Other:   OntologyKind,
+			Inverse: OntologyUser,
 		},
 	},
 
@@ -254,6 +288,88 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Name:  CalendarSchedules,
 			Kind:  data.MulLink,
 			Other: ScheduleKind,
+		},
+	},
+
+	OntologyKind: {
+		OntologyUser: data.Link{
+			Name:    OntologyUser,
+			Kind:    data.OneLink,
+			Other:   UserKind,
+			Inverse: UserOntology,
+		},
+		OntologyClasses: data.Link{
+			Name:    OntologyClasses,
+			Kind:    data.MulLink,
+			Other:   ClassKind,
+			Inverse: ClassOntology,
+		},
+		OntologyObjects: data.Link{
+			Name:    OntologyObjects,
+			Kind:    data.MulLink,
+			Other:   ObjectKind,
+			Inverse: ObjectOntology,
+		},
+	},
+
+	ClassKind: {
+		ClassUser: data.Link{
+			Name:  ClassUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+		ClassOntology: data.Link{
+			Name:    ClassOntology,
+			Kind:    data.OneLink,
+			Other:   OntologyKind,
+			Inverse: OntologyClasses,
+		},
+		ClassTraits: data.Link{
+			Name:    ClassTraits,
+			Kind:    data.MulLink,
+			Other:   TraitKind,
+			Inverse: TraitClass,
+		},
+		ClassRelationships: data.Link{
+			Name:    ClassRelationships,
+			Kind:    data.MulLink,
+			Other:   RelationshipKind,
+			Inverse: RelationshipClass,
+		},
+		ClassObjects: data.Link{
+			Name:    ClassObjects,
+			Kind:    data.MulLink,
+			Other:   ObjectKind,
+			Inverse: ObjectClass,
+		},
+	},
+
+	TraitKind: {
+		TraitUser: data.Link{
+			Name:  TraitUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+		TraitClass: data.Link{
+			Name:    TraitClass,
+			Kind:    data.OneLink,
+			Other:   ClassKind,
+			Inverse: ClassTraits,
+		},
+	},
+
+	RelationshipKind: {
+		RelationshipUser: data.Link{
+			Name:  RelationshipUser,
+			Kind:  data.OneLink,
+			Other: UserKind,
+		},
+
+		RelationshipClass: data.Link{
+			Name:    RelationshipClass,
+			Kind:    data.OneLink,
+			Other:   ClassKind,
+			Inverse: ClassRelationships,
 		},
 	},
 }

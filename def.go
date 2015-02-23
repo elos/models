@@ -36,6 +36,9 @@ type User interface {
 	CurrentAction(data.Access, Action) error
 	SetCurrentActionable(Actionable)
 	CurrentActionable(data.Access) (Actionable, error)
+
+	SetOntology(Ontology) error
+	Ontology(data.Access) (Ontology, error)
 }
 
 type Userable interface {
@@ -184,11 +187,11 @@ type Ontology interface {
 	data.Model
 	Userable
 
-	AddClass(Class) error
-	DropClass(Class) error
+	IncludeClass(Class) error
+	ExcludeClass(Class) error
 
-	AddObject(Object) error
-	DropObject(Object) error
+	IncludeObject(Object) error
+	ExcludeObject(Object) error
 
 	Classes(data.Access) (data.ModelIterator, error)
 	Objects(data.Access) (data.ModelIterator, error)
@@ -202,13 +205,20 @@ type Class interface {
 	SetOntology(Ontology) error
 	Ontology(data.Access, Ontology) error
 
-	IncludeTrait(Trait)
-	ExcludeTrait(Trait)
+	IncludeTrait(Trait) error
+	ExcludeTrait(Trait) error
 	Traits(data.Access) (data.ModelIterator, error)
 
-	IncludeLink(l Link)
-	ExcludeLink(l Link)
-	Links(data.Access) (data.ModelIterator, error)
+	IncludeRelationship(Relationship) error
+	ExcludeRelationship(Relationship) error
+	Relationships(data.Access) (data.ModelIterator, error)
+
+	IncludeObject(Object) error
+	ExcludeObject(Object) error
+	Objects(data.Access) (data.ModelIterator, error)
+
+	HasTrait(data.Access, string) bool
+	RelationshipWithName(data.Access, string) (Relationship, error)
 }
 
 type Trait interface {
@@ -222,28 +232,31 @@ type Trait interface {
 	Type() string
 }
 
-type Link interface {
+type Relationship interface {
 	data.Model
 	data.Nameable
 
 	SetClass(Class) error
-	Class(data.Access, Class) error
+	Class(data.Access) (Class, error)
 
-	LinkKind() string
-	OtherKind() string
-	Inverse() string
+	SetOther(string)
+	Other() string
 
-	SetLinkKind(string)
-	SetOtherKind(string)
 	SetInverse(string)
+	Inverse() string
 }
 
 type Object interface {
 	data.Model
+	data.Nameable
 
-	SetClass(Class)
-	Class() Class
+	SetOntology(Ontology) error
+	Ontology(data.Access, Ontology) error
 
-	AddAttribute(string, string)
-	AddRelationship(string, data.Model)
+	SetClass(Class) error
+	Class(data.Access) (Class, error)
+
+	SetTrait(data.Access, string, string) error
+	AddRelationship(data.Access, string, Object) error
+	DropRelationship(data.Access, string, Object) error
 }

@@ -32,7 +32,9 @@ func NewM(s data.Store) (data.Model, error) {
 func New(s data.Store) (models.Calendar, error) {
 	switch s.Type() {
 	case mongo.DBType:
-		return &mongoCalendar{}, nil
+		c := &mongoCalendar{}
+		c.SetID(s.NewID())
+		return c, nil
 	default:
 		return nil, data.ErrInvalidDBType
 	}
