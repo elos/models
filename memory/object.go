@@ -43,6 +43,16 @@ func (o *Object) Reload() error {
 	return data.TransferAttrs(o.model, o)
 }
 
+func (o *Object) Ontology() *Ontology {
+	ontology, _ := o.model.Ontology(o.space.Access)
+	return OntologyModel(o.space, ontology)
+}
+
+func (o *Object) Class() *Class {
+	class, _ := o.model.Class(o.space.Access)
+	return ClassModel(o.space, class)
+}
+
 func (s *Space) FindObject(id string) *Object {
 	m, _ := s.Access.Unmarshal(models.ObjectKind, data.AttrMap{
 		"id": id,

@@ -203,14 +203,14 @@ type Class interface {
 	Userable
 
 	SetOntology(Ontology) error
-	Ontology(data.Access, Ontology) error
+	Ontology(data.Access) (Ontology, error)
 
-	IncludeTrait(Trait) error
-	ExcludeTrait(Trait) error
+	IncludeTrait(*Trait) error
+	ExcludeTrait(*Trait) error
 	Traits() []*Trait
 
-	IncludeRelationship(Relationship) error
-	ExcludeRelationship(Relationship) error
+	IncludeRelationship(*Relationship) error
+	ExcludeRelationship(*Relationship) error
 	Relationships() []*Relationship
 
 	IncludeObject(Object) error
@@ -219,6 +219,8 @@ type Class interface {
 
 	Trait(string) (*Trait, bool)
 	Relationship(string) (*Relationship, bool)
+
+	NewObject(a data.Access) Object
 }
 
 type Trait struct {
@@ -237,7 +239,7 @@ type Object interface {
 	data.Nameable
 
 	SetOntology(Ontology) error
-	Ontology(data.Access, Ontology) error
+	Ontology(data.Access) (Ontology, error)
 
 	SetClass(Class) error
 	Class(data.Access) (Class, error)

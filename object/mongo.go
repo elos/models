@@ -57,19 +57,6 @@ func (o *mongoObject) SetOntology(ont models.Ontology) error {
 	return o.Schema().Link(o, ont, Ontology)
 }
 
-func (o *mongoObject) Ontology(a data.Access, ont models.Ontology) error {
-	if !data.Compatible(o, ont) {
-		return data.ErrIncompatibleModels
-	}
-
-	if o.CanRead(a.Client()) {
-		ont.SetID(o.EOntologyID)
-		return a.PopulateByID(ont)
-	} else {
-		return data.ErrAccessDenial
-	}
-}
-
 func (o *mongoObject) Link(m data.Model, l data.Link) error {
 	if !data.Compatible(o, m) {
 		return data.ErrIncompatibleModels
@@ -160,5 +147,28 @@ func (o *mongoObject) DropRelationship(a data.Access, name string, other models.
 	}
 
 	o.Relationships[name] = mongo.DropID(ids, other.ID().(bson.ObjectId))
+	return nil
+}
+
+func (o *mongoObject) Ontology(a data.Access) (models.Ontology, error) {
+	m, _ := a.ModelFor(models.OntologyKind)
+	ontology := m.(models.Ontology)
+
+	if o.CanRead(a.Client()) {
+		ontology.SetID(o.EOntologyID)
+		err := a.PopulateByID(ontology)
+		return ontology, err
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
+func (o *mongoObject) SetOntologyID(id data.ID) error {
+	bid, ok := id.(bson.ObjectId)
+	if !ok {
+		return data.ErrInvalidID
+	}
+
+	o.EOntologyID = bid
 	return nil
 }

@@ -41,25 +41,25 @@ func (c *mongoClass) SetOntology(o models.Ontology) error {
 	return c.Schema().Link(c, o, Ontology)
 }
 
-func (c *mongoClass) Ontology(a data.Access, o models.Ontology) error {
-	if !data.Compatible(c, o) {
-		return data.ErrIncompatibleModels
-	}
+func (c *mongoClass) Ontology(a data.Access) (models.Ontology, error) {
+	m, _ := a.ModelFor(models.OntologyKind)
+	o := m.(models.Ontology)
 
 	if c.CanRead(a.Client()) {
 		o.SetID(c.EOntologyID)
-		return a.PopulateByID(o)
+		err := a.PopulateByID(o)
+		return o, err
 	} else {
-		return data.ErrAccessDenial
+		return nil, data.ErrAccessDenial
 	}
 }
 
-func (c *mongoClass) IncludeTrait(t models.Trait) error {
-	c.ETraits[t.Name] = &t
+func (c *mongoClass) IncludeTrait(t *models.Trait) error {
+	c.ETraits[t.Name] = t
 	return nil
 }
 
-func (c *mongoClass) ExcludeTrait(t models.Trait) error {
+func (c *mongoClass) ExcludeTrait(t *models.Trait) error {
 	delete(c.ETraits, t.Name)
 	return nil
 }
@@ -72,12 +72,12 @@ func (c *mongoClass) Traits() []*models.Trait {
 	return ts
 }
 
-func (c *mongoClass) IncludeRelationship(r models.Relationship) error {
-	c.ERelationships[r.Name] = &r
+func (c *mongoClass) IncludeRelationship(r *models.Relationship) error {
+	c.ERelationships[r.Name] = r
 	return nil
 }
 
-func (c *mongoClass) ExcludeRelationship(r models.Relationship) error {
+func (c *mongoClass) ExcludeRelationship(r *models.Relationship) error {
 	delete(c.ERelationships, r.Name)
 	return nil
 }
@@ -160,4 +160,20 @@ func (c *mongoClass) Relationship(name string) (*models.Relationship, bool) {
 func (c *mongoClass) Trait(name string) (*models.Trait, bool) {
 	t, ok := c.ETraits[name]
 	return t, ok
+}
+
+func (c *mongoClass) NewObject(a data.Access) models.Object {
+	m, _ := a.ModelFor(models.ObjectKind)
+	obj := m.(models.Object)
+
+	m, _ = a.Unmarshal(models.OntologyKind, data.AttrMap{
+		"id": c.EOntologyID,
+	})
+	ont := m.(models.Ontology)
+
+	obj.SetOntology(ont)
+	obj.SetClass(c)
+	obj.SetName(c.Name())
+
+	return obj
 }
