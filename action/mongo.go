@@ -5,14 +5,15 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoAction struct {
-	models.MongoModel `bson:",inline"`
-	models.Named      `bson:",inline"`
-	models.Timed      `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	ECompleted bool          `json:"completed" bson:"completed"`
 	ETaskID    bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`

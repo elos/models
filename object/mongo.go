@@ -10,9 +10,9 @@ import (
 )
 
 type mongoObject struct {
-	models.MongoModel `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
-	models.Named      `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	EClassID      bson.ObjectId          `json:"class_id" bson:"class_id,omitempty"`
 	EOntologyID   bson.ObjectId          `json:"ontology_id" bson:"ontology_id,omitempty"`

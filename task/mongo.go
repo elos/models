@@ -8,11 +8,10 @@ import (
 )
 
 type mongoTask struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	models.Timed       `bson:",inline"`
-	models.UserOwned   `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	TaskIDs mongo.IDSet `json:"task_dependencies" bson:"task_dependencies"`
 }

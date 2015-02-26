@@ -7,11 +7,10 @@ import (
 )
 
 type mongoEvent struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	models.Timed       `bson:",inline"`
-	models.UserOwned   `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 }
 
 func (e *mongoEvent) Kind() data.Kind {

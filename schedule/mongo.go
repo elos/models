@@ -8,10 +8,10 @@ import (
 )
 
 type mongoSchedule struct {
-	models.MongoModel `bson:",inline"`
-	models.Named      `bson:",inline"`
-	models.Timed      `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	EFixtureIDs mongo.IDSet `json:"fixture_ids" bson:"fixture_ids"`
 }

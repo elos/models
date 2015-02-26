@@ -3,14 +3,15 @@ package fixture
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoFixture struct {
-	models.MongoModel `bson:",inline"`
-	models.Named      `bson:",inline"`
-	models.Timed      `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	EScheduleID  bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
 	EDescription string        `json:"decription" bson:"description"`

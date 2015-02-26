@@ -8,11 +8,10 @@ import (
 )
 
 type mongoRoutine struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	models.Timed       `bson:",inline"`
-	models.UserOwned   `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	mongo.Timed      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	ETaskIDs          mongo.IDSet   `json:"task_ids" bson:"task_ids"`
 	ECompletedTaskIDs mongo.IDSet   `json:"completed_task_ids" bson:"completed_task_ids"`

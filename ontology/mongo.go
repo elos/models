@@ -8,8 +8,8 @@ import (
 )
 
 type mongoOntology struct {
-	models.MongoModel `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	ClassIDs  mongo.IDSet `json:"class_ids" bson:"class_ids"`
 	ObjectIDs mongo.IDSet `json:"object_ids" bson:"object_ids"`

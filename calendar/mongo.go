@@ -10,8 +10,8 @@ import (
 )
 
 type mongoCalendar struct {
-	models.MongoModel `bson:",inline"`
-	models.UserOwned  `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	EBaseScheduleID bson.ObjectId               `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
 	EMonScheduleID  bson.ObjectId               `json:"monday_schedule_id" bson:"monday_schedule_id,omitempty"`

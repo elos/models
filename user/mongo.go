@@ -10,8 +10,8 @@ import (
 )
 
 type mongoUser struct {
-	models.MongoModel `bson:",inline"`
-	models.Named      `bson:",inline"`
+	mongo.Model `bson:",inline"`
+	mongo.Named `bson:",inline"`
 
 	EKey string `json:"key" bson:"key"`
 
