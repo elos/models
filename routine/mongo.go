@@ -122,9 +122,7 @@ func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) {
 	}
 
 	a.Complete()
-	m, _ := access.ModelFor(models.TaskKind)
-	task := m.(models.Task)
-	a.Task(access, task)
+	task, _ := a.Task(access)
 	r.CompleteTask(task)
 	access.Save(a)
 	access.Save(task)
