@@ -8,10 +8,9 @@ import (
 )
 
 type mongoSet struct {
-	models.MongoID     `bson:",inline"`
-	models.Named       `bson:",inline"`
-	models.Timestamped `bson:",inline"`
-	models.UserOwned   `bson:",inline"`
+	mongo.Model      `bson:",inline"`
+	mongo.Named      `bson:",inline"`
+	models.UserOwned `bson:",inline"`
 
 	ModelKind data.Kind   `json:"model_kind" bson:"model_kind"`
 	ModelIDs  mongo.IDSet `json:"model_ids" bson:"model_ids"`
