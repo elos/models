@@ -62,10 +62,10 @@ type Action interface {
 	data.Timeable
 	Userable
 
-	SetTask(Task) error
-	Task(data.Access, Task) error
 	Completed() bool
 	Complete()
+	SetTask(Task) error
+	Task(data.Access) (Task, error)
 }
 
 type Set interface {

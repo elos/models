@@ -1,6 +1,7 @@
 package action
 
 import (
+	"errors"
 	"time"
 
 	"github.com/elos/data"
@@ -39,9 +40,20 @@ func (a *mongoAction) SetTask(t models.Task) error {
 	return a.Schema().Link(a, t, Task)
 }
 
-func (a *mongoAction) Task(access data.Access, t models.Task) error {
+func (a *mongoAction) Task(access data.Access) (models.Task, error) {
+	m, err := access.ModelFor(models.TaskKind)
+	if err != nil {
+		return nil, err
+	}
+	t, ok := m.(models.Task)
+	if !ok {
+		return nil, errors.New("TODO")
+	}
+
 	t.SetID(a.ETaskID)
-	return access.PopulateByID(t)
+
+	err = access.PopulateByID(t)
+	return t, err
 }
 
 func (a *mongoAction) Completed() bool {
