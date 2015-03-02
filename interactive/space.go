@@ -1,4 +1,4 @@
-package memory
+package interactive
 
 import (
 	"github.com/elos/data"

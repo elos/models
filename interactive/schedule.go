@@ -1,10 +1,10 @@
-package memory
+package interactive
 
 import "github.com/elos/models"
 
-type Fixture struct {
-	space *Space         `json:"-"`
-	model models.Fixture `json:"-"`
+type Schedule struct {
+	space *Space          `json:"-"`
+	model models.Schedule `json:"-"`
 
 	ID        string `json:"id,omitempty"`
 	Name      string `json:"name"`
@@ -14,23 +14,23 @@ type Fixture struct {
 	EndTime   string `json:"end_time"`
 
 	UserID     string `json:"user_id"`
-	ScheduleID string `json:"schedule_id"`
+	FixtureIDs string `json:"fixture_ids"`
 }
 
-func (this *Fixture) Save() {
+func (this *Schedule) Save() {
 	transferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
 
-func NewFixture(s *Space) *Fixture {
-	f, _ := s.Access.ModelFor(models.FixtureKind)
+func NewSchedule(s *Space) *Schedule {
+	f, _ := s.Access.ModelFor(models.ScheduleKind)
 	f.SetID(s.NewID())
-	return FixtureModel(s, f.(models.Fixture))
+	return ScheduleModel(s, f.(models.Schedule))
 }
 
-func FixtureModel(s *Space, m models.Fixture) *Fixture {
-	f := &Fixture{
+func ScheduleModel(s *Space, m models.Schedule) *Schedule {
+	f := &Schedule{
 		space: s,
 		model: m,
 	}
@@ -40,12 +40,12 @@ func FixtureModel(s *Space, m models.Fixture) *Fixture {
 	return f
 }
 
-func (this *Fixture) Reload() error {
+func (this *Schedule) Reload() error {
 	this.space.Access.PopulateByID(this.model)
 	transferAttrs(this.model, this)
 	return nil
 }
 
-func (this *Fixture) Model() models.Fixture {
+func (this *Schedule) Model() models.Schedule {
 	return this.model
 }
