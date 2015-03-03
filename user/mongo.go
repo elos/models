@@ -213,9 +213,26 @@ func (u *mongoUser) SetCurrentAction(a models.Action) {
 	u.Schema().Link(u, a, CurrentAction)
 }
 
-func (u *mongoUser) CurrentAction(a data.Access, action models.Action) error {
+func (u *mongoUser) CurrentAction(a data.Access) (models.Action, error) {
+	m, err := a.ModelFor(models.ActionKind)
+	if err != nil {
+		return nil, err
+	}
+
+	action, ok := m.(models.Action)
+	if !ok {
+		return nil, errors.New("TODO")
+	}
+
 	action.SetID(u.CurrentActionID)
-	return a.PopulateByID(action)
+	err = a.PopulateByID(action)
+
+	return action, err
+}
+
+func (u *mongoUser) ClearCurrentActionable() {
+	u.ActionableKind = ""
+	u.ActionableID = *new(bson.ObjectId)
 }
 
 func (u *mongoUser) SetCurrentActionable(a models.Actionable) {

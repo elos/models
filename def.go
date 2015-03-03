@@ -6,6 +6,8 @@
 package models
 
 import (
+	"time"
+
 	"github.com/elos/data"
 )
 
@@ -33,9 +35,10 @@ type User interface {
 	Calendar(data.Access, Calendar) error
 
 	SetCurrentAction(Action)
-	CurrentAction(data.Access, Action) error
+	CurrentAction(data.Access) (Action, error)
 	SetCurrentActionable(Actionable)
 	CurrentActionable(data.Access) (Actionable, error)
+	ClearCurrentActionable()
 
 	SetOntology(Ontology) error
 	Ontology(data.Access) (Ontology, error)
@@ -143,6 +146,9 @@ type Fixture interface {
 
 	SetDescription(string)
 	Description() string
+
+	SetExpires(time.Time)
+	Expires() time.Time
 }
 
 type Schedule interface {
@@ -179,6 +185,8 @@ type Calendar interface {
 	IncludeSchedule(Schedule) error
 	ExcludeSchedule(Schedule) error
 	Schedules(data.Access) (data.ModelIterator, error)
+
+	ScheduleForDay(time.Time) (Schedule, error)
 }
 
 // Experimental

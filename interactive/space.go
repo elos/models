@@ -16,15 +16,15 @@ type Credentials struct {
 }
 
 type Space struct {
-	*data.MemoryStore
+	*data.InteractiveStore
 	User *User
 }
 
 func Access(a data.Access) (space *Space, err error) {
 	space = new(Space)
 
-	space.MemoryStore = data.NewMemoryStore(a)
-	space.User = space.FindUser(space.MemoryStore.Access.Client().ID().(bson.ObjectId).Hex())
+	space.InteractiveStore = data.NewInteractiveStore(a)
+	space.User = space.FindUser(space.InteractiveStore.Access.Client().ID().(bson.ObjectId).Hex())
 
 	return
 }
@@ -146,9 +146,9 @@ func (s *Space) StartAction(name string) *Action {
 }
 
 func (s *Space) Reload() {
-	s.MemoryStore.ReloadObjects()
+	s.InteractiveStore.ReloadObjects()
 }
 
-func (s *Space) Register(o data.MemoryObject) {
-	s.MemoryStore.RegisterObject(o)
+func (s *Space) Register(o data.InteractiveModel) {
+	s.InteractiveStore.RegisterObject(o)
 }

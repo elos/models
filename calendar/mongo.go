@@ -1,8 +1,6 @@
 package calendar
 
 import (
-	"time"
-
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -13,15 +11,15 @@ type mongoCalendar struct {
 	mongo.Model      `bson:",inline"`
 	models.UserOwned `bson:",inline"`
 
-	EBaseScheduleID bson.ObjectId               `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
-	EMonScheduleID  bson.ObjectId               `json:"monday_schedule_id" bson:"monday_schedule_id,omitempty"`
-	ETueScheduleID  bson.ObjectId               `json:"tuesday_schedule_id" bson:"tuesday_schedule_id,omitempty"`
-	EWedScheduleID  bson.ObjectId               `json:"wednesday_schedule_id" bson"wednesday_schedule_id,omitempty"`
-	EThuScheduleID  bson.ObjectId               `json:"thursday_schedule_id" bson"thursday_schedule_id,omitempty"`
-	EFriScheduleID  bson.ObjectId               `json:"friday_schedule_id" bson:"friday_schedule_id,omitempty"`
-	ESatScheduleID  bson.ObjectId               `json:"saturday_schedule_id" bson:"saturday_schedule_id,omitempty"`
-	ESunScheduleID  bson.ObjectId               `json:"sunday_schedule_id" bson:"sunday_schedule_id,omitempty"`
-	ESchedules      map[time.Time]bson.ObjectId `json:"schedules" bson:"schedules"`
+	EBaseScheduleID bson.ObjectId         `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
+	EMonScheduleID  bson.ObjectId         `json:"monday_schedule_id" bson:"monday_schedule_id,omitempty"`
+	ETueScheduleID  bson.ObjectId         `json:"tuesday_schedule_id" bson:"tuesday_schedule_id,omitempty"`
+	EWedScheduleID  bson.ObjectId         `json:"wednesday_schedule_id" bson"wednesday_schedule_id,omitempty"`
+	EThuScheduleID  bson.ObjectId         `json:"thursday_schedule_id" bson"thursday_schedule_id,omitempty"`
+	EFriScheduleID  bson.ObjectId         `json:"friday_schedule_id" bson:"friday_schedule_id,omitempty"`
+	ESatScheduleID  bson.ObjectId         `json:"saturday_schedule_id" bson:"saturday_schedule_id,omitempty"`
+	ESunScheduleID  bson.ObjectId         `json:"sunday_schedule_id" bson:"sunday_schedule_id,omitempty"`
+	ESchedules      map[int]bson.ObjectId `json:"schedules" bson:"schedules"`
 }
 
 func (c *mongoCalendar) Kind() data.Kind {

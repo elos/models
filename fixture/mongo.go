@@ -1,6 +1,8 @@
 package fixture
 
 import (
+	"time"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -15,6 +17,7 @@ type mongoFixture struct {
 
 	EScheduleID  bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
 	EDescription string        `json:"decription" bson:"description"`
+	EExpires     time.Time     `json:"expires" bson:"expires"`
 }
 
 func (f *mongoFixture) Kind() data.Kind {
@@ -35,6 +38,14 @@ func (f *mongoFixture) SetDescription(s string) {
 
 func (f *mongoFixture) Description() string {
 	return f.EDescription
+}
+
+func (f *mongoFixture) SetExpires(t time.Time) {
+	f.EExpires = t
+}
+
+func (f *mongoFixture) Expires() time.Time {
+	return f.EExpires
 }
 
 func (f *mongoFixture) SetSchedule(s models.Schedule) error {
