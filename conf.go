@@ -65,6 +65,8 @@ const (
 
 	FixtureUser     data.LinkName = "user"
 	FixtureSchedule data.LinkName = "schedule"
+	FixtureActions  data.LinkName = "actions"
+	FixtureEvents   data.LinkName = "events"
 
 	// Experimental
 	OntologyUser    data.LinkName = "user"
@@ -226,6 +228,18 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:    data.OneLink,
 			Other:   ScheduleKind,
 			Inverse: ScheduleFixtures,
+		},
+
+		FixtureActions: data.Link{
+			Name:  FixtureActions,
+			Kind:  data.MulLink,
+			Other: ActionKind,
+		},
+
+		FixtureEvents: data.Link{
+			Name:  FixtureEvents,
+			Kind:  data.MulLink,
+			Other: EventKind,
 		},
 	},
 

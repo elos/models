@@ -18,6 +18,11 @@ type mongoFixture struct {
 	EScheduleID  bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
 	EDescription string        `json:"decription" bson:"description"`
 	EExpires     time.Time     `json:"expires" bson:"expires"`
+
+	EDateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
+
+	EActionIDs mongo.IDSet `json:"action_ids" bson:"action_ids"`
+	EEventIDs  mongo.IDSet `json:"event_ids" bson:"event_ids"`
 }
 
 func (f *mongoFixture) Kind() data.Kind {
