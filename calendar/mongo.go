@@ -1,6 +1,8 @@
 package calendar
 
 import (
+	"time"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -163,6 +165,29 @@ func (c *mongoCalendar) Schedules(a data.Access) (data.ModelIterator, error) {
 	}
 }
 
+func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Schedule, error) {
+	m, err := a.ModelFor(models.ScheduleKind)
+	if err != nil {
+		return nil, err
+	}
+
+	s, ok := m.(models.Schedule)
+
+	id, ok := c.ESchedules[canonDay(t)]
+	if !ok {
+		return nil, data.ErrNotFound
+	}
+
+	s.SetID(id)
+	err = a.PopulateByID(s)
+
+	return s, err
+}
+
+func canonDay(t time.Time) int {
+	return 100*int(t.Month()) + t.Day()
+}
+
 func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 	if !data.Compatible(c, m) {
 		return data.ErrIncompatibleModels
@@ -193,7 +218,7 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 			return data.NewLinkError(c, m, l)
 		}
 
-		c.ESchedules[s.StartTime()] = s.ID().(bson.ObjectId)
+		c.ESchedules[canonDay(s.StartTime())] = s.ID().(bson.ObjectId)
 	default:
 		return data.NewLinkError(c, m, l)
 	}
@@ -249,7 +274,7 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 			return data.NewLinkError(c, m, l)
 		}
 
-		delete(c.ESchedules, s.StartTime())
+		delete(c.ESchedules, canonDay(s.StartTime()))
 	default:
 		return data.NewLinkError(c, m, l)
 	}

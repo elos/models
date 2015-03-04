@@ -186,7 +186,7 @@ type Calendar interface {
 	ExcludeSchedule(Schedule) error
 	Schedules(data.Access) (data.ModelIterator, error)
 
-	ScheduleForDay(time.Time) (Schedule, error)
+	ScheduleForDay(data.Access, time.Time) (Schedule, error)
 }
 
 // Experimental
