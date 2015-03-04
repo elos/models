@@ -32,7 +32,7 @@ type User interface {
 	Routines(data.Access) (data.ModelIterator, error)
 
 	SetCalendar(Calendar) error
-	Calendar(data.Access, Calendar) error
+	Calendar(data.Access) (Calendar, error)
 
 	SetCurrentAction(Action)
 	CurrentAction(data.Access) (Action, error)
@@ -215,6 +215,8 @@ type Calendar interface {
 
 	SetCurrentFixture(Fixture) error
 	CurrentFixture(data.Access) (Fixture, error)
+
+	NextFixture(data.Access) (Fixture, error)
 }
 
 // Experimental

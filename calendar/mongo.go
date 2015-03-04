@@ -133,13 +133,13 @@ func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
 	return c.Schema().Link(c, f, CurrentFixture)
 }
 
-func (c *mongoCalendar) FindNextFixture(a data.Access) (err error) {
+func (c *mongoCalendar) NextFixture(a data.Access) (first models.Fixture, err error) {
 	base, err := c.Base(a)
 	if err != nil {
 		return
 	}
 
-	first, err := base.FirstFixture(a)
+	first, err = base.FirstFixture(a)
 	if err != nil {
 		return
 	}
@@ -174,8 +174,7 @@ func (c *mongoCalendar) FindNextFixture(a data.Access) (err error) {
 		return
 	}
 
-	c.SetCurrentFixture(first)
-	return a.Save(c)
+	return
 }
 
 func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err error) {

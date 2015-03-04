@@ -196,17 +196,21 @@ func (u *mongoUser) SetCalendar(c models.Calendar) error {
 	return u.Schema().Link(u, c, Calendar)
 }
 
-func (u *mongoUser) Calendar(a data.Access, c models.Calendar) error {
-	if u.CanRead(a.Client()) {
-		if !data.Compatible(u, c) {
-			return data.ErrIncompatibleModels
-		}
-
-		c.SetID(u.ECalendarID)
-		return a.PopulateByID(c)
-	} else {
-		return data.ErrAccessDenial
+func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
 	}
+
+	m, err := a.ModelFor(models.CalendarKind)
+	if err != nil {
+		return nil, err
+	}
+
+	c, _ := m.(models.Calendar)
+
+	c.SetID(u.ECalendarID)
+	err = a.PopulateByID(c)
+	return c, err
 }
 
 func (u *mongoUser) SetCurrentAction(a models.Action) {
