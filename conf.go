@@ -49,16 +49,11 @@ const (
 	SetUser   data.LinkName = "user"
 	SetModels data.LinkName = "models"
 
-	CalendarUser      data.LinkName = "user"
-	CalendarBase      data.LinkName = "base"
-	CalendarMon       data.LinkName = "monday"
-	CalendarTue       data.LinkName = "tuesday"
-	CalendarWed       data.LinkName = "wednesday"
-	CalendarThu       data.LinkName = "thursday"
-	CalendarFri       data.LinkName = "friday"
-	CalendarSat       data.LinkName = "saturday"
-	CalendarSun       data.LinkName = "sunday"
-	CalendarSchedules data.LinkName = "schedules"
+	CalendarUser             data.LinkName = "user"
+	CalendarBase             data.LinkName = "base"
+	CalendarWeekdaySchedules data.LinkName = "weekday_schedules"
+	CalendarSchedules        data.LinkName = "schedules"
+	CalendarCurrentFixture   data.LinkName = "current_fixture"
 
 	ScheduleUser     data.LinkName = "user"
 	ScheduleFixtures data.LinkName = "fixtures"
@@ -255,45 +250,20 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Kind:  data.OneLink,
 			Other: ScheduleKind,
 		},
-		CalendarMon: data.Link{
-			Name:  CalendarMon,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarTue: data.Link{
-			Name:  CalendarTue,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarWed: data.Link{
-			Name:  CalendarWed,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarThu: data.Link{
-			Name:  CalendarThu,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarFri: data.Link{
-			Name:  CalendarFri,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarSat: data.Link{
-			Name:  CalendarSat,
-			Kind:  data.OneLink,
-			Other: ScheduleKind,
-		},
-		CalendarSun: data.Link{
-			Name:  CalendarSun,
-			Kind:  data.OneLink,
+		CalendarWeekdaySchedules: data.Link{
+			Name:  CalendarWeekdaySchedules,
+			Kind:  data.MulLink,
 			Other: ScheduleKind,
 		},
 		CalendarSchedules: data.Link{
 			Name:  CalendarSchedules,
 			Kind:  data.MulLink,
 			Other: ScheduleKind,
+		},
+		CalendarCurrentFixture: data.Link{
+			Name:  CalendarCurrentFixture,
+			Kind:  data.OneLink,
+			Other: FixtureKind,
 		},
 	},
 

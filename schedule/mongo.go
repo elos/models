@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"time"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -36,8 +38,24 @@ func (s *mongoSchedule) ExcludeFixture(f models.Fixture) error {
 	return s.Schema().Unlink(s, f, Fixtures)
 }
 
+func (s *mongoSchedule) Fixtures(a data.Access) (data.ModelIterator, error) {
+	if s.CanRead(a.Client()) {
+		return mongo.NewIDIter(s.EFixtureIDs, a), nil
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
 func (s *mongoSchedule) SetUser(u models.User) error {
 	return s.Schema().Link(s, u, User)
+}
+
+func (s *mongoSchedule) FirstFixture(a data.Access) (models.Fixture, error) {
+	return FirstFixture(a, s)
+}
+
+func (s *mongoSchedule) FirstFixtureSince(a data.Access, t time.Time) (models.Fixture, error) {
+	return EarliestSince(a, s, t)
 }
 
 func (s *mongoSchedule) Link(m data.Model, l data.Link) error {

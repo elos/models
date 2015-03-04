@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"errors"
 	"time"
 
 	"github.com/elos/data"
@@ -13,15 +14,11 @@ type mongoCalendar struct {
 	mongo.Model      `bson:",inline"`
 	models.UserOwned `bson:",inline"`
 
-	EBaseScheduleID bson.ObjectId         `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
-	EMonScheduleID  bson.ObjectId         `json:"monday_schedule_id" bson:"monday_schedule_id,omitempty"`
-	ETueScheduleID  bson.ObjectId         `json:"tuesday_schedule_id" bson:"tuesday_schedule_id,omitempty"`
-	EWedScheduleID  bson.ObjectId         `json:"wednesday_schedule_id" bson"wednesday_schedule_id,omitempty"`
-	EThuScheduleID  bson.ObjectId         `json:"thursday_schedule_id" bson"thursday_schedule_id,omitempty"`
-	EFriScheduleID  bson.ObjectId         `json:"friday_schedule_id" bson:"friday_schedule_id,omitempty"`
-	ESatScheduleID  bson.ObjectId         `json:"saturday_schedule_id" bson:"saturday_schedule_id,omitempty"`
-	ESunScheduleID  bson.ObjectId         `json:"sunday_schedule_id" bson:"sunday_schedule_id,omitempty"`
-	ESchedules      map[int]bson.ObjectId `json:"schedules" bson:"schedules"`
+	EBaseScheduleID   bson.ObjectId                  `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
+	EWeekdaySchedules map[time.Weekday]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
+	ESchedules        map[int]bson.ObjectId          `json:"schedules" bson:"schedules"`
+
+	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id", bson:"current_fixture_id,omitempty"`
 }
 
 func (c *mongoCalendar) Kind() data.Kind {
@@ -44,104 +41,52 @@ func (c *mongoCalendar) SetBase(s models.Schedule) error {
 	return c.Schema().Link(c, s, Base)
 }
 
-func (c *mongoCalendar) SetMonday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Mon)
+func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) error {
+	c.EWeekdaySchedules[t] = s.ID().(bson.ObjectId)
+	return nil
 }
 
-func (c *mongoCalendar) SetTuesday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Tue)
-}
+func (c *mongoCalendar) Base(a data.Access) (s models.Schedule, err error) {
+	m, err := a.ModelFor(models.ScheduleKind)
+	if err != nil {
+		return
+	}
 
-func (c *mongoCalendar) SetWednesday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Wed)
-}
-
-func (c *mongoCalendar) SetThursday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Thu)
-}
-
-func (c *mongoCalendar) SetFriday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Fri)
-}
-
-func (c *mongoCalendar) SetSaturday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Sat)
-}
-
-func (c *mongoCalendar) SetSunday(s models.Schedule) error {
-	return c.Schema().Link(c, s, Sun)
-}
-
-func (c *mongoCalendar) Base(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
+	s, ok := m.(models.Schedule)
+	if !ok {
+		err = errors.New("cast error")
+		return
 	}
 
 	s.SetID(c.EBaseScheduleID)
-	return a.PopulateByID(s)
+
+	err = a.PopulateByID(s)
+	return
 }
 
-func (c *mongoCalendar) Monday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
+func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (s models.Schedule, err error) {
+	m, err := a.ModelFor(models.ScheduleKind)
+	if err != nil {
+		return
 	}
 
-	s.SetID(c.EMonScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (c *mongoCalendar) Tuesday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
+	s, ok := m.(models.Schedule)
+	if !ok {
+		err = errors.New("I NEED A CAST ERROR")
+		return
 	}
 
-	s.SetID(c.ETueScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (c *mongoCalendar) Wednesday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
+	id, ok := c.EWeekdaySchedules[t]
+	if !ok {
+		err = data.ErrNotFound
+		return
 	}
 
-	s.SetID(c.EWedScheduleID)
-	return a.PopulateByID(s)
-}
+	s.SetID(id)
 
-func (c *mongoCalendar) Thursday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
-	}
+	err = a.PopulateByID(s)
 
-	s.SetID(c.EThuScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (c *mongoCalendar) Friday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
-	}
-
-	s.SetID(c.EFriScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (c *mongoCalendar) Saturday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
-	}
-
-	s.SetID(c.ESatScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (c *mongoCalendar) Sunday(a data.Access, s models.Schedule) error {
-	if !data.Compatible(c, s) {
-		return data.ErrIncompatibleModels
-	}
-
-	s.SetID(c.ESunScheduleID)
-	return a.PopulateByID(s)
+	return
 }
 
 func (c *mongoCalendar) IncludeSchedule(s models.Schedule) error {
@@ -184,6 +129,92 @@ func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Sched
 	return s, err
 }
 
+func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
+	return c.Schema().Link(c, f, CurrentFixture)
+}
+
+func (c *mongoCalendar) FindNextFixture(a data.Access) (err error) {
+	base, err := c.Base(a)
+	if err != nil {
+		return
+	}
+
+	first, err := base.FirstFixture(a)
+	if err != nil {
+		return
+	}
+
+	if weekday, e1 := c.WeekdaySchedule(a, time.Now().Weekday()); e1 != nil {
+		wfirst, e2 := weekday.FirstFixture(a)
+		if e2 != nil {
+			err = e2
+			return
+		}
+
+		if wfirst.Before(first) {
+			first = wfirst
+		}
+	} else {
+		err = e1
+		return
+	}
+
+	if day, e1 := c.ScheduleForDay(a, time.Now()); e1 != nil {
+		dfirst, e2 := day.FirstFixture(a)
+		if e2 != nil {
+			err = e2
+			return
+		}
+
+		if dfirst.Before(first) {
+			first = dfirst
+		}
+	} else {
+		err = e1
+		return
+	}
+
+	c.SetCurrentFixture(first)
+	return a.Save(c)
+}
+
+func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err error) {
+	current, err := c.CurrentFixture(a)
+	if err != nil {
+		return
+	}
+
+	action, err = current.NextAction(a)
+
+	return
+}
+
+func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
+	m, err := a.ModelFor(models.FixtureKind)
+	if err != nil {
+		return nil, err
+	}
+
+	f, ok := m.(models.Fixture)
+	if !ok {
+		return nil, errors.New("TODO")
+	}
+
+	f.SetID(c.ECurrentFixtureID)
+	err = a.PopulateByID(f)
+
+	return f, err
+}
+
+func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action) error {
+	fixture, err := c.CurrentFixture(access)
+	if err != nil {
+		return err
+	}
+
+	return fixture.CompleteAction(access, action)
+}
+
 func canonDay(t time.Time) int {
 	return 100*int(t.Month()) + t.Day()
 }
@@ -198,20 +229,6 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 		return c.SetUserID(m.ID())
 	case Base:
 		c.EBaseScheduleID = m.ID().(bson.ObjectId)
-	case Mon:
-		c.EMonScheduleID = m.ID().(bson.ObjectId)
-	case Tue:
-		c.ETueScheduleID = m.ID().(bson.ObjectId)
-	case Wed:
-		c.EWedScheduleID = m.ID().(bson.ObjectId)
-	case Thu:
-		c.EThuScheduleID = m.ID().(bson.ObjectId)
-	case Fri:
-		c.EFriScheduleID = m.ID().(bson.ObjectId)
-	case Sat:
-		c.ESatScheduleID = m.ID().(bson.ObjectId)
-	case Sun:
-		c.ESunScheduleID = m.ID().(bson.ObjectId)
 	case Schedules:
 		s, ok := m.(models.Schedule)
 		if !ok {
@@ -219,6 +236,8 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 		}
 
 		c.ESchedules[canonDay(s.StartTime())] = s.ID().(bson.ObjectId)
+	case CurrentFixture:
+		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
 	default:
 		return data.NewLinkError(c, m, l)
 	}
@@ -240,34 +259,6 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 		if c.EBaseScheduleID == id {
 			c.EBaseScheduleID = *new(bson.ObjectId)
 		}
-	case Mon:
-		if c.EMonScheduleID == id {
-			c.EMonScheduleID = *new(bson.ObjectId)
-		}
-	case Tue:
-		if c.ETueScheduleID == id {
-			c.ETueScheduleID = *new(bson.ObjectId)
-		}
-	case Wed:
-		if c.EWedScheduleID == id {
-			c.EWedScheduleID = *new(bson.ObjectId)
-		}
-	case Thu:
-		if c.EThuScheduleID == id {
-			c.EThuScheduleID = *new(bson.ObjectId)
-		}
-	case Fri:
-		if c.EFriScheduleID == id {
-			c.EFriScheduleID = *new(bson.ObjectId)
-		}
-	case Sat:
-		if c.ESatScheduleID == id {
-			c.ESatScheduleID = *new(bson.ObjectId)
-		}
-	case Sun:
-		if c.ESunScheduleID == id {
-			c.ESunScheduleID = *new(bson.ObjectId)
-		}
 	case Schedules:
 		s, ok := m.(models.Schedule)
 		if !ok {
@@ -275,6 +266,10 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 		}
 
 		delete(c.ESchedules, canonDay(s.StartTime()))
+	case CurrentFixture:
+		if c.ECurrentFixtureID == id {
+			c.ECurrentFixtureID = *new(bson.ObjectId)
+		}
 	default:
 		return data.NewLinkError(c, m, l)
 	}

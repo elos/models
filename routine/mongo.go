@@ -79,7 +79,7 @@ func (r *mongoRoutine) ActionCount() int {
 	return len(r.ETaskIDs) - len(r.ECompletedTaskIDs)
 }
 
-func (r *mongoRoutine) NextAction(a data.Access) (models.Action, bool) {
+func (r *mongoRoutine) NextAction(a data.Access) (models.Action, error) {
 	return NewActionRoutine(a, r).Next()
 }
 
@@ -116,17 +116,28 @@ func (r *mongoRoutine) CurrentAction(a data.Access, action models.Action) error 
 	return a.PopulateByID(action)
 }
 
-func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) {
+func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) error {
 	if a.ID() == r.ECurrentActionID {
 		r.ECurrentActionID = ""
 	}
 
 	a.Complete()
+
 	task, _ := a.Task(access)
+
 	r.CompleteTask(task)
-	access.Save(a)
-	access.Save(task)
-	access.Save(r)
+
+	if err := access.Save(a); err != nil {
+		return err
+	}
+	if err := access.Save(task); err != nil {
+		return err
+	}
+	if err := access.Save(r); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r *mongoRoutine) Link(m data.Model, l data.Link) error {

@@ -1,6 +1,7 @@
 package routine
 
 import (
+	"errors"
 	"math/rand"
 
 	"github.com/elos/data"
@@ -19,11 +20,13 @@ func NewActionRoutine(a data.Access, r models.Routine) *ActionRoutine {
 	}
 }
 
+var genericError error = errors.New("TODO")
+
 // Actionable
-func (r *ActionRoutine) Next() (models.Action, bool) {
+func (r *ActionRoutine) Next() (models.Action, error) {
 	ids := r.Routine.IncompleteTaskIDs()
 	if len(ids) < 1 {
-		return nil, false
+		return nil, genericError
 	}
 
 	i := rand.Intn(len(ids))
@@ -33,7 +36,7 @@ func (r *ActionRoutine) Next() (models.Action, bool) {
 	task := model.(models.Task)
 	task.SetID(id)
 	if err := r.Access.PopulateByID(task); err != nil {
-		return nil, false
+		return nil, err
 	}
 
 	model, _ = r.Access.ModelFor(models.ActionKind)
@@ -49,7 +52,7 @@ func (r *ActionRoutine) Next() (models.Action, bool) {
 	r.Save(r.Routine)
 	r.Save(action)
 	r.Save(task)
-	return action, true
+	return action, nil
 }
 
 func (r *ActionRoutine) ForEachTask(f func(models.Task)) error {

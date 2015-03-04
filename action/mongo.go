@@ -16,8 +16,10 @@ type mongoAction struct {
 	mongo.Timed      `bson:",inline"`
 	models.UserOwned `bson:",inline"`
 
-	ECompleted bool          `json:"completed" bson:"completed"`
-	ETaskID    bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
+	ECompleted     bool          `json:"completed" bson:"completed"`
+	ETaskID        bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
+	ActionableKind data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
+	ActionableID   bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
 }
 
 func (a *mongoAction) Kind() data.Kind {
@@ -63,6 +65,30 @@ func (a *mongoAction) Completed() bool {
 func (a *mongoAction) Complete() {
 	a.SetEndTime(time.Now())
 	a.ECompleted = true
+}
+
+func (a *mongoAction) SetActionable(actionable models.Actionable) {
+	a.ActionableKind = actionable.Kind()
+	a.ActionableID = actionable.ID().(bson.ObjectId)
+}
+
+func (a *mongoAction) Actionable(access data.Access) (models.Actionable, error) {
+	m, err := access.ModelFor(a.ActionableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(a.ActionableID)
+	if err = access.PopulateByID(m); err != nil {
+		return nil, err
+	}
+
+	actionable, ok := m.(models.Actionable)
+	if !ok {
+		return nil, errors.New("failed to case model stored as an actionable")
+	}
+
+	return actionable, nil
 }
 
 func (a *mongoAction) Link(m data.Model, l data.Link) error {

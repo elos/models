@@ -51,12 +51,25 @@ type Userable interface {
 	SetUserID(data.ID) error
 }
 
+type ActionableOps interface {
+	NextAction(data.Access) (Action, error)
+	CompleteAction(data.Access, Action) error
+}
+
+type EventableOps interface {
+	Event(data.Access) (Event, error)
+}
+
 type Actionable interface {
 	data.Model
 	Userable
-	ActionCount() int
-	NextAction(data.Access) (Action, bool)
-	CompleteAction(data.Access, Action)
+	ActionableOps
+}
+
+type Eventable interface {
+	data.Model
+	Userable
+	EventableOps
 }
 
 type Action interface {
@@ -69,6 +82,9 @@ type Action interface {
 	Complete()
 	SetTask(Task) error
 	Task(data.Access) (Task, error)
+
+	SetActionable(Actionable)
+	Actionable(data.Access) (Actionable, error)
 }
 
 type Set interface {
@@ -99,6 +115,7 @@ type Task interface {
 
 type Routine interface {
 	Actionable
+	ActionCount() int
 	data.Nameable
 	data.Timeable
 
@@ -138,8 +155,12 @@ type Location interface {
 
 type Fixture interface {
 	data.Model
-	data.Timeable
 	Userable
+	ActionableOps
+	EventableOps
+
+	data.Nameable
+	data.Timeable
 
 	SetSchedule(Schedule) error
 	Schedule(data.Access, Schedule) error
@@ -149,44 +170,51 @@ type Fixture interface {
 
 	SetExpires(time.Time)
 	Expires() time.Time
+	Expired() bool
+
+	AddDateException(time.Time)
+	DateExceptions() []time.Time
+	ShouldOmitOnDate(t time.Time) bool
+
+	IncludeAction(Action) error
+	ExcludeAction(Action) error
+	IncludeEvent(Event) error
+	ExcludeEvent(Event) error
+
+	Conflicts(Fixture) bool
+	Rank(Fixture) (Fixture, Fixture)
+	Before(Fixture) bool
 }
 
 type Schedule interface {
 	data.Model
 	data.Timeable
-	Userable
 
 	IncludeFixture(Fixture) error
 	ExcludeFixture(Fixture) error
+
+	Fixtures(data.Access) (data.ModelIterator, error)
+
+	FirstFixture(data.Access) (Fixture, error)
+	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
 }
 
 type Calendar interface {
-	data.Model
-	Userable
+	Actionable
 
-	Base(data.Access, Schedule) error
-	Monday(data.Access, Schedule) error
-	Tuesday(data.Access, Schedule) error
-	Wednesday(data.Access, Schedule) error
-	Thursday(data.Access, Schedule) error
-	Friday(data.Access, Schedule) error
-	Saturday(data.Access, Schedule) error
-	Sunday(data.Access, Schedule) error
+	Base(data.Access) (Schedule, error)
+	WeekdaySchedule(data.Access, time.Weekday) (Schedule, error)
 
 	SetBase(Schedule) error
-	SetMonday(Schedule) error
-	SetTuesday(Schedule) error
-	SetWednesday(Schedule) error
-	SetThursday(Schedule) error
-	SetFriday(Schedule) error
-	SetSaturday(Schedule) error
-	SetSunday(Schedule) error
+	SetWeekdaySchedule(Schedule, time.Weekday) error
 
 	IncludeSchedule(Schedule) error
 	ExcludeSchedule(Schedule) error
 	Schedules(data.Access) (data.ModelIterator, error)
-
 	ScheduleForDay(data.Access, time.Time) (Schedule, error)
+
+	SetCurrentFixture(Fixture) error
+	CurrentFixture(data.Access) (Fixture, error)
 }
 
 // Experimental

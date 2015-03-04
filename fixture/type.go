@@ -9,6 +9,8 @@ import (
 var (
 	User     data.LinkName = models.FixtureUser
 	Schedule data.LinkName = models.FixtureSchedule
+	Actions  data.LinkName = models.FixtureActions
+	Events   data.LinkName = models.FixtureEvents
 )
 
 var (

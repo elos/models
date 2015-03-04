@@ -7,16 +7,11 @@ import (
 )
 
 var (
-	User      data.LinkName = models.CalendarUser
-	Base      data.LinkName = models.CalendarBase
-	Mon       data.LinkName = models.CalendarMon
-	Tue       data.LinkName = models.CalendarTue
-	Wed       data.LinkName = models.CalendarWed
-	Thu       data.LinkName = models.CalendarThu
-	Fri       data.LinkName = models.CalendarFri
-	Sat       data.LinkName = models.CalendarSat
-	Sun       data.LinkName = models.CalendarSun
-	Schedules data.LinkName = models.CalendarSchedules
+	User             data.LinkName = models.CalendarUser
+	Base             data.LinkName = models.CalendarBase
+	WeekdaySchedules data.LinkName = models.CalendarWeekdaySchedules
+	Schedules        data.LinkName = models.CalendarSchedules
+	CurrentFixture   data.LinkName = models.CalendarCurrentFixture
 )
 
 var (
