@@ -5,6 +5,14 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type Userable interface {
+	SetUser(User) error
+	User(data.Access, User) error
+	UserID() data.ID
+	SetUserID(data.ID) error
+}
+
+// UserOwned implements the Userable interface for mongo models
 type UserOwned struct {
 	EUserID bson.ObjectId `json:"user_id" bson:"user_id,omitempty"`
 }

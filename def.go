@@ -44,34 +44,6 @@ type User interface {
 	Ontology(data.Access) (Ontology, error)
 }
 
-type Userable interface {
-	SetUser(User) error
-	User(data.Access, User) error
-	UserID() data.ID
-	SetUserID(data.ID) error
-}
-
-type ActionableOps interface {
-	NextAction(data.Access) (Action, error)
-	CompleteAction(data.Access, Action) error
-}
-
-type EventableOps interface {
-	Event(data.Access) (Event, error)
-}
-
-type Actionable interface {
-	data.Model
-	Userable
-	ActionableOps
-}
-
-type Eventable interface {
-	data.Model
-	Userable
-	EventableOps
-}
-
 type Action interface {
 	data.Model
 	data.Nameable
@@ -153,20 +125,6 @@ type Location interface {
 	data.Nameable
 }
 
-type Actioned interface {
-	SetActionable(Actionable)
-	Actionable(data.Access) (Actionable, error)
-	DropActionable()
-	HasActionable() bool
-}
-
-type Evented interface {
-	SetEventable(Eventable)
-	Eventable(data.Access) (Eventable, error)
-	DropEventable()
-	HasEventable() bool
-}
-
 type Fixture interface {
 	data.Model
 	data.Nameable
@@ -231,72 +189,4 @@ type Calendar interface {
 	CurrentFixture(data.Access) (Fixture, error)
 
 	NextFixture(data.Access) (Fixture, error)
-}
-
-// Experimental
-
-type Ontology interface {
-	data.Model
-	Userable
-
-	IncludeClass(Class) error
-	ExcludeClass(Class) error
-
-	IncludeObject(Object) error
-	ExcludeObject(Object) error
-
-	Classes(data.Access) (data.ModelIterator, error)
-	Objects(data.Access) (data.ModelIterator, error)
-}
-
-type Class interface {
-	data.Model
-	data.Nameable
-	Userable
-
-	SetOntology(Ontology) error
-	Ontology(data.Access) (Ontology, error)
-
-	IncludeTrait(*Trait) error
-	ExcludeTrait(*Trait) error
-	Traits() []*Trait
-
-	IncludeRelationship(*Relationship) error
-	ExcludeRelationship(*Relationship) error
-	Relationships() []*Relationship
-
-	IncludeObject(Object) error
-	ExcludeObject(Object) error
-	Objects(data.Access) (data.ModelIterator, error)
-
-	Trait(string) (*Trait, bool)
-	Relationship(string) (*Relationship, bool)
-
-	NewObject(a data.Access) Object
-}
-
-type Trait struct {
-	Name string
-	Type string
-}
-
-type Relationship struct {
-	Name    string
-	Other   string
-	Inverse string
-}
-
-type Object interface {
-	data.Model
-	data.Nameable
-
-	SetOntology(Ontology) error
-	Ontology(data.Access) (Ontology, error)
-
-	SetClass(Class) error
-	Class(data.Access) (Class, error)
-
-	SetTrait(data.Access, string, string) error
-	AddRelationship(data.Access, string, Object) error
-	DropRelationship(data.Access, string, Object) error
 }
