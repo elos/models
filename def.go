@@ -153,29 +153,43 @@ type Location interface {
 	data.Nameable
 }
 
+type Actioned interface {
+	SetActionable(Actionable)
+	Actionable(data.Access) (Actionable, error)
+	DropActionable()
+	HasActionable() bool
+}
+
+type Evented interface {
+	SetEventable(Eventable)
+	Eventable(data.Access) (Eventable, error)
+	DropEventable()
+	HasEventable() bool
+}
+
 type Fixture interface {
 	data.Model
+	data.Nameable
+	data.Timeable
+
 	Userable
 	ActionableOps
 	EventableOps
 
-	data.Nameable
-	data.Timeable
-
-	SetSchedule(Schedule) error
-	Schedule(data.Access, Schedule) error
+	Evented
+	Actioned
 
 	SetDescription(string)
 	Description() string
-
 	SetExpires(time.Time)
 	Expires() time.Time
 	Expired() bool
-
 	AddDateException(time.Time)
 	DateExceptions() []time.Time
 	ShouldOmitOnDate(t time.Time) bool
 
+	SetSchedule(Schedule) error
+	Schedule(data.Access, Schedule) error
 	IncludeAction(Action) error
 	ExcludeAction(Action) error
 	IncludeEvent(Event) error

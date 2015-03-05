@@ -23,6 +23,11 @@ type mongoFixture struct {
 
 	EActionIDs mongo.IDSet `json:"action_ids" bson:"action_ids"`
 	EEventIDs  mongo.IDSet `json:"event_ids" bson:"event_ids"`
+
+	EActionableKind data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
+	EActionableID   bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
+	EEventableKind  data.Kind     `json:"eventable_kind" bson:"eventable_kind"`
+	EEventableID    bson.ObjectId `json:"eventable_id" bson:"eventable_id,omitempty"`
 }
 
 func (f *mongoFixture) Kind() data.Kind {
@@ -164,4 +169,66 @@ func (f *mongoFixture) Unlink(m data.Model, l data.Link) error {
 		return data.NewLinkError(f, m, l)
 	}
 	return nil
+}
+
+// Setting the fixture's actionable to itself is a no-op
+func (f *mongoFixture) SetActionable(a models.Actionable) {
+	if a.ID() == f.ID() {
+		return
+	}
+
+	f.EActionableKind = a.Kind()
+	f.EActionableID = a.ID().(bson.ObjectId)
+}
+
+func (f *mongoFixture) Actionable(a data.Access) (models.Actionable, error) {
+	m, err := a.ModelFor(f.EActionableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(f.EActionableID)
+
+	err = a.PopulateByID(m)
+
+	return m.(models.Actionable), err
+}
+
+func (f *mongoFixture) DropActionable() {
+	f.EActionableKind = data.Kind("")
+	f.EActionableID = *new(bson.ObjectId)
+}
+
+func (f *mongoFixture) HasActionable() bool {
+	return f.EActionableID != *new(bson.ObjectId) && f.EActionableKind != data.Kind("")
+}
+
+// settting to itself is a no-op
+func (f *mongoFixture) SetEventable(e models.Eventable) {
+	if f.ID() == e.ID() {
+		return
+	}
+
+	f.EEventableKind = e.Kind()
+	f.EEventableID = e.ID().(bson.ObjectId)
+}
+
+func (f *mongoFixture) Eventable(a data.Access) (models.Eventable, error) {
+	m, err := a.ModelFor(f.EEventableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(f.EEventableID)
+	err = a.PopulateByID(m)
+	return m.(models.Eventable), err
+}
+
+func (f *mongoFixture) DropEventable() {
+	f.EEventableKind = data.Kind("")
+	f.EEventableID = *new(bson.ObjectId)
+}
+
+func (f *mongoFixture) HasEventable() bool {
+	return f.EEventableID != *new(bson.ObjectId) && f.EEventableKind != data.Kind("")
 }

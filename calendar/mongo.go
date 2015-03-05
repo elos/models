@@ -134,47 +134,7 @@ func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
 }
 
 func (c *mongoCalendar) NextFixture(a data.Access) (first models.Fixture, err error) {
-	base, err := c.Base(a)
-	if err != nil {
-		return
-	}
-
-	first, err = base.FirstFixture(a)
-	if err != nil {
-		return
-	}
-
-	if weekday, e1 := c.WeekdaySchedule(a, time.Now().Weekday()); e1 != nil {
-		wfirst, e2 := weekday.FirstFixture(a)
-		if e2 != nil {
-			err = e2
-			return
-		}
-
-		if wfirst.Before(first) {
-			first = wfirst
-		}
-	} else {
-		err = e1
-		return
-	}
-
-	if day, e1 := c.ScheduleForDay(a, time.Now()); e1 != nil {
-		dfirst, e2 := day.FirstFixture(a)
-		if e2 != nil {
-			err = e2
-			return
-		}
-
-		if dfirst.Before(first) {
-			first = dfirst
-		}
-	} else {
-		err = e1
-		return
-	}
-
-	return
+	return NextFixture(a, c)
 }
 
 func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err error) {
