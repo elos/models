@@ -17,6 +17,10 @@ type FixtureStream struct {
 	err error
 }
 
+func NewFixtureStream(a data.Access, c models.Calendar, start time.Time) {
+
+}
+
 func (s FixtureStream) Next(m data.Model) bool {
 	if s.err != nil {
 		return false
@@ -28,6 +32,10 @@ func (s FixtureStream) Next(m data.Model) bool {
 
 	try := s.iter.Next(m)
 	if !try {
+		if err := s.Close(); err != nil {
+			s.err = err
+			return false
+		}
 		s.advanceDay()
 		return s.Next(m)
 	} else {

@@ -1,74 +1,53 @@
 package schedule
 
 import (
-	"errors"
 	"time"
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/structures"
 )
 
 func FirstFixture(a data.Access, s models.Schedule) (first models.Fixture, err error) {
 	return EarliestSince(a, s, *new(time.Time))
 }
 
-var castError error = errors.New("wow I need an errors for cast failures")
+func EarliestSince(a data.Access, s models.Schedule, start time.Time) (models.Fixture, error) {
+	iter, _ := s.Fixtures(a)
+	fixtures, _ := OrderFixtures(a, iter)
 
-func EarliestSince(a data.Access, s models.Schedule, start time.Time) (next models.Fixture, err error) {
-	iter, err := s.Fixtures(a)
-	if err != nil {
-		return
-	}
-
-	m, err := a.ModelFor(models.FixtureKind)
-	if err != nil {
-		return
-	}
-
-	earliest := *new(time.Time)
-
-	for iter.Next(m) {
-		f, ok := m.(models.Fixture)
-
-		if !ok {
-			err = castError
-			return
-		}
-
+	for _, f := range fixtures {
 		if start.Before(f.StartTime()) {
-			next = f
-			earliest = next.StartTime()
-			m, _ = a.ModelFor(models.FixtureKind)
+			return f, nil
 		}
 	}
 
-	if earliest.IsZero() {
-		err = errors.New("No fixutres since start")
-		return
+	return nil, data.ErrNotFound
+}
+
+func OrderFixtures(a data.Access, iter data.ModelIterator) ([]models.Fixture, error) {
+	m, _ := a.ModelFor(models.FixtureKind)
+	f := m.(models.Fixture)
+	tree := new(structures.TimeableTree)
+	fixtures := make([]models.Fixture, 0)
+	c := 0
+
+	for iter.Next(f) {
+		tree.Add(f)
+		c++
+		m, _ = a.ModelFor(models.FixtureKind)
+		f = m.(models.Fixture)
 	}
 
-	// Now that we have the first valid fixture
-	// lets see if anything can beat it
-	for iter.Next(m) {
-		f, ok := m.(models.Fixture)
-
-		if !ok {
-			err = castError
-			return
-		}
-
-		if start.Before(f.StartTime()) && f.StartTime().Before(earliest) {
-			next = f
-			m, _ = (a.ModelFor(models.FixtureKind))
-		}
+	if err := iter.Close(); err != nil {
+		return fixtures, err
 	}
 
-	if err = iter.Close(); err != nil {
-		return
+	s := tree.Stream()
+	for i := 0; i < c; i++ {
+		of := <-s
+		fixtures = append(fixtures, of.(models.Fixture))
 	}
 
-	// atm kinda funny double rturn
-	// but may in the future be other things to do
-	return
-
+	return fixtures, nil
 }

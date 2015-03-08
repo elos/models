@@ -18,6 +18,8 @@ type mongoFixture struct {
 	EScheduleID  bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
 	EDescription string        `json:"decription" bson:"description"`
 	EExpires     time.Time     `json:"expires" bson:"expires"`
+	ERank        int           `json:"rank" bson:"rank"`
+	ELabel       bool          `json:"label" bson:"label"`
 
 	EDateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
 
@@ -48,6 +50,26 @@ func (f *mongoFixture) SetDescription(s string) {
 
 func (f *mongoFixture) Description() string {
 	return f.EDescription
+}
+
+func (f *mongoFixture) SetRank(i int) {
+	f.ERank = i
+}
+
+func (f *mongoFixture) Rank() int {
+	return f.ERank
+}
+
+func (f *mongoFixture) SetLabel(b bool) {
+	f.ELabel = b
+}
+
+func (f *mongoFixture) Label() bool {
+	return f.ELabel
+}
+
+func (f *mongoFixture) AllDay() bool {
+	return f.Label()
 }
 
 func (f *mongoFixture) SetExpires(t time.Time) {
@@ -126,7 +148,7 @@ func (f *mongoFixture) Conflicts(other models.Fixture) bool {
 	return Conflicting(f, other)
 }
 
-func (f *mongoFixture) Rank(other models.Fixture) (models.Fixture, models.Fixture) {
+func (f *mongoFixture) Order(other models.Fixture) (models.Fixture, models.Fixture) {
 	return Sort(f, other)
 }
 

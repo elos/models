@@ -46,6 +46,11 @@ func (s *mongoSchedule) Fixtures(a data.Access) (data.ModelIterator, error) {
 	}
 }
 
+func (s *mongoSchedule) OrderedFixtures(a data.Access) ([]models.Fixture, error) {
+	iter, _ := s.Fixtures(a)
+	return OrderFixtures(a, iter)
+}
+
 func (s *mongoSchedule) SetUser(u models.User) error {
 	return s.Schema().Link(s, u, User)
 }

@@ -1,78 +1,70 @@
 package calendar
 
 import (
-	"errors"
 	"time"
 
 	"github.com/elos/data"
 	"github.com/elos/models"
 )
 
-func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
+func MergeSchedules(a data.Access, schedules ...models.Schedule) (s models.Schedule, err error) {
 	m, err := a.ModelFor(models.ScheduleKind)
 	if err != nil {
-		return nil, err
+		return
 	}
 
 	s, ok := m.(models.Schedule)
 	if !ok {
-		return nil, errors.New("calnedar ops line 19")
+		err = models.CastError(models.ScheduleKind)
+		return
 	}
 
-	base, err := c.Base(a)
+	m, err = a.ModelFor(models.ScheduleKind)
 	if err != nil {
-		return nil, err
+		return
 	}
-
-	iter, err := base.Fixtures(a)
-	if err != nil {
-		return nil, err
-	}
-
-	m, err = a.ModelFor(models.FixtureKind)
-	if err != nil {
-		return nil, err
-	}
-
 	f, ok := m.(models.Fixture)
 	if !ok {
-		return nil, errors.New("adsf")
+		err = models.CastError(models.FixtureKind)
+		return
 	}
 
-	for iter.Next(f) {
-		s.IncludeFixture(f)
+	for _, schedule := range schedules {
+		iter, e := schedule.Fixtures(a)
+		if e != nil {
+			return
+		}
+
+		for iter.Next(f) {
+			s.IncludeFixture(f)
+		}
+
+		err = iter.Close()
+		if err != nil {
+			break
+		}
+	}
+
+	return
+}
+
+func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
+	base, err := c.Base(a)
+	if err != nil {
+		return
 	}
 
 	weekday, err := c.WeekdaySchedule(a, t.Weekday())
 	if err != nil {
-		return nil, err
-	}
-
-	iter, err = weekday.Fixtures(a)
-	if err != nil {
-		return nil, err
-	}
-
-	for iter.Next(f) {
-		s.IncludeFixture(f)
+		return
 	}
 
 	day, err := c.ScheduleForDay(a, t)
 	if err != nil {
-		return nil, err
+		return
 	}
 
-	iter, err = day.Fixtures(a)
-	if err != nil {
-		return nil, err
-	}
-
-	for iter.Next(f) {
-		s.IncludeFixture(f)
-	}
-
-	return s, nil
-
+	return MergeSchedules(a, base, weekday, day)
 }
 
 func NextFixture(a data.Access, c models.Calendar) (first models.Fixture, err error) {

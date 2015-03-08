@@ -137,24 +137,35 @@ type Fixture interface {
 	Evented
 	Actioned
 
+	IncludeAction(Action) error
+	ExcludeAction(Action) error
+
+	IncludeEvent(Event) error
+	ExcludeEvent(Event) error
+
 	SetDescription(string)
 	Description() string
+
 	SetExpires(time.Time)
 	Expires() time.Time
 	Expired() bool
+
+	SetRank(int)
+	Rank() int
+
+	SetLabel(bool)
+	Label() bool
+	AllDay() bool
+
 	AddDateException(time.Time)
 	DateExceptions() []time.Time
 	ShouldOmitOnDate(t time.Time) bool
 
 	SetSchedule(Schedule) error
 	Schedule(data.Access, Schedule) error
-	IncludeAction(Action) error
-	ExcludeAction(Action) error
-	IncludeEvent(Event) error
-	ExcludeEvent(Event) error
 
 	Conflicts(Fixture) bool
-	Rank(Fixture) (Fixture, Fixture)
+	Order(Fixture) (Fixture, Fixture)
 	Before(Fixture) bool
 }
 
@@ -165,7 +176,8 @@ type Schedule interface {
 	IncludeFixture(Fixture) error
 	ExcludeFixture(Fixture) error
 
-	Fixtures(data.Access) (data.ModelIterator, error)
+	Fixtures(data.Access) (data.ModelIterator, error) // traditional model iterator for infinite (long) lists and memory
+	OrderedFixtures(data.Access) ([]Fixture, error)   // if you are ordering them you are biting the memory bullet anyway
 
 	FirstFixture(data.Access) (Fixture, error)
 	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
