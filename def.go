@@ -202,3 +202,26 @@ type Calendar interface {
 
 	NextFixture(data.Access) (Fixture, error)
 }
+
+type Ritual interface {
+	data.Model
+	data.Nameable
+
+	CurrentStreak() (Streak, error)
+	SetCurrentStreak(Streak) error
+
+	IncludeStreak(Streak) error
+	ExcludeStreak(Streak) error
+}
+
+type Streak interface {
+	data.Model
+	data.Timeable
+
+	Ritual() (Ritual, error)
+	SetRitual(Ritual) error
+
+	Length() int
+	IncludeDay(time.Time) error
+	ExcludeDay(time.Time)
+}
