@@ -63,3 +63,15 @@ func FindBy(s data.Store, field string, value interface{}) (models.User, error) 
 
 	return user, nil
 }
+
+func NewWithName(s data.Store, n string) (models.User, error) {
+	user, err := Create(s, data.AttrMap{
+		"name": n,
+	})
+
+	if err != nil {
+		return user, err
+	}
+
+	return user, s.Save(user)
+}
