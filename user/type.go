@@ -6,7 +6,6 @@ import (
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
-	"github.com/elos/stack/util"
 )
 
 var (
@@ -122,7 +121,7 @@ func Create(s data.Store, a data.AttrMap) (models.User, error) {
 		user.SetName(n.(string))
 	}
 
-	user.SetKey(util.RandomString(64))
+	user.SetKey(NewKey())
 
 	if err := s.Save(user); err != nil {
 		return user, err

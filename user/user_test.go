@@ -57,7 +57,7 @@ func testUser(s data.Store, u models.User, t *testing.T) {
 		t.Errorf("User should have name %s; got: %s", testName, u.Name())
 	}
 
-	testKey := "5PCCM1qBxOx4q_vFmuLcTnxuOj4exGECiQlXWmx1xk9LeRuGPb6qDtomSUZhHTUM"
+	testKey := user.NewKey()
 	u.SetKey(testKey)
 	if u.Key() != testKey {
 		t.Errorf("User should have key %s; got: %s", testKey, u.Key())
