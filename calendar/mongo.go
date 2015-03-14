@@ -14,9 +14,9 @@ type mongoCalendar struct {
 	mongo.Model      `bson:",inline"`
 	models.UserOwned `bson:",inline"`
 
-	EBaseScheduleID   bson.ObjectId                  `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
-	EWeekdaySchedules map[time.Weekday]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
-	ESchedules        map[int]bson.ObjectId          `json:"schedules" bson:"schedules"`
+	EBaseScheduleID   bson.ObjectId            `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
+	EWeekdaySchedules map[string]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
+	ESchedules        map[string]bson.ObjectId `json:"schedules" bson:"schedules"`
 
 	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id", bson:"current_fixture_id,omitempty"`
 }
@@ -42,7 +42,7 @@ func (c *mongoCalendar) SetBase(s models.Schedule) error {
 }
 
 func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) error {
-	c.EWeekdaySchedules[t] = s.ID().(bson.ObjectId)
+	c.EWeekdaySchedules[t.String()] = s.ID().(bson.ObjectId)
 	return nil
 }
 
@@ -76,7 +76,7 @@ func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (s models
 		return
 	}
 
-	id, ok := c.EWeekdaySchedules[t]
+	id, ok := c.EWeekdaySchedules[t.String()]
 	if !ok {
 		err = data.ErrNotFound
 		return
@@ -118,7 +118,7 @@ func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Sched
 
 	s, ok := m.(models.Schedule)
 
-	id, ok := c.ESchedules[canonDay(t)]
+	id, ok := c.ESchedules[string(canonDay(t))]
 	if !ok {
 		return nil, data.ErrNotFound
 	}
@@ -194,7 +194,7 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 			return data.NewLinkError(c, m, l)
 		}
 
-		c.ESchedules[canonDay(s.StartTime())] = s.ID().(bson.ObjectId)
+		c.ESchedules[string(canonDay(s.StartTime()))] = s.ID().(bson.ObjectId)
 	case CurrentFixture:
 		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
 	default:
@@ -224,7 +224,7 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 			return data.NewLinkError(c, m, l)
 		}
 
-		delete(c.ESchedules, canonDay(s.StartTime()))
+		delete(c.ESchedules, string(canonDay(s.StartTime())))
 	case CurrentFixture:
 		if c.ECurrentFixtureID == id {
 			c.ECurrentFixtureID = *new(bson.ObjectId)
