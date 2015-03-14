@@ -3,13 +3,14 @@ package ontology
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoOntology struct {
-	mongo.Model      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 
 	ClassIDs  mongo.IDSet `json:"class_ids" bson:"class_ids"`
 	ObjectIDs mongo.IDSet `json:"object_ids" bson:"object_ids"`

@@ -3,14 +3,15 @@ package event
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 )
 
 type mongoEvent struct {
-	mongo.Model      `bson:",inline"`
-	mongo.Named      `bson:",inline"`
-	mongo.Timed      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	mongo.Named           `bson:",inline"`
+	mongo.Timed           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 }
 
 func (e *mongoEvent) Kind() data.Kind {

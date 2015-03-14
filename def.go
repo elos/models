@@ -59,14 +59,6 @@ type Action interface {
 	Actionable(data.Access) (Actionable, error)
 }
 
-type Set interface {
-	data.Model
-
-	IncludeModel(data.Model) error
-	ExcludeModel(data.Model) error
-	ElementKind() data.Kind
-}
-
 type Event interface {
 	data.Model
 	data.Nameable

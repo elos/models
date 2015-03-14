@@ -5,14 +5,15 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoObject struct {
-	mongo.Model      `bson:",inline"`
-	mongo.Named      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	mongo.Named           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 
 	EClassID      bson.ObjectId          `json:"class_id" bson:"class_id,omitempty"`
 	EOntologyID   bson.ObjectId          `json:"ontology_id" bson:"ontology_id,omitempty"`

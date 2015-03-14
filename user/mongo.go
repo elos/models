@@ -31,11 +31,6 @@ type mongoUser struct {
 	ActionableID    bson.ObjectId `json:"actionable_id"     bson:"actionable_id,omitempty"`
 }
 
-// DBType returns mongo.DBType
-func (u *mongoUser) DBType() data.DBType {
-	return mongo.DBType
-}
-
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (u *mongoUser) Kind() data.Kind {

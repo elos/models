@@ -6,17 +6,18 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoCalendar struct {
-	mongo.Model      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 
-	EBaseScheduleID   bson.ObjectId            `json:"base_schedule_id" bson:"base_schedule_id,omitempty"`
+	EBaseScheduleID   bson.ObjectId            `json:"base_schedule_id"  bson:"base_schedule_id,omitempty"`
 	EWeekdaySchedules map[string]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
-	ESchedules        map[string]bson.ObjectId `json:"schedules" bson:"schedules"`
+	ESchedules        map[string]bson.ObjectId `json:"schedules"         bson:"schedules"`
 
 	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id", bson:"current_fixture_id,omitempty"`
 }

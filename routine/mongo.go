@@ -3,15 +3,16 @@ package routine
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoRoutine struct {
-	mongo.Model      `bson:",inline"`
-	mongo.Named      `bson:",inline"`
-	mongo.Timed      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	mongo.Named           `bson:",inline"`
+	mongo.Timed           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 
 	ETaskIDs          mongo.IDSet   `json:"task_ids" bson:"task_ids"`
 	ECompletedTaskIDs mongo.IDSet   `json:"completed_task_ids" bson:"completed_task_ids"`

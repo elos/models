@@ -3,15 +3,16 @@ package task
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/shared"
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
 type mongoTask struct {
-	mongo.Model      `bson:",inline"`
-	mongo.Named      `bson:",inline"`
-	mongo.Timed      `bson:",inline"`
-	models.UserOwned `bson:",inline"`
+	mongo.Model           `bson:",inline"`
+	mongo.Named           `bson:",inline"`
+	mongo.Timed           `bson:",inline"`
+	shared.MongoUserOwned `bson:",inline"`
 
 	TaskIDs mongo.IDSet `json:"task_dependencies" bson:"task_dependencies"`
 }
