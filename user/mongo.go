@@ -65,7 +65,7 @@ func (u *mongoUser) UnlinkEvent(eventID bson.ObjectId) error {
 }
 
 func (u *mongoUser) SetOntology(o models.Ontology) error {
-	return u.Schema().Link(u, o, Ontology)
+	return u.Schema().Link(u, o, ontology)
 }
 
 func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
@@ -87,17 +87,17 @@ func (u *mongoUser) Link(m data.Model, l data.Link) error {
 	}
 
 	switch l.Name {
-	case Events:
+	case events:
 		return u.LinkEvent(m.ID().(bson.ObjectId))
-	case Tasks:
+	case tasks:
 		u.TaskIDs = mongo.AddID(u.TaskIDs, m.ID().(bson.ObjectId))
-	case Routines:
+	case routines:
 		u.RoutineIDs = mongo.AddID(u.RoutineIDs, m.ID().(bson.ObjectId))
-	case Ontology:
+	case ontology:
 		u.EOntologyID = m.ID().(bson.ObjectId)
-	case Calendar:
+	case calendar:
 		u.ECalendarID = m.ID().(bson.ObjectId)
-	case CurrentAction:
+	case currentAction:
 		u.CurrentActionID = m.ID().(bson.ObjectId)
 	default:
 		return data.NewLinkError(u, m, l)
@@ -111,21 +111,21 @@ func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
 	}
 
 	switch l.Name {
-	case Events:
+	case events:
 		return u.UnlinkEvent(m.ID().(bson.ObjectId))
-	case Tasks:
+	case tasks:
 		u.TaskIDs = mongo.DropID(u.TaskIDs, m.ID().(bson.ObjectId))
-	case Routines:
+	case routines:
 		u.RoutineIDs = mongo.DropID(u.RoutineIDs, m.ID().(bson.ObjectId))
-	case Calendar:
+	case calendar:
 		if u.ECalendarID == m.ID().(bson.ObjectId) {
 			u.ECalendarID = *new(bson.ObjectId)
 		}
-	case Ontology:
+	case ontology:
 		if u.EOntologyID == m.ID().(bson.ObjectId) {
 			u.EOntologyID = *new(bson.ObjectId)
 		}
-	case CurrentAction:
+	case currentAction:
 		if u.CurrentActionID == m.ID().(bson.ObjectId) {
 			u.CurrentActionID = *new(bson.ObjectId)
 		}
@@ -145,11 +145,11 @@ func (u *mongoUser) Key() string {
 }
 
 func (u *mongoUser) IncludeEvent(e models.Event) error {
-	return u.Schema().Link(u, e, Events)
+	return u.Schema().Link(u, e, events)
 }
 
 func (u *mongoUser) ExcludeEvent(e models.Event) error {
-	return u.Schema().Unlink(u, e, Events)
+	return u.Schema().Unlink(u, e, events)
 }
 
 func (u *mongoUser) Events(a data.Access) (data.ModelIterator, error) {
@@ -161,11 +161,11 @@ func (u *mongoUser) Events(a data.Access) (data.ModelIterator, error) {
 }
 
 func (u *mongoUser) IncludeTask(t models.Task) error {
-	return u.Schema().Link(u, t, Tasks)
+	return u.Schema().Link(u, t, tasks)
 }
 
 func (u *mongoUser) ExcludeTask(t models.Task) error {
-	return u.Schema().Unlink(u, t, Tasks)
+	return u.Schema().Unlink(u, t, tasks)
 }
 
 func (u *mongoUser) Tasks(a data.Access) (data.ModelIterator, error) {
@@ -185,15 +185,15 @@ func (u *mongoUser) Routines(a data.Access) (data.ModelIterator, error) {
 }
 
 func (u *mongoUser) IncludeRoutine(r models.Routine) error {
-	return u.Schema().Link(u, r, Routines)
+	return u.Schema().Link(u, r, routines)
 }
 
 func (u *mongoUser) ExcludeRoutine(r models.Routine) error {
-	return u.Schema().Unlink(u, r, Routines)
+	return u.Schema().Unlink(u, r, routines)
 }
 
 func (u *mongoUser) SetCalendar(c models.Calendar) error {
-	return u.Schema().Link(u, c, Calendar)
+	return u.Schema().Link(u, c, calendar)
 }
 
 func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
@@ -214,7 +214,7 @@ func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
 }
 
 func (u *mongoUser) SetCurrentAction(a models.Action) {
-	u.Schema().Link(u, a, CurrentAction)
+	u.Schema().Link(u, a, currentAction)
 }
 
 func (u *mongoUser) CurrentAction(a data.Access) (models.Action, error) {
