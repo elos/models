@@ -18,30 +18,30 @@ type User interface {
 	SetKey(string)
 	Key() string
 
-	IncludeEvent(Event) error
-	ExcludeEvent(Event) error
+	SetCurrentAction(Action) error
+	CurrentAction(data.Access) (Action, error)
 
-	IncludeTask(Task) error
-	ExcludeTask(Task) error
-
-	IncludeRoutine(Routine) error
-	ExcludeRoutine(Routine) error
-
-	Events(data.Access) (data.ModelIterator, error)
-	Tasks(data.Access) (data.ModelIterator, error)
-	Routines(data.Access) (data.ModelIterator, error)
+	SetCurrentActionable(Actionable) error
+	CurrentActionable(data.Access) (Actionable, error)
+	ClearCurrentActionable()
 
 	SetCalendar(Calendar) error
 	Calendar(data.Access) (Calendar, error)
 
-	SetCurrentAction(Action)
-	CurrentAction(data.Access) (Action, error)
-	SetCurrentActionable(Actionable)
-	CurrentActionable(data.Access) (Actionable, error)
-	ClearCurrentActionable()
-
 	SetOntology(Ontology) error
 	Ontology(data.Access) (Ontology, error)
+
+	IncludeEvent(Event) error
+	ExcludeEvent(Event) error
+	Events(data.Access) (data.ModelIterator, error)
+
+	IncludeTask(Task) error
+	ExcludeTask(Task) error
+	Tasks(data.Access) (data.ModelIterator, error)
+
+	IncludeRoutine(Routine) error
+	ExcludeRoutine(Routine) error
+	Routines(data.Access) (data.ModelIterator, error)
 }
 
 type Action interface {

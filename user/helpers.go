@@ -29,7 +29,7 @@ import (
 			// Only true of the authentication was successful, in this
 			// scenario the user has been populated
 		} else {
-			// The User is not populated, and is nil! don't it
+			// The User is not populated, and is nil! don't use it
 			if err == data.ErrNotFound {
 				// bad id
 			} else if err.Error() == "Invalid key" { // we need a type for this (TODO)
@@ -64,7 +64,6 @@ func Authenticate(s data.Store, id string, key string) (models.User, bool, error
 	The error could be data.ErrInvalidDBType, data.ErrInvalidID,
 	or an error from store.PopulateByID
 */
-// Finds a user model by an id
 func Find(s data.Store, id data.ID) (models.User, error) {
 	user, err := New(s)
 	if err != nil {
