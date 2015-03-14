@@ -63,7 +63,6 @@ const (
 	FixtureActions  data.LinkName = "actions"
 	FixtureEvents   data.LinkName = "events"
 
-	// Experimental
 	OntologyUser    data.LinkName = "user"
 	OntologyClasses data.LinkName = "classes"
 	OntologyObjects data.LinkName = "objects"
