@@ -39,7 +39,7 @@ import (
 			}
 		}
 */
-func Authenticate(s data.Store, id string, key string) (data.Client, bool, error) {
+func Authenticate(s data.Store, id string, key string) (models.User, bool, error) {
 	user, err := Find(s, mongo.NewObjectIDFromHex(id))
 
 	if err != nil {
