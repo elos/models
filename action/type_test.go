@@ -60,7 +60,7 @@ func TestCreate(t *testing.T) {
 		"trash": []string{"1324", "1234", "1234"},
 	}
 
-	a, err := Create(store, attrsID)
+	a, err := CreateAttrs(store, attrsID)
 
 	if err != nil {
 		t.Error(err)
@@ -72,7 +72,7 @@ func TestCreate(t *testing.T) {
 
 	store = BadStore()
 
-	a, err = Create(store, attrsID)
+	a, err = CreateAttrs(store, attrsID)
 
 	if err != data.ErrInvalidDBType || a != nil {
 		t.Errorf("Create should propogate invalid db type errors")
@@ -80,7 +80,7 @@ func TestCreate(t *testing.T) {
 
 	attrsID["id"] = "trash"
 
-	a, err = Create(Store(), attrsID)
+	a, err = CreateAttrs(Store(), attrsID)
 	if err != data.ErrInvalidID || a == nil {
 		t.Errorf("ID was bad create shouldn't choke, go err %s, model %+v", err, a)
 	}
