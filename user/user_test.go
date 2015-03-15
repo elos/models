@@ -114,7 +114,7 @@ func testUser(s data.Store, u models.User, t *testing.T) {
 
 	u.ClearCurrentActionable()
 
-	if _, err = u.CurrentActionable(access); err != data.ErrNotFound {
+	if _, err = u.CurrentActionable(access); err != models.ErrEmptyRelationship {
 		t.Errorf("The user shouldn't have a current actionable after it has been cleared")
 	}
 
