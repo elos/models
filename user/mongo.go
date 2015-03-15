@@ -211,7 +211,7 @@ func (u *mongoUser) CurrentAction(a data.Access) (models.Action, error) {
 
 	m, err := a.ModelFor(models.ActionKind)
 	if err != nil {
-		return nil, models.UndefinedKindError(models.ActionKind)
+		return nil, err
 	}
 
 	action, ok := m.(models.Action)
@@ -298,7 +298,7 @@ func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
 
 	m, err := a.ModelFor(models.CalendarKind)
 	if err != nil {
-		return nil, models.UndefinedKindError(models.CalendarKind)
+		return nil, err
 	}
 
 	c, ok := m.(models.Calendar)
@@ -338,7 +338,7 @@ func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
 
 	m, err := a.ModelFor(models.OntologyKind)
 	if err != nil { // data.ErrUndefinedKind
-		return nil, models.UndefinedKindError(models.OntologyKind)
+		return nil, err
 	}
 
 	o, ok := m.(models.Ontology)
@@ -388,7 +388,7 @@ func (u *mongoUser) Events(a data.Access) ([]models.Event, error) {
 
 	m, err := a.ModelFor(models.EventKind)
 	if err != nil {
-		return events, models.UndefinedKindError(models.EventKind)
+		return events, err
 	}
 
 	for iter.Next(m) {
@@ -401,7 +401,7 @@ func (u *mongoUser) Events(a data.Access) ([]models.Event, error) {
 
 		m, err = a.ModelFor(models.EventKind)
 		if err != nil {
-			return events, models.UndefinedKindError(models.EventKind)
+			return events, err
 		}
 	}
 
@@ -438,7 +438,7 @@ func (u *mongoUser) Tasks(a data.Access) ([]models.Task, error) {
 
 	m, err := a.ModelFor(models.TaskKind)
 	if err != nil {
-		return tasks, models.UndefinedKindError(models.TaskKind)
+		return tasks, err
 	}
 
 	for iter.Next(m) {
@@ -451,7 +451,7 @@ func (u *mongoUser) Tasks(a data.Access) ([]models.Task, error) {
 
 		m, err = a.ModelFor(models.TaskKind)
 		if err != nil {
-			return tasks, models.UndefinedKindError(models.TaskKind)
+			return tasks, err
 		}
 	}
 
@@ -488,7 +488,7 @@ func (u *mongoUser) Routines(a data.Access) ([]models.Routine, error) {
 
 	m, err := a.ModelFor(models.RoutineKind)
 	if err != nil {
-		return routines, models.UndefinedKindError(models.RoutineKind)
+		return routines, err
 	}
 
 	for iter.Next(m) {
@@ -501,7 +501,7 @@ func (u *mongoUser) Routines(a data.Access) ([]models.Routine, error) {
 
 		m, err = a.ModelFor(models.RoutineKind)
 		if err != nil {
-			return routines, models.UndefinedKindError(models.RoutineKind)
+			return routines, err
 		}
 	}
 
