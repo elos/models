@@ -113,7 +113,7 @@ func FindBy(s data.Store, field string, value interface{}) (models.User, error) 
 	the provided name.
 */
 func NewWithName(s data.Store, n string) (models.User, error) {
-	user, err := Create(s, data.AttrMap{
+	user, err := CreateAttrs(s, data.AttrMap{
 		"name": n,
 	})
 

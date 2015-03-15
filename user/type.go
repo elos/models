@@ -22,7 +22,7 @@ var (
 )
 
 /*
-	NewM is like new except that is satisfies the data.ModelConstructor
+	NewM is like New except that is satisfies the data.ModelConstructor
 	interface.
 
 	When associating a user with a store, use the NewM function:
@@ -68,8 +68,17 @@ func New(s data.Store) (models.User, error) {
 	}
 }
 
+func Create(s data.Store) (models.User, error) {
+	u, err := New(s)
+	if err != nil {
+		return u, err
+	}
+
+	return u, s.Save(u)
+}
+
 /*
-	Create instantiates and *saves* user using the the provided
+	CreateAttrs instantiates and *saves* user using the the provided
 	data.AttrMap.
 
 	Create will look for an id attribute, a created_at attribute, and
@@ -89,7 +98,7 @@ func New(s data.Store) (models.User, error) {
 
 	Most errors for create don't matter. But if the id is bad, Create complains.
 */
-func Create(s data.Store, a data.AttrMap) (models.User, error) {
+func CreateAttrs(s data.Store, a data.AttrMap) (models.User, error) {
 	user, err := New(s)
 	if err != nil {
 		return user, err
