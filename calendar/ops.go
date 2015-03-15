@@ -7,6 +7,14 @@ import (
 	"github.com/elos/models"
 )
 
+/*
+	Returns this day in the elos canonical representation
+	October 14th is 1014
+*/
+func canonDay(t time.Time) int {
+	return 100*int(t.Month()) + t.Day()
+}
+
 func MergeSchedules(a data.Access, schedules ...models.Schedule) (s models.Schedule, err error) {
 	m, err := a.ModelFor(models.ScheduleKind)
 	if err != nil {
@@ -49,7 +57,7 @@ func MergeSchedules(a data.Access, schedules ...models.Schedule) (s models.Sched
 }
 
 func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
-	base, err := c.Base(a)
+	base, err := c.BaseSchedule(a)
 	if err != nil {
 		return
 	}

@@ -50,7 +50,7 @@ const (
 	SetModels data.LinkName = "models"
 
 	CalendarUser             data.LinkName = "user"
-	CalendarBase             data.LinkName = "base"
+	CalendarBaseSchedule     data.LinkName = "base_schedule"
 	CalendarWeekdaySchedules data.LinkName = "weekday_schedules"
 	CalendarSchedules        data.LinkName = "schedules"
 	CalendarCurrentFixture   data.LinkName = "current_fixture"
@@ -244,8 +244,8 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other:   UserKind,
 			Inverse: UserCalendar,
 		},
-		CalendarBase: data.Link{
-			Name:  CalendarBase,
+		CalendarBaseSchedule: data.Link{
+			Name:  CalendarBaseSchedule,
 			Kind:  data.OneLink,
 			Other: ScheduleKind,
 		},

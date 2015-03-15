@@ -44,6 +44,26 @@ type User interface {
 	Routines(data.Access) (data.ModelIterator, error)
 }
 
+type Calendar interface {
+	Actionable
+
+	SetBaseSchedule(Schedule) error
+	BaseSchedule(data.Access) (Schedule, error)
+
+	SetWeekdaySchedule(Schedule, time.Weekday) error
+	WeekdaySchedule(data.Access, time.Weekday) (Schedule, error)
+
+	IncludeSchedule(Schedule) error
+	ExcludeSchedule(Schedule) error
+	Schedules(data.Access) (data.ModelIterator, error)
+	ScheduleForDay(data.Access, time.Time) (Schedule, error)
+
+	SetCurrentFixture(Fixture) error
+	CurrentFixture(data.Access) (Fixture, error)
+
+	NextFixture(data.Access) (Fixture, error)
+}
+
 type Action interface {
 	data.Model
 	data.Nameable
@@ -173,26 +193,6 @@ type Schedule interface {
 
 	FirstFixture(data.Access) (Fixture, error)
 	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
-}
-
-type Calendar interface {
-	Actionable
-
-	Base(data.Access) (Schedule, error)
-	WeekdaySchedule(data.Access, time.Weekday) (Schedule, error)
-
-	SetBase(Schedule) error
-	SetWeekdaySchedule(Schedule, time.Weekday) error
-
-	IncludeSchedule(Schedule) error
-	ExcludeSchedule(Schedule) error
-	Schedules(data.Access) (data.ModelIterator, error)
-	ScheduleForDay(data.Access, time.Time) (Schedule, error)
-
-	SetCurrentFixture(Fixture) error
-	CurrentFixture(data.Access) (Fixture, error)
-
-	NextFixture(data.Access) (Fixture, error)
 }
 
 type Ritual interface {

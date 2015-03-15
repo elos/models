@@ -1,7 +1,6 @@
 package calendar
 
 import (
-	"errors"
 	"time"
 
 	"github.com/elos/data"
@@ -22,93 +21,185 @@ type mongoCalendar struct {
 	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id", bson:"current_fixture_id,omitempty"`
 }
 
+// Kind is derived from the models package and is
+// defined in type.go, shared among implementations
 func (c *mongoCalendar) Kind() data.Kind {
 	return kind
 }
 
-func (c *mongoCalendar) Version() int {
-	return version
-}
-
+// Schema is derived from the models package and is
+// defined in type.go, shared among implementations
 func (c *mongoCalendar) Schema() data.Schema {
 	return schema
 }
 
-func (c *mongoCalendar) SetUser(u models.User) error {
-	return c.Schema().Link(c, u, User)
+// Version is derieved from teh models package and is
+// defined in type.go, shared among implementations
+func (c *mongoCalendar) Version() int {
+	return version
 }
 
-func (c *mongoCalendar) SetBase(s models.Schedule) error {
-	return c.Schema().Link(c, s, Base)
-}
+func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
+	if !data.Compatible(c, m) {
+		return data.ErrIncompatibleModels
+	}
 
-func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) error {
-	c.EWeekdaySchedules[t.String()] = s.ID().(bson.ObjectId)
+	id, ok := m.ID().(bson.ObjectId)
+	if !ok {
+		return data.ErrInvalidID
+	}
+
+	switch l.Name {
+	case user:
+		return c.SetUserID(id)
+	case baseSchedule:
+		c.EBaseScheduleID = id
+	case schedules:
+		s, ok := m.(models.Schedule)
+		if !ok {
+			return data.NewLinkError(c, m, l)
+		}
+
+		c.ESchedules[string(canonDay(s.StartTime()))] = id
+	case currentFixture:
+		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
+	default:
+		return data.NewLinkError(c, m, l)
+	}
+
 	return nil
 }
 
-func (c *mongoCalendar) Base(a data.Access) (s models.Schedule, err error) {
+func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
+	if !data.Compatible(c, m) {
+		return data.ErrIncompatibleModels
+	}
+
+	id, ok := m.ID().(bson.ObjectId)
+	if !ok {
+		return data.ErrInvalidID
+	}
+
+	switch l.Name {
+	case user:
+		if c.UserID().String() == id.String() {
+			c.DropUserID()
+		}
+	case baseSchedule:
+		if c.EBaseScheduleID.String() == id.String() {
+			c.EBaseScheduleID = mongo.EmptyID()
+		}
+	case weekdaySchedules:
+
+	case schedules:
+		s, ok := m.(models.Schedule)
+		if !ok {
+			return data.NewLinkError(c, m, l)
+		}
+
+		delete(c.ESchedules, string(canonDay(s.StartTime())))
+	case currentFixture:
+		if c.ECurrentFixtureID == id {
+			c.ECurrentFixtureID = *new(bson.ObjectId)
+		}
+	default:
+		return data.NewLinkError(c, m, l)
+	}
+	return nil
+}
+
+func (c *mongoCalendar) SetUser(u models.User) error {
+	return c.Schema().Link(c, u, user)
+}
+
+func (c *mongoCalendar) SetBaseSchedule(s models.Schedule) error {
+	return c.Schema().Link(c, s, baseSchedule)
+}
+
+func (c *mongoCalendar) BaseSchedule(a data.Access) (models.Schedule, error) {
 	m, err := a.ModelFor(models.ScheduleKind)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	s, ok := m.(models.Schedule)
 	if !ok {
-		err = errors.New("cast error")
-		return
+		return nil, models.CastError(models.ScheduleKind)
+	}
+
+	if c.EBaseScheduleID.String() == mongo.EmptyID().String() {
+		return nil, data.ErrNotFound
 	}
 
 	s.SetID(c.EBaseScheduleID)
 
-	err = a.PopulateByID(s)
-	return
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return s, a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (s models.Schedule, err error) {
+func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) error {
+	if !data.Compatible(c, s) {
+		return data.ErrIncompatibleModels
+	}
+
+	id, ok := s.ID().(bson.ObjectId)
+	if !ok {
+		return data.ErrInvalidID
+	}
+
+	c.EWeekdaySchedules[t.String()] = id
+	return nil
+}
+
+func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.Schedule, error) {
 	m, err := a.ModelFor(models.ScheduleKind)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	s, ok := m.(models.Schedule)
 	if !ok {
-		err = errors.New("I NEED A CAST ERROR")
-		return
+		return nil, models.CastError(models.ScheduleKind)
 	}
 
 	id, ok := c.EWeekdaySchedules[t.String()]
 	if !ok {
-		err = data.ErrNotFound
-		return
+		return nil, data.ErrNotFound
+	}
+
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
 	}
 
 	s.SetID(id)
 
-	err = a.PopulateByID(s)
-
-	return
+	return s, a.PopulateByID(s)
 }
 
 func (c *mongoCalendar) IncludeSchedule(s models.Schedule) error {
-	return c.Schema().Link(c, s, Schedules)
+	return c.Schema().Link(c, s, schedules)
 }
 
 func (c *mongoCalendar) ExcludeSchedule(s models.Schedule) error {
-	return c.Schema().Unlink(c, s, Schedules)
+	return c.Schema().Unlink(c, s, schedules)
 }
 
 func (c *mongoCalendar) Schedules(a data.Access) (data.ModelIterator, error) {
-	ids := make(mongo.IDSet, 0)
-	for _, id := range c.ESchedules {
-		ids = mongo.AddID(ids, id)
-	}
-
-	if c.CanRead(a.Client()) {
-		return mongo.NewIDIter(ids, a), nil
-	} else {
+	if !c.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	ids := make(mongo.IDSet, len(c.ESchedules))
+	i := 0
+	for _, id := range c.ESchedules {
+		ids[i] = id
+		i++
+	}
+
+	return mongo.NewIDIter(ids, a), nil
 }
 
 func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Schedule, error) {
@@ -131,7 +222,26 @@ func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Sched
 }
 
 func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
-	return c.Schema().Link(c, f, CurrentFixture)
+	return c.Schema().Link(c, f, currentFixture)
+}
+
+func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
+	m, err := a.ModelFor(models.FixtureKind)
+	if err != nil {
+		return nil, err
+	}
+
+	f, ok := m.(models.Fixture)
+	if !ok {
+		return nil, models.CastError(models.FixtureKind)
+	}
+
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	f.SetID(c.ECurrentFixtureID)
+	return f, a.PopulateByID(f)
 }
 
 func (c *mongoCalendar) NextFixture(a data.Access) (first models.Fixture, err error) {
@@ -149,23 +259,6 @@ func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err err
 	return
 }
 
-func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
-	m, err := a.ModelFor(models.FixtureKind)
-	if err != nil {
-		return nil, err
-	}
-
-	f, ok := m.(models.Fixture)
-	if !ok {
-		return nil, errors.New("TODO")
-	}
-
-	f.SetID(c.ECurrentFixtureID)
-	err = a.PopulateByID(f)
-
-	return f, err
-}
-
 func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action) error {
 	fixture, err := c.CurrentFixture(access)
 	if err != nil {
@@ -173,65 +266,4 @@ func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action)
 	}
 
 	return fixture.CompleteAction(access, action)
-}
-
-func canonDay(t time.Time) int {
-	return 100*int(t.Month()) + t.Day()
-}
-
-func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
-	if !data.Compatible(c, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	switch l.Name {
-	case User:
-		return c.SetUserID(m.ID())
-	case Base:
-		c.EBaseScheduleID = m.ID().(bson.ObjectId)
-	case Schedules:
-		s, ok := m.(models.Schedule)
-		if !ok {
-			return data.NewLinkError(c, m, l)
-		}
-
-		c.ESchedules[string(canonDay(s.StartTime()))] = s.ID().(bson.ObjectId)
-	case CurrentFixture:
-		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
-	default:
-		return data.NewLinkError(c, m, l)
-	}
-
-	return nil
-}
-
-func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
-	if !data.Compatible(c, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	id := m.ID().(bson.ObjectId)
-
-	switch l.Name {
-	case User:
-		c.DropUserID()
-	case Base:
-		if c.EBaseScheduleID == id {
-			c.EBaseScheduleID = *new(bson.ObjectId)
-		}
-	case Schedules:
-		s, ok := m.(models.Schedule)
-		if !ok {
-			return data.NewLinkError(c, m, l)
-		}
-
-		delete(c.ESchedules, string(canonDay(s.StartTime())))
-	case CurrentFixture:
-		if c.ECurrentFixtureID == id {
-			c.ECurrentFixtureID = *new(bson.ObjectId)
-		}
-	default:
-		return data.NewLinkError(c, m, l)
-	}
-	return nil
 }
