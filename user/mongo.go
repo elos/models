@@ -366,12 +366,46 @@ func (u *mongoUser) ExcludeEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, events)
 }
 
-func (u *mongoUser) Events(a data.Access) (data.ModelIterator, error) {
-	if u.CanRead(a.Client()) {
-		return mongo.NewIDIter(u.EventIDs, a), nil
-	} else {
+func (u *mongoUser) EventsIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	return mongo.NewIDIter(u.EventIDs, a), nil
+}
+
+func (u *mongoUser) Events(a data.Access) ([]models.Event, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	events := make([]models.Event, 0)
+
+	iter, err := u.EventsIter(a)
+	if err != nil {
+		return events, err
+	}
+
+	m, err := a.ModelFor(models.EventKind)
+	if err != nil {
+		return events, models.UndefinedKindError(models.EventKind)
+	}
+
+	for iter.Next(m) {
+		e, ok := m.(models.Event)
+		if !ok {
+			return events, models.CastError(models.EventKind)
+		}
+
+		events = append(events, e)
+
+		m, err = a.ModelFor(models.EventKind)
+		if err != nil {
+			return events, models.UndefinedKindError(models.EventKind)
+		}
+	}
+
+	return events, nil
 }
 
 func (u *mongoUser) IncludeTask(t models.Task) error {
@@ -382,20 +416,46 @@ func (u *mongoUser) ExcludeTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, tasks)
 }
 
-func (u *mongoUser) Tasks(a data.Access) (data.ModelIterator, error) {
-	if u.CanRead(a.Client()) {
-		return mongo.NewIDIter(u.TaskIDs, a), nil
-	} else {
+func (u *mongoUser) TasksIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	return mongo.NewIDIter(u.TaskIDs, a), nil
 }
 
-func (u *mongoUser) Routines(a data.Access) (data.ModelIterator, error) {
-	if u.CanRead(a.Client()) {
-		return mongo.NewIDIter(u.RoutineIDs, a), nil
-	} else {
+func (u *mongoUser) Tasks(a data.Access) ([]models.Task, error) {
+	if !u.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	tasks := make([]models.Task, 0)
+
+	iter, err := u.TasksIter(a)
+	if err != nil {
+		return tasks, err
+	}
+
+	m, err := a.ModelFor(models.TaskKind)
+	if err != nil {
+		return tasks, models.UndefinedKindError(models.TaskKind)
+	}
+
+	for iter.Next(m) {
+		t, ok := m.(models.Task)
+		if !ok {
+			return tasks, models.CastError(models.TaskKind)
+		}
+
+		tasks = append(tasks, t)
+
+		m, err = a.ModelFor(models.TaskKind)
+		if err != nil {
+			return tasks, models.UndefinedKindError(models.TaskKind)
+		}
+	}
+
+	return tasks, nil
 }
 
 func (u *mongoUser) IncludeRoutine(r models.Routine) error {
@@ -404,4 +464,46 @@ func (u *mongoUser) IncludeRoutine(r models.Routine) error {
 
 func (u *mongoUser) ExcludeRoutine(r models.Routine) error {
 	return u.Schema().Unlink(u, r, routines)
+}
+
+func (u *mongoUser) RoutinesIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return mongo.NewIDIter(u.RoutineIDs, a), nil
+}
+
+func (u *mongoUser) Routines(a data.Access) ([]models.Routine, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	routines := make([]models.Routine, 0)
+
+	iter, err := u.RoutinesIter(a)
+	if err != nil {
+		return routines, err
+	}
+
+	m, err := a.ModelFor(models.RoutineKind)
+	if err != nil {
+		return routines, models.UndefinedKindError(models.RoutineKind)
+	}
+
+	for iter.Next(m) {
+		r, ok := m.(models.Routine)
+		if !ok {
+			return routines, models.CastError(models.RoutineKind)
+		}
+
+		routines = append(routines, r)
+
+		m, err = a.ModelFor(models.RoutineKind)
+		if err != nil {
+			return routines, models.UndefinedKindError(models.RoutineKind)
+		}
+	}
+
+	return routines, nil
 }

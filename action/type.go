@@ -32,7 +32,16 @@ func New(s data.Store) (models.Action, error) {
 	}
 }
 
-func Create(s data.Store, a data.AttrMap) (models.Action, error) {
+func Create(s data.Store) (models.Action, error) {
+	a, err := New(s)
+	if err != nil {
+		return a, err
+	}
+
+	return a, s.Save(a)
+}
+
+func CreateAttrs(s data.Store, a data.AttrMap) (models.Action, error) {
 	action, err := New(s)
 	if err != nil {
 		return action, err

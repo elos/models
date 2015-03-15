@@ -32,3 +32,12 @@ func New(s data.Store) (models.Ontology, error) {
 		return nil, data.ErrInvalidDBType
 	}
 }
+
+func Create(s data.Store) (models.Ontology, error) {
+	o, err := New(s)
+	if err != nil {
+		return o, err
+	}
+
+	return o, s.Save(o)
+}

@@ -33,15 +33,18 @@ type User interface {
 
 	IncludeEvent(Event) error
 	ExcludeEvent(Event) error
-	Events(data.Access) (data.ModelIterator, error)
+	EventsIter(data.Access) (data.ModelIterator, error)
+	Events(data.Access) ([]Event, error)
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
-	Tasks(data.Access) (data.ModelIterator, error)
+	TasksIter(data.Access) (data.ModelIterator, error)
+	Tasks(data.Access) ([]Task, error)
 
 	IncludeRoutine(Routine) error
 	ExcludeRoutine(Routine) error
-	Routines(data.Access) (data.ModelIterator, error)
+	RoutinesIter(data.Access) (data.ModelIterator, error)
+	Routines(data.Access) ([]Routine, error)
 }
 
 type Calendar interface {

@@ -18,7 +18,7 @@ type mongoCalendar struct {
 	EWeekdaySchedules map[string]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
 	ESchedules        map[string]bson.ObjectId `json:"schedules"         bson:"schedules"`
 
-	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id", bson:"current_fixture_id,omitempty"`
+	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id" bson:"current_fixture_id,omitempty"`
 }
 
 // Kind is derived from the models package and is

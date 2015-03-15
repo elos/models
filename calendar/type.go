@@ -57,3 +57,12 @@ func New(s data.Store) (models.Calendar, error) {
 	c.SetID(s.NewID())
 	return c, nil
 }
+
+func Create(s data.Store) (models.Calendar, error) {
+	c, err := New(s)
+	if err != nil {
+		return c, err
+	}
+
+	return c, s.Save(c)
+}
