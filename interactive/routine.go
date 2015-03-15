@@ -1,6 +1,9 @@
 package interactive
 
-import "github.com/elos/models"
+import (
+	"github.com/elos/data"
+	"github.com/elos/models"
+)
 
 type Routine struct {
 	space *Space         `json:"-"`
@@ -20,19 +23,19 @@ type Routine struct {
 }
 
 func (this *Routine) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
 
 func (this *Routine) Delete() error {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	return this.space.Delete(this.model)
 }
 
 func (this *Routine) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 
@@ -52,14 +55,14 @@ func RoutineModel(s *Space, m models.Routine) *Routine {
 		model: m,
 	}
 
-	transferAttrs(r.model, r)
+	data.TransferAttrs(r.model, r)
 	s.Register(r)
 	return r
 }
 
 func (this *Routine) AddTask(t *Task) {
 	other := t.Model()
-	transferAttrs(t, other)
+	data.TransferAttrs(t, other)
 	this.model.IncludeTask(other)
 	this.space.Access.Save(other)
 	this.space.Access.Save(this.model)

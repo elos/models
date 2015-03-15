@@ -1,24 +1,28 @@
 package interactive
 
-import "github.com/elos/models"
+import (
+	"github.com/elos/data"
+	"github.com/elos/models"
+)
 
 type Fixture struct {
 	space *Space         `json:"-"`
 	model models.Fixture `json:"-"`
 
-	ID        string `json:"id,omitempty"`
-	Name      string `json:"name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
-	StartTime string `json:"start_time"`
-	EndTime   string `json:"end_time"`
+	ID          string `json:"id,omitempty"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+	StartTime   string `json:"start_time"`
+	EndTime     string `json:"end_time"`
 
 	UserID     string `json:"user_id"`
 	ScheduleID string `json:"schedule_id"`
 }
 
 func (this *Fixture) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
@@ -35,14 +39,14 @@ func FixtureModel(s *Space, m models.Fixture) *Fixture {
 		model: m,
 	}
 
-	transferAttrs(f.model, f)
+	data.TransferAttrs(f.model, f)
 	s.Register(f)
 	return f
 }
 
 func (this *Fixture) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 

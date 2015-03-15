@@ -1,6 +1,9 @@
 package interactive
 
-import "github.com/elos/models"
+import (
+	"github.com/elos/data"
+	"github.com/elos/models"
+)
 
 type Task struct {
 	space *Space      `json:"-"`
@@ -17,19 +20,19 @@ type Task struct {
 }
 
 func (this *Task) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
 
 func (this *Task) Delete() error {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	return this.space.Delete(this.model)
 }
 
 func (this *Task) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 
@@ -49,7 +52,7 @@ func TaskModel(s *Space, m models.Task) *Task {
 		model: m,
 	}
 
-	transferAttrs(r.model, r)
+	data.TransferAttrs(r.model, r)
 	s.Register(r)
 	return r
 }

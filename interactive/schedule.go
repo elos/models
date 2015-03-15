@@ -1,6 +1,9 @@
 package interactive
 
-import "github.com/elos/models"
+import (
+	"github.com/elos/data"
+	"github.com/elos/models"
+)
 
 type Schedule struct {
 	space *Space          `json:"-"`
@@ -18,7 +21,7 @@ type Schedule struct {
 }
 
 func (this *Schedule) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
@@ -35,14 +38,14 @@ func ScheduleModel(s *Space, m models.Schedule) *Schedule {
 		model: m,
 	}
 
-	transferAttrs(f.model, f)
+	data.TransferAttrs(f.model, f)
 	s.Register(f)
 	return f
 }
 
 func (this *Schedule) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 

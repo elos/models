@@ -48,6 +48,7 @@ func (s *Space) Expose(o *otto.Otto) {
 	o.Set("FindOntology", s.FindOntology)
 	o.Set("FindClass", s.FindClass)
 	o.Set("FindObject", s.FindObject)
+	o.Set("FindCalendar", s.FindCalendar)
 
 	o.Set("User", func() *User {
 		return NewUser(s)
@@ -83,6 +84,10 @@ func (s *Space) Expose(o *otto.Otto) {
 
 	o.Set("EObject", func() *Object {
 		return NewObject(s)
+	})
+
+	o.Set("Calendar", func() *Calendar {
+		return NewCalendar(s)
 	})
 
 	o.Set("me", s.User)
@@ -135,6 +140,14 @@ func (s *Space) FindSchedule(id string) *Schedule {
 	})
 	s.Access.PopulateByID(m)
 	return ScheduleModel(s, m.(models.Schedule))
+}
+
+func (s *Space) FindCalendar(id string) *Calendar {
+	m, _ := s.Access.Unmarshal(models.CalendarKind, data.AttrMap{
+		"id": id,
+	})
+	s.Access.PopulateByID(m)
+	return CalendarModel(s, m.(models.Calendar))
 }
 
 func (s *Space) StartAction(name string) *Action {

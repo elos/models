@@ -1,8 +1,7 @@
 package interactive
 
 import (
-	"encoding/json"
-
+	"github.com/elos/data"
 	"github.com/elos/models"
 )
 
@@ -21,6 +20,15 @@ type User struct {
 	ActionableKind  string   `json:"actionable_kind"`
 	ActionableID    string   `json:"actionable_id"`
 	OntologyID      string   `json:"ontology_id"`
+	CalendarID      string   `json:"calendar_id"`
+}
+
+func (this *User) Space() *Space {
+	return this.space
+}
+
+func (this *User) Model() data.Model {
+	return this.model
 }
 
 func UserModel(s *Space, m models.User) *User {
@@ -28,7 +36,7 @@ func UserModel(s *Space, m models.User) *User {
 		space: s,
 		model: m,
 	}
-	transferAttrs(u.model, u)
+	data.TransferAttrs(u.model, u)
 	s.Register(u)
 	return u
 }
@@ -40,19 +48,19 @@ func NewUser(s *Space) *User {
 }
 
 func (this *User) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
 
 func (this *User) Delete() error {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	return this.space.Delete(this.model)
 }
 
 func (this *User) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 
@@ -74,12 +82,4 @@ func (u *User) SetCurrentRoutine(r *Routine) {
 	u.space.Access.Save(u.model)
 	u.space.Access.Save(other)
 	u.space.Reload()
-}
-
-func transferAttrs(this interface{}, that interface{}) error {
-	bytes, err := json.Marshal(this)
-	if err != nil {
-		return nil
-	}
-	return json.Unmarshal(bytes, that)
 }

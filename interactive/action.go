@@ -1,6 +1,9 @@
 package interactive
 
-import "github.com/elos/models"
+import (
+	"github.com/elos/data"
+	"github.com/elos/models"
+)
 
 type Action struct {
 	space *Space        `json:"-"`
@@ -16,13 +19,13 @@ type Action struct {
 }
 
 func (this *Action) Save() {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	this.space.Save(this.model)
 	this.space.Reload()
 }
 
 func (this *Action) Delete() error {
-	transferAttrs(this, this.model)
+	data.TransferAttrs(this, this.model)
 	return this.space.Delete(this.model)
 }
 
@@ -38,14 +41,14 @@ func ActionModel(s *Space, m models.Action) *Action {
 		model: m,
 	}
 
-	transferAttrs(a.model, a)
+	data.TransferAttrs(a.model, a)
 	s.Register(a)
 	return a
 }
 
 func (this *Action) Reload() error {
 	this.space.Access.PopulateByID(this.model)
-	transferAttrs(this.model, this)
+	data.TransferAttrs(this.model, this)
 	return nil
 }
 
