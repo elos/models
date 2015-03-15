@@ -220,8 +220,8 @@ func (u *mongoUser) CurrentAction(a data.Access) (models.Action, error) {
 	}
 
 	if u.CanRead(a.Client()) {
-		if u.CurrentActionID == *new(bson.ObjectId) {
-			return nil, data.ErrNotFound
+		if mongo.EmptyID(u.CurrentActionID) {
+			return nil, models.ErrEmptyRelationship
 		}
 
 		action.SetID(u.CurrentActionID)
@@ -252,8 +252,8 @@ func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) 
 		return nil, data.ErrInvalidDBType
 	}
 
-	if u.ActionableKind == "" || u.ActionableID == *new(bson.ObjectId) {
-		return nil, data.ErrNotFound
+	if u.ActionableKind == "" || mongo.EmptyID(u.ActionableID) {
+		return nil, models.ErrEmptyRelationship
 	}
 
 	m, err := a.ModelFor(u.ActionableKind)
@@ -288,8 +288,8 @@ func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
 		return nil, data.ErrInvalidDBType
 	}
 
-	if u.ECalendarID == *new(bson.ObjectId) {
-		return nil, data.ErrNotFound
+	if mongo.EmptyID(u.ECalendarID) {
+		return nil, models.ErrEmptyRelationship
 	}
 
 	if !u.CanRead(a.Client()) {
@@ -325,10 +325,9 @@ func (u *mongoUser) SetOntology(o models.Ontology) error {
 	a data.ErrAccessDenial error
 
 	If the user does not have an ontology this returns
-	data.ErrNotFound TODO this maybe should be a real link error
-	or something to that effect
+	models.ErrEmptyRelationship
 
-	If an error has occured, the ontology returned is nil, do not
+	Ir an error has occured, the ontology returned is nil, do not
 	inspect to be able even to inspect the id of the returned ontology
 	if there is an error
 */
@@ -347,16 +346,16 @@ func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
 		return nil, models.CastError(models.OntologyKind)
 	}
 
-	if u.CanRead(a.Client()) { // if we can stop before a db hit, let's do it
-		if u.EOntologyID == *new(bson.ObjectId) {
-			return nil, data.ErrNotFound
-		}
-
-		o.SetID(u.EOntologyID)
-		return o, a.PopulateByID(o)
-	} else {
+	if !u.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	if mongo.EmptyID(u.EOntologyID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	o.SetID(u.EOntologyID)
+	return o, a.PopulateByID(o)
 }
 
 func (u *mongoUser) IncludeEvent(e models.Event) error {

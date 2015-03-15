@@ -18,3 +18,5 @@ type ErrUndefinedKind error
 func UndefinedKindError(k data.Kind) ErrUndefinedKind {
 	return ErrUndefinedKind(errors.New(fmt.Sprintf("models error: undefined kind: %s", k)))
 }
+
+var ErrEmptyRelationship = errors.New("models error: empty relationship")

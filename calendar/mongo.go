@@ -87,7 +87,7 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 		}
 	case baseSchedule:
 		if c.EBaseScheduleID.String() == id.String() {
-			c.EBaseScheduleID = mongo.EmptyID()
+			c.EBaseScheduleID = mongo.NewEmptyID()
 		}
 	case weekdaySchedules:
 
@@ -127,8 +127,8 @@ func (c *mongoCalendar) BaseSchedule(a data.Access) (models.Schedule, error) {
 		return nil, models.CastError(models.ScheduleKind)
 	}
 
-	if c.EBaseScheduleID.String() == mongo.EmptyID().String() {
-		return nil, data.ErrNotFound
+	if mongo.EmptyID(c.EBaseScheduleID) {
+		return nil, models.ErrEmptyRelationship
 	}
 
 	s.SetID(c.EBaseScheduleID)
@@ -167,7 +167,7 @@ func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.S
 
 	id, ok := c.EWeekdaySchedules[t.String()]
 	if !ok {
-		return nil, data.ErrNotFound
+		return nil, models.ErrEmptyRelationship
 	}
 
 	if !c.CanRead(a.Client()) {
@@ -212,7 +212,7 @@ func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Sched
 
 	id, ok := c.ESchedules[string(canonDay(t))]
 	if !ok {
-		return nil, data.ErrNotFound
+		return nil, models.ErrEmptyRelationship
 	}
 
 	s.SetID(id)
