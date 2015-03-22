@@ -34,3 +34,12 @@ func New(s data.Store) (models.Fixture, error) {
 		return nil, data.ErrInvalidDBType
 	}
 }
+
+func Create(s data.Store) (models.Fixture, error) {
+	f, err := New(s)
+	if err != nil {
+		return f, err
+	}
+
+	return f, s.Save(f)
+}
