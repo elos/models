@@ -46,6 +46,15 @@ func ActionModel(s *Space, m models.Action) *Action {
 	return a
 }
 
+func Actions(s *Space, models []models.Action) []*Action {
+	actions := make([]*Action, len(models))
+	for i := range actions {
+		actions[i] = ActionModel(s, models[i])
+	}
+
+	return actions
+}
+
 func (this *Action) Reload() error {
 	this.space.Access.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)

@@ -1,6 +1,8 @@
 package interactive
 
 import (
+	"log"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 )
@@ -9,15 +11,14 @@ type Schedule struct {
 	space *Space          `json:"-"`
 	model models.Schedule `json:"-"`
 
-	ID        string `json:"id,omitempty"`
+	MongoModel
+
 	Name      string `json:"name"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
 	StartTime string `json:"start_time"`
 	EndTime   string `json:"end_time"`
+	UserID    string `json:"user_id"`
 
-	UserID     string `json:"user_id"`
-	FixtureIDs string `json:"fixture_ids"`
+	FixtureIDs []string `json:"fixture_ids"`
 }
 
 func (this *Schedule) Save() {
@@ -51,4 +52,33 @@ func (this *Schedule) Reload() error {
 
 func (this *Schedule) Model() models.Schedule {
 	return this.model
+}
+
+func (s *Schedule) Fixtures() []*Fixture {
+	fixtures, err := s.model.Fixtures(s.space.Access)
+
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+
+	return Fixtures(s.space, fixtures)
+}
+
+func (s *Schedule) IncludeFixture(f *Fixture) {
+	f.Save()
+	s.FixtureIDs = append(s.FixtureIDs, f.ID)
+	s.Save()
+}
+
+func (s *Schedule) ExcludeFixture(f *Fixture) {
+	fids := make([]string, 0)
+	for _, id := range s.FixtureIDs {
+		if id != f.ID {
+			fids = append(fids, id)
+		}
+	}
+
+	s.FixtureIDs = fids
+	s.Save()
 }

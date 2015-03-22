@@ -1,26 +1,37 @@
 package interactive
 
 import (
+	"log"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 )
+
+type MongoModel struct {
+	ID        string `json:"id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
 
 type User struct {
 	space *Space      `json:"-"`
 	model models.User `json:"-"`
 
-	ID              string   `json:"id"`
-	Name            string   `json:"name"`
-	CreatedAt       string   `json:"created_at"`
-	UpdatedAt       string   `json:"updated_at"`
-	Key             string   `json:"key"`
-	EventIDs        []string `json:"event_ids"`
-	TaskIDs         []string `json:"task_ids"`
-	CurrentActionID string   `json:"current_action_id"`
-	ActionableKind  string   `json:"actionable_kind"`
-	ActionableID    string   `json:"actionable_id"`
-	OntologyID      string   `json:"ontology_id"`
-	CalendarID      string   `json:"calendar_id"`
+	MongoModel
+
+	Name string `json:"name"`
+	Key  string `json:"key"`
+
+	ActionIDs  []string `json:"action_ids"`
+	EventIDs   []string `json:"event_ids"`
+	TaskIDs    []string `json:"task_ids"`
+	RoutineIDs []string `json:"routine_ids"`
+
+	OntologyID      string `json:"ontology_id"`
+	CalendarID      string `json:"calendar_id"`
+	CurrentActionID string `json:"current_action_id"`
+	ActionableKind  string `json:"actionable_kind"`
+	ActionableID    string `json:"actionable_id"`
 }
 
 func (this *User) Space() *Space {
@@ -62,6 +73,26 @@ func (this *User) Reload() error {
 	this.space.Access.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
+}
+
+func (u *User) Add(v interface{}) {
+	switch v.(type) {
+	case *Action:
+	case *Task:
+	case *Routine:
+	default:
+		log.Printf("Can't add %+v", v)
+	}
+}
+
+func (u *User) Actions() []*Action {
+	actions, err := u.model.Actions(u.space.Access)
+	if err != nil {
+		log.Print(err)
+		return nil
+	}
+
+	return Actions(u.space, actions)
 }
 
 func (u *User) CurrentAction() *Action {

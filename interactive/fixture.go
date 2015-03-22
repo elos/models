@@ -44,6 +44,15 @@ func FixtureModel(s *Space, m models.Fixture) *Fixture {
 	return f
 }
 
+func Fixtures(s *Space, models []models.Fixture) []*Fixture {
+	fixtures := make([]*Fixture, len(models))
+	for i := range fixtures {
+		fixtures[i] = FixtureModel(s, models[i])
+	}
+
+	return fixtures
+}
+
 func (this *Fixture) Reload() error {
 	this.space.Access.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)

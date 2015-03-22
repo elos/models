@@ -10,13 +10,15 @@ type Calendar struct {
 	space *Space          `json:"-"`
 	model models.Calendar `json:"-"`
 
-	ID     string `json:"id"`
+	MongoModel
+
 	UserID string `json:"user_id"`
 
 	BaseScheduleID   string            `json:"base_schedule_id"`
 	WeekdaySchedules map[string]string `json:"weekday_schedules"`
 	Schedules        map[string]string `json:"schedules"`
-	CurrentFixtureID string            `json:"current_fixture_id"`
+
+	CurrentFixtureID string `json:"current_fixture_id"`
 }
 
 func CalendarModel(s *Space, m models.Calendar) *Calendar {
@@ -49,4 +51,21 @@ func (this *Calendar) Reload() error {
 	this.space.Access.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
+}
+
+func (c *Calendar) SetBaseSchedule(b *Schedule) {
+	c.BaseScheduleID = b.ID
+	c.Save()
+}
+
+func (c *Calendar) BaseSchedule() *Schedule {
+	return c.space.FindSchedule(c.BaseScheduleID)
+}
+
+func (c *Calendar) SetWeekdaySchedule(s *Schedule, weekday int) {
+	c.WeekdaySchedules[string(weekday)] = s.ID
+}
+
+func (c *Calendar) WeekdaySchedule(weekday int) *Schedule {
+	return c.space.FindSchedule(c.WeekdaySchedules[string(weekday)])
 }
