@@ -31,6 +31,11 @@ type User interface {
 	SetOntology(Ontology) error
 	Ontology(data.Access) (Ontology, error)
 
+	IncludeAction(Action) error
+	ExcludeAction(Action) error
+	ActionsIter(data.Access) (data.ModelIterator, error)
+	Actions(data.Access) ([]Action, error)
+
 	IncludeEvent(Event) error
 	ExcludeEvent(Event) error
 	EventsIter(data.Access) (data.ModelIterator, error)
@@ -65,6 +70,20 @@ type Calendar interface {
 	CurrentFixture(data.Access) (Fixture, error)
 
 	NextFixture(data.Access) (Fixture, error)
+}
+
+type Schedule interface {
+	data.Model
+	data.Timeable
+
+	IncludeFixture(Fixture) error
+	ExcludeFixture(Fixture) error
+	FixturesIter(data.Access) (data.ModelIterator, error)
+	Fixtures(data.Access) ([]Fixture, error)
+	OrderedFixtures(data.Access) ([]Fixture, error)
+
+	FirstFixture(data.Access) (Fixture, error)
+	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
 }
 
 type Action interface {
@@ -182,20 +201,6 @@ type Fixture interface {
 	Conflicts(Fixture) bool
 	Order(Fixture) (Fixture, Fixture)
 	Before(Fixture) bool
-}
-
-type Schedule interface {
-	data.Model
-	data.Timeable
-
-	IncludeFixture(Fixture) error
-	ExcludeFixture(Fixture) error
-
-	Fixtures(data.Access) (data.ModelIterator, error) // traditional model iterator for infinite (long) lists and memory
-	OrderedFixtures(data.Access) ([]Fixture, error)   // if you are ordering them you are biting the memory bullet anyway
-
-	FirstFixture(data.Access) (Fixture, error)
-	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
 }
 
 type Ritual interface {

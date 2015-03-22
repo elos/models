@@ -24,13 +24,13 @@ const (
 )
 
 const (
+	UserActions       data.LinkName = "actions"
 	UserEvents        data.LinkName = "events"
 	UserTasks         data.LinkName = "tasks"
-	UserActions       data.LinkName = "actions"
-	UserCurrentAction data.LinkName = "current_action"
 	UserRoutines      data.LinkName = "routines"
-	UserCalendar      data.LinkName = "calendar"
 	UserOntology      data.LinkName = "ontology"
+	UserCalendar      data.LinkName = "calendar"
+	UserCurrentAction data.LinkName = "current_action"
 
 	EventUser data.LinkName = "user"
 
@@ -80,6 +80,12 @@ const (
 
 var RMap data.RelationshipMap = data.RelationshipMap{
 	UserKind: {
+		UserActions: data.Link{
+			Name:    UserActions,
+			Kind:    data.MulLink,
+			Other:   ActionKind,
+			Inverse: ActionUser,
+		},
 		UserEvents: data.Link{
 			Name:    UserEvents,
 			Kind:    data.MulLink,
@@ -92,22 +98,17 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other:   TaskKind,
 			Inverse: TaskUser,
 		},
-		UserActions: data.Link{
-			Name:    UserActions,
-			Kind:    data.MulLink,
-			Other:   ActionKind,
-			Inverse: ActionUser,
-		},
-		UserCurrentAction: data.Link{
-			Name:  UserCurrentAction,
-			Kind:  data.OneLink,
-			Other: ActionKind,
-		},
 		UserRoutines: data.Link{
 			Name:    UserRoutines,
 			Kind:    data.MulLink,
 			Other:   RoutineKind,
 			Inverse: RoutineUser,
+		},
+		UserOntology: data.Link{
+			Name:    UserOntology,
+			Kind:    data.OneLink,
+			Other:   OntologyKind,
+			Inverse: OntologyUser,
 		},
 		UserCalendar: data.Link{
 			Name:    UserCalendar,
@@ -115,11 +116,10 @@ var RMap data.RelationshipMap = data.RelationshipMap{
 			Other:   CalendarKind,
 			Inverse: CalendarUser,
 		},
-		UserOntology: data.Link{
-			Name:    UserOntology,
-			Kind:    data.OneLink,
-			Other:   OntologyKind,
-			Inverse: OntologyUser,
+		UserCurrentAction: data.Link{
+			Name:  UserCurrentAction,
+			Kind:  data.OneLink,
+			Other: ActionKind,
 		},
 	},
 
