@@ -9,39 +9,32 @@ import (
 	"github.com/elos/models/calendar"
 	"github.com/elos/models/event"
 	"github.com/elos/models/ontology"
+	"github.com/elos/models/persistence"
 	"github.com/elos/models/routine"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
-	"github.com/elos/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
-func newMongoStore() data.Store {
-	db := data.NewMemoryDBWithType(mongo.DBType)
-	db.SetIDConstructor(func() data.ID {
-		return mongo.NewObjectID()
-	})
-
-	store := data.NewStore(db, models.Schema)
-
-	store.Register(models.UserKind, user.NewM)
-	store.Register(models.ActionKind, action.NewM)
-	store.Register(models.RoutineKind, routine.NewM)
-	store.Register(models.TaskKind, task.NewM)
-	store.Register(models.CalendarKind, calendar.NewM)
-	store.Register(models.OntologyKind, ontology.NewM)
-	store.Register(models.EventKind, event.NewM)
-	store.Register(models.TaskKind, task.NewM)
-
-	return store
-}
-
 func TestMongo(t *testing.T) {
-	s := newMongoStore()
+	s := persistence.Store(persistence.MongoMemoryDB())
 	u, err := user.New(s)
 	if err != nil {
 		t.Errorf("Expected not error but got %s", err)
 	}
 	testUser(s, u, t)
+
+	if u.Version() != 1 {
+		t.Errorf("Expected mongoUser version to be 1, got %d", u.Version())
+	}
+
+	if u.Kind() != models.UserKind {
+		t.Errorf("Expected mongoUser kind to equal models.UserKind, got %s", u.Kind())
+	}
+
+	if u.Schema() != models.Schema {
+		t.Errorf("Expected mongoUser schema to be models.Schema")
+	}
 }
 
 /*
@@ -65,6 +58,9 @@ func testUser(s data.Store, u models.User, t *testing.T) {
 	testEvents(access, u, t)
 	testTasks(access, u, t)
 	testRoutines(access, u, t)
+
+	testAccessProtection(s, u, t)
+	testAnonReadAccess(s, u, t)
 }
 
 func testName(access data.Access, u models.User, t *testing.T) {
@@ -314,4 +310,81 @@ func testRoutines(access data.Access, u models.User, t *testing.T) {
 	if r2Copy.ID().String() != r2.ID().String() {
 		t.Errorf("Expected to find t2 as the only event")
 	}
+}
+
+/*
+	testAccessProtection ensures that each of a users accessors
+	are access protected
+*/
+func testAccessProtection(s data.Store, u models.User, t *testing.T) {
+	access := data.NewAnonAccess(s)
+
+	_, err := u.CurrentAction(access)
+	expectAccessDenial("CurrentAction", err, t)
+
+	_, err = u.CurrentActionable(access)
+	expectAccessDenial("CurrentActionable", err, t)
+
+	_, err = u.Calendar(access)
+	expectAccessDenial("Calendar", err, t)
+
+	_, err = u.Ontology(access)
+	expectAccessDenial("Ontology", err, t)
+
+	_, err = u.ActionsIter(access)
+	expectAccessDenial("ActionsIter", err, t)
+
+	_, err = u.Actions(access)
+	expectAccessDenial("Actions", err, t)
+
+	_, err = u.EventsIter(access)
+	expectAccessDenial("EventsIter", err, t)
+
+	_, err = u.Events(access)
+	expectAccessDenial("Events", err, t)
+
+	_, err = u.TasksIter(access)
+	expectAccessDenial("TasksIter", err, t)
+
+	_, err = u.Tasks(access)
+	expectAccessDenial("Tasks", err, t)
+
+	_, err = u.RoutinesIter(access)
+	expectAccessDenial("RoutinesIter", err, t)
+
+	_, err = u.Routines(access)
+	expectAccessDenial("Routines", err, t)
+}
+
+/*
+	expectAccessDenail is a helper that ensures err
+	is data.ErrAccessDenial and prints a failure message
+	if not
+*/
+func expectAccessDenial(property string, err error, t *testing.T) {
+	if err != data.ErrAccessDenial {
+		t.Errorf("Expected access denial on %s, got %s", property, err)
+	}
+}
+
+/*
+	testAnonReadAccess ensures that an anonymous access can not
+	read a user
+*/
+func testAnonReadAccess(s data.Store, u models.User, t *testing.T) {
+	if err := s.Save(u); err != nil {
+		t.Fatalf("Error while saving user: %s", err)
+	}
+
+	access := data.NewAnonAccess(s)
+
+	m, err := access.Unmarshal(models.UserKind, data.AttrMap{
+		"id": u.ID().(bson.ObjectId).Hex(),
+	})
+
+	if err != nil {
+		t.Errorf("Error while unmarshalling user: %s", err)
+	}
+
+	expectAccessDenial("Reading User Anonymously", access.PopulateByID(m), t)
 }

@@ -119,6 +119,8 @@ func (u *mongoUser) Link(m data.Model, l data.Link) error {
 	}
 
 	switch l.Name {
+	case actions:
+		u.ActionIDs = mongo.AddID(u.ActionIDs, id)
 	case events:
 		u.EventIDs = mongo.AddID(u.EventIDs, id)
 	case tasks:
@@ -163,6 +165,8 @@ func (u *mongoUser) Unlink(m data.Model, l data.Link) error {
 	}
 
 	switch l.Name {
+	case actions:
+		u.ActionIDs = mongo.DropID(u.ActionIDs, id)
 	case events:
 		u.EventIDs = mongo.DropID(u.EventIDs, id)
 	case tasks:
@@ -248,6 +252,10 @@ func (u *mongoUser) SetCurrentActionable(a models.Actionable) error {
 }
 
 func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
 	if u.DBType() != a.Type() {
 		return nil, data.ErrInvalidDBType
 	}
@@ -356,6 +364,55 @@ func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
 
 	o.SetID(u.EOntologyID)
 	return o, a.PopulateByID(o)
+}
+
+func (u *mongoUser) IncludeAction(a models.Action) error {
+	return u.Schema().Link(u, a, actions)
+}
+
+func (u *mongoUser) ExcludeAction(a models.Action) error {
+	return u.Schema().Unlink(u, a, actions)
+}
+
+func (u *mongoUser) ActionsIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return mongo.NewIDIter(u.ActionIDs, a), nil
+}
+
+func (u *mongoUser) Actions(a data.Access) ([]models.Action, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	actions := make([]models.Action, 0)
+	iter, err := u.EventsIter(a)
+	if err != nil {
+		return actions, err
+	}
+
+	m, err := a.ModelFor(models.ActionKind)
+	if err != nil {
+		return actions, err
+	}
+
+	for iter.Next(m) {
+		action, ok := m.(models.Action)
+		if !ok {
+			return actions, models.CastError(models.EventKind)
+		}
+
+		actions = append(actions, action)
+
+		m, err = a.ModelFor(models.ActionKind)
+		if err != nil {
+			return actions, err
+		}
+	}
+
+	return actions, nil
 }
 
 func (u *mongoUser) IncludeEvent(e models.Event) error {

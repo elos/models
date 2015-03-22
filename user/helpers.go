@@ -67,19 +67,19 @@ func Authenticate(s data.Store, id string, key string) (models.User, bool, error
 func Find(s data.Store, id data.ID) (models.User, error) {
 	user, err := New(s)
 	if err != nil {
-		return user, err
+		return nil, err
 	}
 
 	id, ok := id.(bson.ObjectId)
 	if !ok {
-		return user, data.ErrInvalidID
+		return nil, data.ErrInvalidID
 	}
 
 	user.SetID(id)
 
 	// Find a user that has specified id
 	if err := s.PopulateByID(user); err != nil {
-		return user, err
+		return nil, err
 	}
 
 	return user, nil

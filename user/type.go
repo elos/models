@@ -13,6 +13,7 @@ var (
 	schema  data.Schema = models.Schema
 	version int         = models.DataVersion
 
+	actions       data.LinkName = models.UserActions
 	events        data.LinkName = models.UserEvents
 	tasks         data.LinkName = models.UserTasks
 	routines      data.LinkName = models.UserRoutines
