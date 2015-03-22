@@ -38,7 +38,7 @@ func MergeSchedules(a data.Access, schedules ...models.Schedule) (s models.Sched
 	}
 
 	for _, schedule := range schedules {
-		iter, e := schedule.Fixtures(a)
+		iter, e := schedule.FixturesIter(a)
 		if e != nil {
 			return
 		}

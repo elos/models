@@ -64,7 +64,7 @@ func (f FixtureStream) advanceDay() {
 		return
 	}
 
-	iter, e := s.Fixtures(f.Access)
+	iter, e := s.FixturesIter(f.Access)
 	if e != nil {
 		f.err = e
 		return
