@@ -13,7 +13,7 @@ func FirstFixture(a data.Access, s models.Schedule) (first models.Fixture, err e
 }
 
 func EarliestSince(a data.Access, s models.Schedule, start time.Time) (models.Fixture, error) {
-	iter, _ := s.Fixtures(a)
+	iter, _ := s.FixturesIter(a)
 	fixtures, _ := OrderFixtures(a, iter)
 
 	for _, f := range fixtures {

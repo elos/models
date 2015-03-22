@@ -39,16 +39,51 @@ func (s *mongoSchedule) ExcludeFixture(f models.Fixture) error {
 	return s.Schema().Unlink(s, f, Fixtures)
 }
 
-func (s *mongoSchedule) Fixtures(a data.Access) (data.ModelIterator, error) {
-	if s.CanRead(a.Client()) {
-		return mongo.NewIDIter(s.EFixtureIDs, a), nil
-	} else {
+func (s *mongoSchedule) FixturesIter(a data.Access) (data.ModelIterator, error) {
+	if !s.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	return mongo.NewIDIter(s.EFixtureIDs, a), nil
+}
+
+func (s *mongoSchedule) Fixtures(a data.Access) ([]models.Fixture, error) {
+	if !s.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	fixtures := make([]models.Fixture, 0)
+
+	iter, err := s.FixturesIter(a)
+	if err != nil {
+		return fixtures, err
+	}
+
+	m, err := a.ModelFor(models.FixtureKind)
+	if err != nil {
+		return fixtures, err
+	}
+
+	for iter.Next(m) {
+		e, ok := m.(models.Fixture)
+		if !ok {
+			return fixtures, models.CastError(models.FixtureKind)
+		}
+
+		fixtures = append(fixtures, e)
+
+		m, err = a.ModelFor(models.FixtureKind)
+		if err != nil {
+			return fixtures, err
+		}
+	}
+
+	return fixtures, nil
+
 }
 
 func (s *mongoSchedule) OrderedFixtures(a data.Access) ([]models.Fixture, error) {
-	iter, _ := s.Fixtures(a)
+	iter, _ := s.FixturesIter(a)
 	return OrderFixtures(a, iter)
 }
 
