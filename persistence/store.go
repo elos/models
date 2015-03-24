@@ -35,6 +35,7 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(models.OntologyKind, "ontologies")
 	db.RegisterKind(models.ClassKind, "classes")
 	db.RegisterKind(models.ObjectKind, "objects")
+	db.RegisterKind(models.CalendarKind, "calendars")
 
 	return db, nil
 }
