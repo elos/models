@@ -6,6 +6,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 type ActionRoutine struct {
@@ -44,11 +45,19 @@ func (r *ActionRoutine) Next() (models.Action, error) {
 	action.SetID(r.Access.NewID())
 	action.SetName(task.Name())
 	action.SetTask(task)
-	action.SetUserID(r.UserID())
+
+	u, err := r.Access.Unmarshal(models.UserKind, data.AttrMap{
+		"id": r.UserID().(bson.ObjectId).Hex(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	action.SetUser(u.(models.User))
 
 	r.Routine.AddAction(action)
 	r.Routine.SetCurrentAction(action)
 
+	r.Save(u)
 	r.Save(r.Routine)
 	r.Save(action)
 	r.Save(task)

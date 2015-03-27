@@ -20,10 +20,8 @@ type Calendar interface {
 	SetWeekdaySchedule(Schedule, time.Weekday) error
 	WeekdaySchedule(data.Access, time.Weekday) (Schedule, error)
 
-	IncludeSchedule(Schedule) error
-	ExcludeSchedule(Schedule) error
-	Schedules(data.Access) (data.ModelIterator, error)
-	ScheduleForDay(data.Access, time.Time) (Schedule, error)
+	SetYeardaySchedule(Schedule, time.Time) error
+	YeardaySchedule(data.Access, time.Time) (Schedule, error)
 
 	SetCurrentFixture(Fixture) error
 	CurrentFixture(data.Access) (Fixture, error)

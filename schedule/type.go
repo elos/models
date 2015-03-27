@@ -31,3 +31,11 @@ func New(s data.Store) (models.Schedule, error) {
 		return nil, data.ErrInvalidDBType
 	}
 }
+
+func Create(s data.Store) (models.Schedule, error) {
+	sched, err := New(s)
+	if err != nil {
+		return nil, err
+	}
+	return sched, s.Save(sched)
+}

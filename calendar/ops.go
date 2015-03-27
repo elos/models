@@ -67,7 +67,7 @@ func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s mod
 		return
 	}
 
-	day, err := c.ScheduleForDay(a, t)
+	day, err := c.YeardaySchedule(a, t)
 	if err != nil {
 		return
 	}

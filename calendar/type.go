@@ -49,7 +49,7 @@ func New(s data.Store) (models.Calendar, error) {
 
 	switch s.Type() {
 	case mongo.DBType:
-		c = &mongoCalendar{}
+		c = newMongoCalendar()
 	default:
 		return nil, data.ErrInvalidDBType
 	}

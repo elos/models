@@ -3,6 +3,7 @@ package calendar
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func NewBaseSchedule(a data.Access, c models.Calendar) error {
@@ -37,4 +38,21 @@ func NewBaseSchedule(a data.Access, c models.Calendar) error {
 	}
 
 	return a.Save(c)
+}
+
+func Find(s data.Store, id data.ID) (models.Calendar, error) {
+	m, err := s.Unmarshal(models.CalendarKind, data.AttrMap{
+		"id": id.(bson.ObjectId).Hex(),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	c, ok := m.(models.Calendar)
+	if !ok {
+		return nil, models.CastError(models.CalendarKind)
+	}
+
+	return c, s.PopulateByID(c)
 }

@@ -11,16 +11,16 @@ import (
 	"github.com/elos/models/ontology"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/routine"
+	"github.com/elos/models/shared"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
-	"gopkg.in/mgo.v2/bson"
 )
 
 func TestMongo(t *testing.T) {
 	s := persistence.Store(persistence.MongoMemoryDB())
 	u, err := user.New(s)
 	if err != nil {
-		t.Errorf("Expected not error but got %s", err)
+		t.Errorf("Error from user.New, expected no error but got %s", err)
 	}
 	testUser(s, u, t)
 
@@ -60,7 +60,7 @@ func testUser(s data.Store, u models.User, t *testing.T) {
 	testRoutines(access, u, t)
 
 	testAccessProtection(s, u, t)
-	testAnonReadAccess(s, u, t)
+	shared.TestAnonReadAccess(s, u, t)
 }
 
 func testName(access data.Access, u models.User, t *testing.T) {
@@ -320,71 +320,38 @@ func testAccessProtection(s data.Store, u models.User, t *testing.T) {
 	access := data.NewAnonAccess(s)
 
 	_, err := u.CurrentAction(access)
-	expectAccessDenial("CurrentAction", err, t)
+	shared.ExpectAccessDenial("CurrentAction", err, t)
 
 	_, err = u.CurrentActionable(access)
-	expectAccessDenial("CurrentActionable", err, t)
+	shared.ExpectAccessDenial("CurrentActionable", err, t)
 
 	_, err = u.Calendar(access)
-	expectAccessDenial("Calendar", err, t)
+	shared.ExpectAccessDenial("Calendar", err, t)
 
 	_, err = u.Ontology(access)
-	expectAccessDenial("Ontology", err, t)
+	shared.ExpectAccessDenial("Ontology", err, t)
 
 	_, err = u.ActionsIter(access)
-	expectAccessDenial("ActionsIter", err, t)
+	shared.ExpectAccessDenial("ActionsIter", err, t)
 
 	_, err = u.Actions(access)
-	expectAccessDenial("Actions", err, t)
+	shared.ExpectAccessDenial("Actions", err, t)
 
 	_, err = u.EventsIter(access)
-	expectAccessDenial("EventsIter", err, t)
+	shared.ExpectAccessDenial("EventsIter", err, t)
 
 	_, err = u.Events(access)
-	expectAccessDenial("Events", err, t)
+	shared.ExpectAccessDenial("Events", err, t)
 
 	_, err = u.TasksIter(access)
-	expectAccessDenial("TasksIter", err, t)
+	shared.ExpectAccessDenial("TasksIter", err, t)
 
 	_, err = u.Tasks(access)
-	expectAccessDenial("Tasks", err, t)
+	shared.ExpectAccessDenial("Tasks", err, t)
 
 	_, err = u.RoutinesIter(access)
-	expectAccessDenial("RoutinesIter", err, t)
+	shared.ExpectAccessDenial("RoutinesIter", err, t)
 
 	_, err = u.Routines(access)
-	expectAccessDenial("Routines", err, t)
-}
-
-/*
-	expectAccessDenail is a helper that ensures err
-	is data.ErrAccessDenial and prints a failure message
-	if not
-*/
-func expectAccessDenial(property string, err error, t *testing.T) {
-	if err != data.ErrAccessDenial {
-		t.Errorf("Expected access denial on %s, got %s", property, err)
-	}
-}
-
-/*
-	testAnonReadAccess ensures that an anonymous access can not
-	read a user
-*/
-func testAnonReadAccess(s data.Store, u models.User, t *testing.T) {
-	if err := s.Save(u); err != nil {
-		t.Fatalf("Error while saving user: %s", err)
-	}
-
-	access := data.NewAnonAccess(s)
-
-	m, err := access.Unmarshal(models.UserKind, data.AttrMap{
-		"id": u.ID().(bson.ObjectId).Hex(),
-	})
-
-	if err != nil {
-		t.Errorf("Error while unmarshalling user: %s", err)
-	}
-
-	expectAccessDenial("Reading User Anonymously", access.PopulateByID(m), t)
+	shared.ExpectAccessDenial("Routines", err, t)
 }

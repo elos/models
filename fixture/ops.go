@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"gopkg.in/mgo.v2/bson"
 )
 
 func Action(a data.Access, f models.Fixture) (models.Action, error) {
@@ -30,9 +31,16 @@ func Action(a data.Access, f models.Fixture) (models.Action, error) {
 
 	action.SetName(f.Name())
 	action.SetActionable(f)
-	action.SetUserID(f.UserID())
+	u, err := a.Unmarshal(models.UserKind, data.AttrMap{
+		"id": f.UserID().(bson.ObjectId).Hex(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	action.SetUser(u.(models.User))
 	f.IncludeAction(action)
 
+	a.Save(u)
 	a.Save(action)
 	a.Save(f)
 
@@ -61,9 +69,16 @@ func Event(a data.Access, f models.Fixture) (models.Event, error) {
 	}
 
 	event.SetName(f.Name())
-	event.SetUserID(f.UserID())
+	u, err := a.Unmarshal(models.UserKind, data.AttrMap{
+		"id": f.UserID().(bson.ObjectId).Hex(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	event.SetUser(u.(models.User))
 	f.IncludeEvent(event)
 
+	a.Save(u)
 	a.Save(event)
 	a.Save(f)
 

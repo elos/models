@@ -3,6 +3,7 @@ package shared
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -29,9 +30,17 @@ func (o *MongoUserOwned) UserID() data.ID {
 	return o.EUserID
 }
 
-func (o *MongoUserOwned) User(a data.Access, u models.User) error {
+func (o *MongoUserOwned) User(a data.Access) (models.User, error) {
+	m, err := a.ModelFor(models.UserKind)
+	if err != nil {
+		return nil, err
+	}
+	u, ok := m.(models.User)
+	if !ok {
+		return nil, models.CastError(models.UserKind)
+	}
 	u.SetID(o.EUserID)
-	return a.PopulateByID(u)
+	return u, a.PopulateByID(u)
 }
 
 func (o *MongoUserOwned) Concerned() []data.ID {
@@ -41,6 +50,10 @@ func (o *MongoUserOwned) Concerned() []data.ID {
 }
 
 func (o *MongoUserOwned) CanRead(c data.Client) bool {
+	if mongo.EmptyID(o.EUserID) { // not owned
+		return true
+	}
+
 	if c.Kind() != models.UserKind {
 		return false
 	}

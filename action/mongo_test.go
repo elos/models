@@ -8,19 +8,14 @@ import (
 	"github.com/elos/mongo"
 	"gopkg.in/mgo.v2/bson"
 
-	"github.com/elos/models"
 	. "github.com/elos/models/action"
+	"github.com/elos/models/persistence"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
 )
 
 func TestMongoAction(t *testing.T) {
-	// a new mock store, TODO: should  move this to mongo?
-	// like mongo.NewMockStore(s Schema)
-	store := data.NewRecorderStore(data.NewRecorderDBWithType(mongo.DBType), models.Schema)
-	store.Register(models.ActionKind, NewM)
-	store.Register(models.UserKind, user.NewM)
-	store.Register(models.TaskKind, task.NewM)
+	store := persistence.Store(persistence.MongoMemoryDB())
 
 	a, err := New(store)
 
@@ -66,42 +61,24 @@ func TestMongoAction(t *testing.T) {
 		t.Errorf("EndTime should be %s, got %s", testTime, a.EndTime())
 	}
 
-	u, err := user.New(store)
+	u, err := user.Create(store)
 	if err != nil {
-		t.Fatalf("user.New() returned %s", err)
+		t.Fatalf("user.Create() returned %s", err)
 	}
 
 	u.SetName(testName)
 
-	ucp, _ := user.New(store)
-
 	access := data.NewAccess(u, store)
-
-	err = a.User(access, ucp)
-	if err != nil {
-		t.Fatalf("Error populating user model: %s", err)
-	}
-
-	if ucp.ID() != bson.ObjectId("") { // this is kinda a hacky check
-		t.Errorf("User should start as nil")
-	}
 
 	a.SetUser(u)
 
-	err = a.User(access, ucp)
+	ucp, err := a.User(access)
 	if err != nil {
 		t.Fatalf("Error populateing user model: %s", err)
 	}
 
 	if ucp.ID() != u.ID() {
 		t.Fatalf("The user copy model should have populated to the id of the set user")
-	}
-
-	id := bson.NewObjectId()
-
-	a.SetUserID(id)
-	if a.UserID() != id {
-		t.Errorf("SetUserID or UserID() doesn't work")
 	}
 
 	if a.Completed() != false {
@@ -116,18 +93,18 @@ func TestMongoAction(t *testing.T) {
 
 	tt, err := a.Task(access)
 
-	if err != nil {
-		t.Errorf("Error getting task %s", err)
+	if err != data.ErrNotFound {
+		t.Errorf("Expected task to not be set", err)
 	}
 
 	if tt.ID() != *new(bson.ObjectId) {
 		t.Errorf("Current task id should be zero id")
 	}
 
-	ts, err := task.New(store)
+	ts, err := task.Create(store)
 
 	if err != nil {
-		t.Fatalf("task.New() returned %s", err)
+		t.Fatalf("task.Create() returned %s", err)
 	}
 
 	a.SetTask(ts)

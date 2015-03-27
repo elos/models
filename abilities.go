@@ -6,9 +6,8 @@ import (
 
 type Userable interface {
 	SetUser(User) error
-	User(data.Access, User) error
+	User(data.Access) (User, error)
 	UserID() data.ID
-	SetUserID(data.ID) error
 }
 
 type ActionableOps interface {

@@ -16,9 +16,16 @@ type mongoCalendar struct {
 
 	EBaseScheduleID   bson.ObjectId            `json:"base_schedule_id"  bson:"base_schedule_id,omitempty"`
 	EWeekdaySchedules map[string]bson.ObjectId `json:"weekday_schedules" bson:"weekday_schedules"`
-	ESchedules        map[string]bson.ObjectId `json:"schedules"         bson:"schedules"`
+	EYeardaySchedules map[string]bson.ObjectId `json:"schedules"         bson:"schedules"`
 
 	ECurrentFixtureID bson.ObjectId `json:"current_fixture_id" bson:"current_fixture_id,omitempty"`
+}
+
+func newMongoCalendar() *mongoCalendar {
+	c := &mongoCalendar{}
+	c.EWeekdaySchedules = make(map[string]bson.ObjectId)
+	c.EYeardaySchedules = make(map[string]bson.ObjectId)
+	return c
 }
 
 // Kind is derived from the models package and is
@@ -55,12 +62,7 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 	case baseSchedule:
 		c.EBaseScheduleID = id
 	case schedules:
-		s, ok := m.(models.Schedule)
-		if !ok {
-			return data.NewLinkError(c, m, l)
-		}
-
-		c.ESchedules[string(canonDay(s.StartTime()))] = id
+		panic("link schedules not implemented")
 	case currentFixture:
 		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
 	default:
@@ -92,12 +94,7 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 	case weekdaySchedules:
 
 	case schedules:
-		s, ok := m.(models.Schedule)
-		if !ok {
-			return data.NewLinkError(c, m, l)
-		}
-
-		delete(c.ESchedules, string(canonDay(s.StartTime())))
+		panic("link schedules not implemented")
 	case currentFixture:
 		if c.ECurrentFixtureID == id {
 			c.ECurrentFixtureID = *new(bson.ObjectId)
@@ -179,30 +176,21 @@ func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.S
 	return s, a.PopulateByID(s)
 }
 
-func (c *mongoCalendar) IncludeSchedule(s models.Schedule) error {
-	return c.Schema().Link(c, s, schedules)
-}
-
-func (c *mongoCalendar) ExcludeSchedule(s models.Schedule) error {
-	return c.Schema().Unlink(c, s, schedules)
-}
-
-func (c *mongoCalendar) Schedules(a data.Access) (data.ModelIterator, error) {
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (c *mongoCalendar) SetYeardaySchedule(s models.Schedule, t time.Time) error {
+	if !data.Compatible(c, s) {
+		return data.ErrIncompatibleModels
 	}
 
-	ids := make(mongo.IDSet, len(c.ESchedules))
-	i := 0
-	for _, id := range c.ESchedules {
-		ids[i] = id
-		i++
+	id, ok := s.ID().(bson.ObjectId)
+	if !ok {
+		return data.ErrInvalidID
 	}
 
-	return mongo.NewIDIter(ids, a), nil
+	c.EYeardaySchedules[string(canonDay(t))] = id
+	return nil
 }
 
-func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Schedule, error) {
+func (c *mongoCalendar) YeardaySchedule(a data.Access, t time.Time) (models.Schedule, error) {
 	m, err := a.ModelFor(models.ScheduleKind)
 	if err != nil {
 		return nil, err
@@ -210,7 +198,7 @@ func (c *mongoCalendar) ScheduleForDay(a data.Access, t time.Time) (models.Sched
 
 	s, ok := m.(models.Schedule)
 
-	id, ok := c.ESchedules[string(canonDay(t))]
+	id, ok := c.EYeardaySchedules[string(canonDay(t))]
 	if !ok {
 		return nil, models.ErrEmptyRelationship
 	}
