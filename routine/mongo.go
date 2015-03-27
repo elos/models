@@ -117,6 +117,10 @@ func (r *mongoRoutine) CurrentAction(a data.Access, action models.Action) error 
 	return a.PopulateByID(action)
 }
 
+func (r *mongoRoutine) StartAction(access data.Access, a models.Action) error {
+	panic("not implemented")
+}
+
 func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) error {
 	if a.ID() == r.ECurrentActionID {
 		r.ECurrentActionID = ""

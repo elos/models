@@ -255,3 +255,7 @@ func (f *mongoFixture) DropEventable() {
 func (f *mongoFixture) HasEventable() bool {
 	return f.EEventableID != *new(bson.ObjectId) && f.EEventableKind != data.Kind("")
 }
+
+func (f *mongoFixture) StartAction(access data.Access, action models.Action) error {
+	return nil
+}

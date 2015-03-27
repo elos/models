@@ -12,6 +12,7 @@ type Userable interface {
 
 type ActionableOps interface {
 	NextAction(data.Access) (Action, error)
+	StartAction(data.Access, Action) error
 	CompleteAction(data.Access, Action) error
 }
 

@@ -25,6 +25,12 @@ func ExpectEmptyRelationship(property string, err error, t *testing.T) {
 	}
 }
 
+func ExpectNoError(op string, err error, t *testing.T) {
+	if err != nil {
+		t.Errorf("Error while %s: %s", op, err)
+	}
+}
+
 /*
 	TestAnonReadAccess ensures that an anonymous access can not
 	read a model

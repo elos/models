@@ -214,6 +214,10 @@ func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
 }
 
 func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
+	if mongo.EmptyID(c.ECurrentFixtureID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
 	m, err := a.ModelFor(models.FixtureKind)
 	if err != nil {
 		return nil, err
@@ -237,21 +241,13 @@ func (c *mongoCalendar) NextFixture(a data.Access) (first models.Fixture, err er
 }
 
 func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err error) {
-	current, err := c.CurrentFixture(a)
-	if err != nil {
-		return
-	}
+	return NextAction(c, a)
+}
 
-	action, err = current.NextAction(a)
-
-	return
+func (c *mongoCalendar) StartAction(access data.Access, action models.Action) error {
+	return StartAction(c, access, action)
 }
 
 func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action) error {
-	fixture, err := c.CurrentFixture(access)
-	if err != nil {
-		return err
-	}
-
-	return fixture.CompleteAction(access, action)
+	return CompleteAction(c, access, action)
 }

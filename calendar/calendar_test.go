@@ -8,6 +8,7 @@ import (
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/models/calendar"
+	"github.com/elos/models/fixture"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/schedule"
 	"github.com/elos/models/shared"
@@ -140,45 +141,59 @@ var monthDays = map[time.Month]int{
 }
 
 func testYeardaySchedules(access data.Access, c models.Calendar, t *testing.T) {
-	if err := access.Save(c); err != nil {
-		t.Errorf("Error while saving calendar: %s", err)
-	}
+	err := access.Save(c)
+	shared.ExpectNoError("saving calendar", err, t)
 
 	for month, days := range monthDays {
 		for i := 1; i <= days; i++ {
 			yearday := time.Date(2015, month, i, 0, 0, 0, 0, time.UTC)
 
 			s, err := schedule.Create(access)
-			if err != nil {
-				t.Errorf("Error creating schedule: %s", err)
-			}
+			shared.ExpectNoError("creating schedule", err, t)
 
-			if err = c.SetYeardaySchedule(s, yearday); err != nil {
-				t.Errorf("Error while setting yearday schedules: %s", err)
-			}
+			err = c.SetYeardaySchedule(s, yearday)
+			shared.ExpectNoError("setting yearday schedules", err, t)
 
-			if err = access.Save(c); err != nil {
-				t.Errorf("Error while saving calendar: %s", err)
-			}
+			err = access.Save(c)
+			shared.ExpectNoError("saving calendar", err, t)
 
 			c, err := calendar.Find(access, c.ID())
-			if err != nil {
-				t.Errorf("Error while finding calendar: %s", err)
-			}
+			shared.ExpectNoError("finding calendar", err, t)
 
 			sRetrieved, err := c.YeardaySchedule(access, yearday)
-			if err != nil {
-				t.Error("Error while retrieving yearday schedule: %s", err)
-			}
+			shared.ExpectNoError("retrieving yearday schedule", err, t)
 
 			if sRetrieved.ID().String() != s.ID().String() {
-				t.Errorf("Retrieved yearday schedule doesn't match retrieved yearday schedule")
+				t.Errorf("Retrieved yearday schedule doesn't match set yearday schedule")
 			}
 		}
 	}
 }
 
 func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
+	f, err := fixture.Create(access)
+	if err != nil {
+		t.Fatalf("Error creating fixture: %s", err)
+	}
+
+	_, err = c.CurrentFixture(access)
+	shared.ExpectEmptyRelationship("CurrentFixture", err, t)
+
+	err = c.SetCurrentFixture(f)
+	shared.ExpectNoError("setting current fixture", err, t)
+
+	err = access.Save(c)
+	shared.ExpectNoError("saving calendar", err, t)
+
+	c, err = calendar.Find(access, c.ID())
+	shared.ExpectNoError("finding calendar", err, t)
+
+	fRetrieved, err := c.CurrentFixture(access)
+	shared.ExpectNoError("retrieving current fixture", err, t)
+
+	if !data.EqualModels(f, fRetrieved) {
+		t.Errorf("Retrieved curret fixture doesn't match set current fixture")
+	}
 }
 
 func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
