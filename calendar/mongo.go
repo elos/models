@@ -186,7 +186,7 @@ func (c *mongoCalendar) SetYeardaySchedule(s models.Schedule, t time.Time) error
 		return data.ErrInvalidID
 	}
 
-	c.EYeardaySchedules[string(canonDay(t))] = id
+	c.EYeardaySchedules[string(Yearday(t))] = id
 	return nil
 }
 
@@ -198,7 +198,7 @@ func (c *mongoCalendar) YeardaySchedule(a data.Access, t time.Time) (models.Sche
 
 	s, ok := m.(models.Schedule)
 
-	id, ok := c.EYeardaySchedules[string(canonDay(t))]
+	id, ok := c.EYeardaySchedules[string(Yearday(t))]
 	if !ok {
 		return nil, models.ErrEmptyRelationship
 	}

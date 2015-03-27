@@ -5,55 +5,15 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/schedule"
 )
 
 /*
 	Returns this day in the elos canonical representation
 	October 14th is 1014
 */
-func canonDay(t time.Time) int {
+func Yearday(t time.Time) int {
 	return 100*int(t.Month()) + t.Day()
-}
-
-func MergeSchedules(a data.Access, schedules ...models.Schedule) (s models.Schedule, err error) {
-	m, err := a.ModelFor(models.ScheduleKind)
-	if err != nil {
-		return
-	}
-
-	s, ok := m.(models.Schedule)
-	if !ok {
-		err = models.CastError(models.ScheduleKind)
-		return
-	}
-
-	m, err = a.ModelFor(models.ScheduleKind)
-	if err != nil {
-		return
-	}
-	f, ok := m.(models.Fixture)
-	if !ok {
-		err = models.CastError(models.FixtureKind)
-		return
-	}
-
-	for _, schedule := range schedules {
-		iter, e := schedule.FixturesIter(a)
-		if e != nil {
-			return
-		}
-
-		for iter.Next(f) {
-			s.IncludeFixture(f)
-		}
-
-		err = iter.Close()
-		if err != nil {
-			break
-		}
-	}
-
-	return
 }
 
 func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
@@ -72,7 +32,7 @@ func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s mod
 		return
 	}
 
-	return MergeSchedules(a, base, weekday, day)
+	return schedule.Merge(a, base, weekday, day)
 }
 
 func NextFixture(a data.Access, c models.Calendar) (first models.Fixture, err error) {
