@@ -15,7 +15,7 @@ var (
 	user             data.LinkName = models.CalendarUser
 	baseSchedule     data.LinkName = models.CalendarBaseSchedule
 	weekdaySchedules data.LinkName = models.CalendarWeekdaySchedules
-	schedules        data.LinkName = models.CalendarSchedules
+	yeardaySchedules data.LinkName = models.CalendarSchedules
 	currentFixture   data.LinkName = models.CalendarCurrentFixture
 )
 

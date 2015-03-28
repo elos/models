@@ -17,10 +17,11 @@ func Merge(a data.Access, schedules ...models.Schedule) (s models.Schedule, err 
 		return
 	}
 
-	m, err = a.ModelFor(models.ScheduleKind)
+	m, err = a.ModelFor(models.FixtureKind)
 	if err != nil {
 		return
 	}
+
 	f, ok := m.(models.Fixture)
 	if !ok {
 		err = models.CastError(models.FixtureKind)

@@ -58,7 +58,7 @@ func testActionable(access data.Access, c models.Calendar, t *testing.T) {
 
 func testBaseSchedule(access data.Access, c models.Calendar, t *testing.T) {
 	_, err := c.BaseSchedule(access)
-	shared.ExpectEmptyRelationship("BaseSchedules", err, t)
+	shared.ExpectEmptyLinkError("BaseSchedule", err, t)
 
 	s, err := schedule.Create(access)
 	if err != nil {
@@ -97,7 +97,7 @@ func testWeekdaySchedules(access data.Access, c models.Calendar, t *testing.T) {
 		w := time.Weekday(i)
 
 		_, err := c.WeekdaySchedule(access, w)
-		shared.ExpectEmptyRelationship(fmt.Sprintf("Weekday: %s", w.String()), err, t)
+		shared.ExpectEmptyLinkError(fmt.Sprintf("Weekday: %s", w.String()), err, t)
 
 		s, err := schedule.Create(access)
 		if err != nil {
@@ -177,7 +177,7 @@ func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
 	}
 
 	_, err = c.CurrentFixture(access)
-	shared.ExpectEmptyRelationship("CurrentFixture", err, t)
+	shared.ExpectEmptyLinkError("CurrentFixture", err, t)
 
 	err = c.SetCurrentFixture(f)
 	shared.ExpectNoError("setting current fixture", err, t)
@@ -196,7 +196,46 @@ func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
 	}
 }
 
+// TODO: fix this to be actually test hard scenarios
 func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
+	sBase, err := schedule.Create(access)
+	shared.ExpectNoError("creating schedule", err, t)
+	sWeek, err := schedule.Create(access)
+	shared.ExpectNoError("creating schedule", err, t)
+	sYear, err := schedule.Create(access)
+	shared.ExpectNoError("creating schedule", err, t)
+
+	testTime := time.Now()
+
+	err = c.SetBaseSchedule(sBase)
+	shared.ExpectNoError("setting base schedule", err, t)
+
+	err = c.SetWeekdaySchedule(sWeek, testTime.Weekday())
+	shared.ExpectNoError("setting weekday schedule", err, t)
+
+	err = c.SetYeardaySchedule(sYear, testTime)
+	shared.ExpectNoError("setting yearday schedule", err, t)
+
+	f, err := fixture.Create(access)
+	shared.ExpectNoError("creating fixture", err, t)
+
+	f.SetStartTime(testTime.Add(1 * time.Hour))
+	f.SetEndTime(testTime.Add(2 * time.Hour))
+
+	err = sBase.IncludeFixture(f)
+	shared.ExpectNoError("including fixture", err, t)
+
+	err = access.Save(sBase)
+	shared.ExpectNoError("saving schedule", err, t)
+	err = access.Save(f)
+	shared.ExpectNoError("saving fixture", err, t)
+
+	nextF, err := c.NextFixture(access)
+	shared.ExpectNoError("retrieving next fixture", err, t)
+
+	if !data.EqualModels(f, nextF) {
+		t.Errorf("Expected next fixture to be fixture on base schedule")
+	}
 }
 
 func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {

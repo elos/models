@@ -19,6 +19,13 @@ func ExpectAccessDenial(property string, err error, t *testing.T) {
 	}
 }
 
+func ExpectEmptyLinkError(property string, err error, t *testing.T) {
+	_, ok := err.(*data.EmptyLinkError)
+	if !ok {
+		t.Errorf("Expected empty link on %s, got %s", property, err)
+	}
+}
+
 func ExpectEmptyRelationship(property string, err error, t *testing.T) {
 	if err != models.ErrEmptyRelationship {
 		t.Errorf("Expected empty relationship on %s, got %s", property, err)
@@ -27,7 +34,7 @@ func ExpectEmptyRelationship(property string, err error, t *testing.T) {
 
 func ExpectNoError(op string, err error, t *testing.T) {
 	if err != nil {
-		t.Errorf("Error while %s: %s", op, err)
+		t.Fatalf("Error while %s: %s", op, err)
 	}
 }
 

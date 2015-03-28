@@ -61,7 +61,7 @@ func (c *mongoCalendar) Link(m data.Model, l data.Link) error {
 		return c.SetUserID(id)
 	case baseSchedule:
 		c.EBaseScheduleID = id
-	case schedules:
+	case yeardaySchedules:
 		panic("link schedules not implemented")
 	case currentFixture:
 		c.ECurrentFixtureID = m.ID().(bson.ObjectId)
@@ -93,7 +93,7 @@ func (c *mongoCalendar) Unlink(m data.Model, l data.Link) error {
 		}
 	case weekdaySchedules:
 
-	case schedules:
+	case yeardaySchedules:
 		panic("link schedules not implemented")
 	case currentFixture:
 		if c.ECurrentFixtureID == id {
@@ -125,7 +125,7 @@ func (c *mongoCalendar) BaseSchedule(a data.Access) (models.Schedule, error) {
 	}
 
 	if mongo.EmptyID(c.EBaseScheduleID) {
-		return nil, models.ErrEmptyRelationship
+		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][baseSchedule])
 	}
 
 	s.SetID(c.EBaseScheduleID)
@@ -164,7 +164,7 @@ func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.S
 
 	id, ok := c.EWeekdaySchedules[t.String()]
 	if !ok {
-		return nil, models.ErrEmptyRelationship
+		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][weekdaySchedules])
 	}
 
 	if !c.CanRead(a.Client()) {
@@ -200,7 +200,7 @@ func (c *mongoCalendar) YeardaySchedule(a data.Access, t time.Time) (models.Sche
 
 	id, ok := c.EYeardaySchedules[string(Yearday(t))]
 	if !ok {
-		return nil, models.ErrEmptyRelationship
+		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][yeardaySchedules])
 	}
 
 	s.SetID(id)
@@ -215,7 +215,7 @@ func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
 
 func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
 	if mongo.EmptyID(c.ECurrentFixtureID) {
-		return nil, models.ErrEmptyRelationship
+		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][currentFixture])
 	}
 
 	m, err := a.ModelFor(models.FixtureKind)
