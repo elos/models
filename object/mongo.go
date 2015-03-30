@@ -33,31 +33,6 @@ func (o *mongoObject) Schema() data.Schema {
 	return schema
 }
 
-func (o *mongoObject) SetUser(u models.User) error {
-	return o.Schema().Link(o, u, User)
-}
-
-func (o *mongoObject) SetClass(c models.Class) error {
-	return o.Schema().Link(o, c, Class)
-}
-
-func (o *mongoObject) Class(a data.Access) (models.Class, error) {
-	m, _ := a.ModelFor(models.ClassKind)
-	c := m.(models.Class)
-
-	if o.CanRead(a.Client()) {
-		c.SetID(o.EClassID)
-		err := a.PopulateByID(c)
-		return c, err
-	} else {
-		return nil, data.ErrAccessDenial
-	}
-}
-
-func (o *mongoObject) SetOntology(ont models.Ontology) error {
-	return o.Schema().Link(o, ont, Ontology)
-}
-
 func (o *mongoObject) Link(m data.Model, l data.Link) error {
 	if !data.Compatible(o, m) {
 		return data.ErrIncompatibleModels
@@ -92,6 +67,44 @@ func (o *mongoObject) Unlink(m data.Model, l data.Link) error {
 		return data.NewLinkError(o, m, l)
 	}
 	return nil
+}
+
+func (o *mongoObject) SetUser(u models.User) error {
+	return o.Schema().Link(o, u, User)
+}
+
+func (o *mongoObject) SetOntology(ont models.Ontology) error {
+	return o.Schema().Link(o, ont, Ontology)
+}
+
+func (o *mongoObject) Ontology(a data.Access) (models.Ontology, error) {
+	m, _ := a.ModelFor(models.OntologyKind)
+	ontology := m.(models.Ontology)
+
+	if o.CanRead(a.Client()) {
+		ontology.SetID(o.EOntologyID)
+		err := a.PopulateByID(ontology)
+		return ontology, err
+	} else {
+		return nil, data.ErrAccessDenial
+	}
+}
+
+func (o *mongoObject) SetClass(c models.Class) error {
+	return o.Schema().Link(o, c, Class)
+}
+
+func (o *mongoObject) Class(a data.Access) (models.Class, error) {
+	m, _ := a.ModelFor(models.ClassKind)
+	c := m.(models.Class)
+
+	if o.CanRead(a.Client()) {
+		c.SetID(o.EClassID)
+		err := a.PopulateByID(c)
+		return c, err
+	} else {
+		return nil, data.ErrAccessDenial
+	}
 }
 
 func (o *mongoObject) SetTrait(a data.Access, name string, value string) error {
@@ -149,19 +162,6 @@ func (o *mongoObject) DropRelationship(a data.Access, name string, other models.
 
 	o.Relationships[name] = mongo.DropID(ids, other.ID().(bson.ObjectId))
 	return nil
-}
-
-func (o *mongoObject) Ontology(a data.Access) (models.Ontology, error) {
-	m, _ := a.ModelFor(models.OntologyKind)
-	ontology := m.(models.Ontology)
-
-	if o.CanRead(a.Client()) {
-		ontology.SetID(o.EOntologyID)
-		err := a.PopulateByID(ontology)
-		return ontology, err
-	} else {
-		return nil, data.ErrAccessDenial
-	}
 }
 
 func (o *mongoObject) SetOntologyID(id data.ID) error {

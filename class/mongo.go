@@ -197,23 +197,5 @@ func (c *mongoClass) Objects(a data.Access) ([]models.Object, error) {
 }
 
 func (c *mongoClass) NewObject(a data.Access) (models.Object, error) {
-	m, err := a.ModelFor(models.ObjectKind)
-	if err != nil {
-		return nil, err
-	}
-	obj, ok := m.(models.Object)
-	if !ok {
-		return nil, models.CastError(models.ObjectKind)
-	}
-
-	ont, err := c.Ontology(a)
-	if err != nil {
-		return nil, err
-	}
-
-	obj.SetOntology(ont)
-	obj.SetClass(c)
-	obj.SetName(c.Name())
-
-	return obj, nil
+	return NewObject(c, a)
 }
