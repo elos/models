@@ -12,9 +12,9 @@ type mongoClass struct {
 	mongo.Model           `bson:",inline"`
 	mongo.Named           `bson:",inline"`
 	shared.MongoUserOwned `bson:",inline"`
+	shared.MongoObjects   `bson:",inline"`
 
 	EOntologyID     bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
-	ObjectIDs       mongo.IDSet   `json:"object_ids" bson:"object_ids"`
 	TraitIDs        mongo.IDSet   `json:"trait_ids" bson:"trait_ids"`
 	RelationshipIDs mongo.IDSet   `json:"relationship_ids" bson:"relationship_ids"`
 
@@ -45,7 +45,7 @@ func (c *mongoClass) Link(m data.Model, l data.Link) error {
 	case user:
 		return c.SetUserID(id)
 	case objects:
-		c.ObjectIDs = mongo.AddID(c.ObjectIDs, id)
+		c.MongoObjects.IncludeObjectID(id)
 	case traits:
 		c.TraitIDs = mongo.AddID(c.TraitIDs, id)
 	case relationships:
@@ -68,7 +68,7 @@ func (c *mongoClass) Unlink(m data.Model, l data.Link) error {
 	case user:
 		c.DropUserID()
 	case objects:
-		c.ObjectIDs = mongo.DropID(c.ObjectIDs, id)
+		c.MongoObjects.ExcludeObjectID(id)
 	case traits:
 		c.TraitIDs = mongo.DropID(c.TraitIDs, id)
 	case relationships:
@@ -160,7 +160,7 @@ func (c *mongoClass) ObjectsIter(a data.Access) (data.ModelIterator, error) {
 		return nil, data.ErrAccessDenial
 	}
 
-	return mongo.NewIDIter(c.ObjectIDs, a), nil
+	return c.MongoObjects.ObjectsIter(a), nil
 }
 
 func (c *mongoClass) Objects(a data.Access) ([]models.Object, error) {
@@ -168,32 +168,7 @@ func (c *mongoClass) Objects(a data.Access) ([]models.Object, error) {
 		return nil, data.ErrAccessDenial
 	}
 
-	objects := make([]models.Object, 0)
-	iter, err := c.ObjectsIter(a)
-	if err != nil {
-		return objects, err
-	}
-
-	m, err := a.ModelFor(models.ObjectKind)
-	if err != nil {
-		return objects, err
-	}
-
-	for iter.Next(m) {
-		object, ok := m.(models.Object)
-		if !ok {
-			return objects, models.CastError(models.ObjectKind)
-		}
-
-		objects = append(objects, object)
-
-		m, err = a.ModelFor(models.ObjectKind)
-		if err != nil {
-			return objects, err
-		}
-	}
-
-	return objects, err
+	return c.MongoObjects.Objects(a)
 }
 
 func (c *mongoClass) NewObject(a data.Access) (models.Object, error) {
