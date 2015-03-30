@@ -8,11 +8,11 @@ import (
 	"github.com/elos/models/structures"
 )
 
-func FirstFixture(a data.Access, s models.Schedule) (first models.Fixture, err error) {
-	return EarliestSince(a, s, *new(time.Time))
+func FirstFixture(s models.Schedule, a data.Access) (first models.Fixture, err error) {
+	return EarliestSince(s, a, *new(time.Time))
 }
 
-func EarliestSince(a data.Access, s models.Schedule, start time.Time) (models.Fixture, error) {
+func EarliestSince(s models.Schedule, a data.Access, start time.Time) (models.Fixture, error) {
 	iter, _ := s.FixturesIter(a)
 	fixtures, _ := OrderFixtures(a, iter)
 
@@ -23,6 +23,14 @@ func EarliestSince(a data.Access, s models.Schedule, start time.Time) (models.Fi
 	}
 
 	return nil, data.ErrNotFound
+}
+
+func OrderedFixtures(s models.Schedule, a data.Access) ([]models.Fixture, error) {
+	iter, err := s.FixturesIter(a)
+	if err != nil {
+		return nil, err
+	}
+	return OrderFixtures(a, iter)
 }
 
 func OrderFixtures(a data.Access, iter data.ModelIterator) ([]models.Fixture, error) {

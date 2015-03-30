@@ -388,7 +388,7 @@ func (u *mongoUser) Actions(a data.Access) ([]models.Action, error) {
 	}
 
 	actions := make([]models.Action, 0)
-	iter, err := u.EventsIter(a)
+	iter, err := u.ActionsIter(a)
 	if err != nil {
 		return actions, err
 	}

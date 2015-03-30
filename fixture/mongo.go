@@ -16,21 +16,20 @@ type mongoFixture struct {
 	mongo.Timed           `bson:",inline"`
 	shared.MongoUserOwned `bson:",inline"`
 
-	EScheduleID  bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
-	EDescription string        `json:"decription" bson:"description"`
-	EExpires     time.Time     `json:"expires" bson:"expires"`
-	ERank        int           `json:"rank" bson:"rank"`
-	ELabel       bool          `json:"label" bson:"label"`
-
-	EDateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
-
-	EActionIDs mongo.IDSet `json:"action_ids" bson:"action_ids"`
-	EEventIDs  mongo.IDSet `json:"event_ids" bson:"event_ids"`
-
 	EActionableKind data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
 	EActionableID   bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
 	EEventableKind  data.Kind     `json:"eventable_kind" bson:"eventable_kind"`
 	EEventableID    bson.ObjectId `json:"eventable_id" bson:"eventable_id,omitempty"`
+
+	EDescription    string      `json:"decription" bson:"description"`
+	ERank           int         `json:"rank" bson:"rank"`
+	ELabel          bool        `json:"label" bson:"label"`
+	EExpires        time.Time   `json:"expires" bson:"expires"`
+	EDateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
+
+	EScheduleID bson.ObjectId `json:"schedule_id" bson:"schedule_id,omitempty"`
+	EActionIDs  mongo.IDSet   `json:"action_ids" bson:"action_ids"`
+	EEventIDs   mongo.IDSet   `json:"event_ids" bson:"event_ids"`
 }
 
 func (f *mongoFixture) Kind() data.Kind {
@@ -43,6 +42,135 @@ func (f *mongoFixture) Version() int {
 
 func (f *mongoFixture) Schema() data.Schema {
 	return schema
+}
+
+func (f *mongoFixture) Link(m data.Model, l data.Link) error {
+	switch l.Name {
+	case User:
+		return f.SetUserID(m.ID())
+	case Schedule:
+		f.EScheduleID = m.ID().(bson.ObjectId)
+		return nil
+	case Actions:
+		f.EActionIDs = mongo.AddID(f.EActionIDs, m.ID().(bson.ObjectId))
+	case Events:
+		f.EEventIDs = mongo.AddID(f.EEventIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.NewLinkError(f, m, l)
+	}
+
+	return nil
+}
+
+func (f *mongoFixture) Unlink(m data.Model, l data.Link) error {
+	switch l.Name {
+	case User:
+		f.DropUserID()
+	case Schedule:
+		if f.EScheduleID == m.ID().(bson.ObjectId) {
+			f.EScheduleID = *new(bson.ObjectId)
+		}
+	case Actions:
+		f.EActionIDs = mongo.DropID(f.EActionIDs, m.ID().(bson.ObjectId))
+	case Events:
+		f.EEventIDs = mongo.DropID(f.EEventIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.NewLinkError(f, m, l)
+	}
+	return nil
+}
+
+func (f *mongoFixture) SetUser(u models.User) error {
+	return f.Schema().Link(f, u, User)
+}
+
+func (f *mongoFixture) NextAction(a data.Access) (models.Action, error) {
+	return NextAction(f, a)
+}
+
+func (f *mongoFixture) StartAction(access data.Access, action models.Action) error {
+	return nil
+}
+
+func (f *mongoFixture) CompleteAction(access data.Access, action models.Action) error {
+	if _, present := f.EActionIDs.IndexID(action.ID().(bson.ObjectId)); !present {
+		return data.ErrNotFound
+	}
+
+	// fixture can do any clean up, none right now
+
+	action.Complete()
+	return access.Save(action)
+}
+
+func (f *mongoFixture) NextEvent(a data.Access) (models.Event, error) {
+	return NextEvent(a, f)
+}
+
+// Setting the fixture's actionable to itself is a no-op
+func (f *mongoFixture) SetActionable(a models.Actionable) {
+	if a.ID() == f.ID() {
+		return
+	}
+
+	f.EActionableKind = a.Kind()
+	f.EActionableID = a.ID().(bson.ObjectId)
+}
+
+func (f *mongoFixture) Actionable(a data.Access) (models.Actionable, error) {
+	if !f.HasActionable() {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	m, err := a.ModelFor(f.EActionableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(f.EActionableID)
+
+	err = a.PopulateByID(m)
+
+	return m.(models.Actionable), err
+}
+
+func (f *mongoFixture) DropActionable() {
+	f.EActionableKind = data.Kind("")
+	f.EActionableID = *new(bson.ObjectId)
+}
+
+func (f *mongoFixture) HasActionable() bool {
+	return !mongo.EmptyID(f.EActionableID) && !data.EmptyKind(f.EActionableKind)
+}
+
+// setting to itself is a no-op
+func (f *mongoFixture) SetEventable(e models.Eventable) {
+	if f.ID() == e.ID() {
+		return
+	}
+
+	f.EEventableKind = e.Kind()
+	f.EEventableID = e.ID().(bson.ObjectId)
+}
+
+func (f *mongoFixture) Eventable(a data.Access) (models.Eventable, error) {
+	m, err := a.ModelFor(f.EEventableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(f.EEventableID)
+	err = a.PopulateByID(m)
+	return m.(models.Eventable), err
+}
+
+func (f *mongoFixture) DropEventable() {
+	f.EEventableKind = data.Kind("")
+	f.EEventableID = *new(bson.ObjectId)
+}
+
+func (f *mongoFixture) HasEventable() bool {
+	return !mongo.EmptyID(f.EEventableID) && !data.EmptyKind(f.EEventableKind)
 }
 
 func (f *mongoFixture) SetDescription(s string) {
@@ -85,25 +213,27 @@ func (f *mongoFixture) Expired() bool {
 	return Expired(f)
 }
 
+func (f *mongoFixture) AddDateException(t time.Time) {
+	f.EDateExceptions = append(f.EDateExceptions, t)
+}
+
+func (f *mongoFixture) DateExceptions() []time.Time {
+	return f.EDateExceptions
+}
+
+func (f *mongoFixture) ShouldOmitOnDate(t time.Time) bool {
+	return ShouldOmitOnDate(f, t)
+}
+
 func (f *mongoFixture) SetSchedule(s models.Schedule) error {
 	return f.Schema().Link(f, s, Schedule)
 }
 
-func (f *mongoFixture) Schedule(a data.Access, s models.Schedule) error {
+func (f *mongoFixture) Schedule(a data.Access) (models.Schedule, error) {
+	m, _ := a.ModelFor(models.ScheduleKind)
+	s := m.(models.Schedule)
 	s.SetID(f.EScheduleID)
-	return a.PopulateByID(s)
-}
-
-func (f *mongoFixture) SetUser(u models.User) error {
-	return f.Schema().Link(f, u, User)
-}
-
-func (f *mongoFixture) Event(a data.Access) (models.Event, error) {
-	return Event(a, f)
-}
-
-func (f *mongoFixture) NextAction(a data.Access) (models.Action, error) {
-	return Action(a, f)
+	return s, a.PopulateByID(s)
 }
 
 func (f *mongoFixture) IncludeAction(a models.Action) error {
@@ -114,6 +244,47 @@ func (f *mongoFixture) ExcludeAction(a models.Action) error {
 	return f.Schema().Unlink(f, a, Actions)
 }
 
+func (u *mongoFixture) ActionsIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return mongo.NewIDIter(u.EActionIDs, a), nil
+}
+
+func (u *mongoFixture) Actions(a data.Access) ([]models.Action, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	actions := make([]models.Action, 0)
+	iter, err := u.ActionsIter(a)
+	if err != nil {
+		return actions, err
+	}
+
+	m, err := a.ModelFor(models.ActionKind)
+	if err != nil {
+		return actions, err
+	}
+
+	for iter.Next(m) {
+		action, ok := m.(models.Action)
+		if !ok {
+			return actions, models.CastError(models.ActionKind)
+		}
+
+		actions = append(actions, action)
+
+		m, err = a.ModelFor(models.ActionKind)
+		if err != nil {
+			return actions, err
+		}
+	}
+
+	return actions, nil
+}
+
 func (f *mongoFixture) IncludeEvent(e models.Event) error {
 	return f.Schema().Link(f, e, Events)
 }
@@ -122,140 +293,56 @@ func (f *mongoFixture) ExcludeEvent(e models.Event) error {
 	return f.Schema().Unlink(f, e, Events)
 }
 
-func (f *mongoFixture) CompleteAction(access data.Access, action models.Action) error {
-	if _, present := f.EActionIDs.IndexID(action.ID().(bson.ObjectId)); !present {
-		return data.ErrNotFound
+func (u *mongoFixture) EventsIter(a data.Access) (data.ModelIterator, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
 	}
 
-	// fixture can do any clean up, none right now
-
-	action.Complete()
-	return access.Save(action)
+	return mongo.NewIDIter(u.EEventIDs, a), nil
 }
 
-func (f *mongoFixture) AddDateException(t time.Time) {
-	f.EDateExceptions = append(f.EDateExceptions, t)
-}
+func (u *mongoFixture) Events(a data.Access) ([]models.Event, error) {
+	if !u.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
 
-func (f *mongoFixture) DateExceptions() []time.Time {
-	return f.EDateExceptions
-}
+	events := make([]models.Event, 0)
 
-func (f *mongoFixture) ShouldOmitOnDate(t time.Time) bool {
-	return OmitOnDate(f, t)
+	iter, err := u.EventsIter(a)
+	if err != nil {
+		return events, err
+	}
+
+	m, err := a.ModelFor(models.EventKind)
+	if err != nil {
+		return events, err
+	}
+
+	for iter.Next(m) {
+		e, ok := m.(models.Event)
+		if !ok {
+			return events, models.CastError(models.EventKind)
+		}
+
+		events = append(events, e)
+
+		m, err = a.ModelFor(models.EventKind)
+		if err != nil {
+			return events, err
+		}
+	}
+
+	return events, nil
 }
 
 func (f *mongoFixture) Conflicts(other models.Fixture) bool {
-	return Conflicting(f, other)
+	return Conflicts(f, other)
 }
 
 func (f *mongoFixture) Order(other models.Fixture) (models.Fixture, models.Fixture) {
-	return Sort(f, other)
+	return Order(f, other)
 }
 
 func (f *mongoFixture) Before(other models.Fixture) bool {
-	first, _ := Sort(f, other)
-	return first == f
-}
-
-func (f *mongoFixture) Link(m data.Model, l data.Link) error {
-	switch l.Name {
-	case User:
-		return f.SetUserID(m.ID())
-	case Schedule:
-		f.EScheduleID = m.ID().(bson.ObjectId)
-		return nil
-	case Actions:
-		f.EActionIDs = mongo.AddID(f.EActionIDs, m.ID().(bson.ObjectId))
-	case Events:
-		f.EEventIDs = mongo.AddID(f.EEventIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.NewLinkError(f, m, l)
-	}
-
-	return nil
-}
-
-func (f *mongoFixture) Unlink(m data.Model, l data.Link) error {
-	switch l.Name {
-	case User:
-		f.DropUserID()
-	case Schedule:
-		if f.EScheduleID == m.ID().(bson.ObjectId) {
-			f.EScheduleID = *new(bson.ObjectId)
-		}
-	case Actions:
-		f.EActionIDs = mongo.DropID(f.EActionIDs, m.ID().(bson.ObjectId))
-	case Events:
-		f.EEventIDs = mongo.DropID(f.EEventIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.NewLinkError(f, m, l)
-	}
-	return nil
-}
-
-// Setting the fixture's actionable to itself is a no-op
-func (f *mongoFixture) SetActionable(a models.Actionable) {
-	if a.ID() == f.ID() {
-		return
-	}
-
-	f.EActionableKind = a.Kind()
-	f.EActionableID = a.ID().(bson.ObjectId)
-}
-
-func (f *mongoFixture) Actionable(a data.Access) (models.Actionable, error) {
-	m, err := a.ModelFor(f.EActionableKind)
-	if err != nil {
-		return nil, err
-	}
-
-	m.SetID(f.EActionableID)
-
-	err = a.PopulateByID(m)
-
-	return m.(models.Actionable), err
-}
-
-func (f *mongoFixture) DropActionable() {
-	f.EActionableKind = data.Kind("")
-	f.EActionableID = *new(bson.ObjectId)
-}
-
-func (f *mongoFixture) HasActionable() bool {
-	return f.EActionableID != *new(bson.ObjectId) && f.EActionableKind != data.Kind("")
-}
-
-// settting to itself is a no-op
-func (f *mongoFixture) SetEventable(e models.Eventable) {
-	if f.ID() == e.ID() {
-		return
-	}
-
-	f.EEventableKind = e.Kind()
-	f.EEventableID = e.ID().(bson.ObjectId)
-}
-
-func (f *mongoFixture) Eventable(a data.Access) (models.Eventable, error) {
-	m, err := a.ModelFor(f.EEventableKind)
-	if err != nil {
-		return nil, err
-	}
-
-	m.SetID(f.EEventableID)
-	err = a.PopulateByID(m)
-	return m.(models.Eventable), err
-}
-
-func (f *mongoFixture) DropEventable() {
-	f.EEventableKind = data.Kind("")
-	f.EEventableID = *new(bson.ObjectId)
-}
-
-func (f *mongoFixture) HasEventable() bool {
-	return f.EEventableID != *new(bson.ObjectId) && f.EEventableKind != data.Kind("")
-}
-
-func (f *mongoFixture) StartAction(access data.Access, action models.Action) error {
-	return nil
+	return Before(f, other)
 }

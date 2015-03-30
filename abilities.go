@@ -17,7 +17,7 @@ type ActionableOps interface {
 }
 
 type EventableOps interface {
-	Event(data.Access) (Event, error)
+	NextEvent(data.Access) (Event, error)
 }
 
 type Actionable interface {

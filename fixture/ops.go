@@ -3,104 +3,20 @@ package fixture
 import (
 	"time"
 
-	"github.com/elos/data"
 	"github.com/elos/models"
-	"gopkg.in/mgo.v2/bson"
+	"github.com/elos/models/calendar"
 )
-
-func Action(a data.Access, f models.Fixture) (models.Action, error) {
-	// Allow an actionable to hijack
-	if f.HasActionable() {
-		actionable, err := f.Actionable(a)
-		if err != nil {
-			return nil, err
-		}
-
-		return actionable.NextAction(a)
-	}
-
-	m, err := a.ModelFor(models.ActionKind)
-	if err != nil {
-		return nil, err
-	}
-
-	action, ok := m.(models.Action)
-	if !ok {
-		return nil, models.CastError(models.ActionKind)
-	}
-
-	action.SetName(f.Name())
-	action.SetActionable(f)
-	u, err := a.Unmarshal(models.UserKind, data.AttrMap{
-		"id": f.UserID().(bson.ObjectId).Hex(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	action.SetUser(u.(models.User))
-	f.IncludeAction(action)
-
-	a.Save(u)
-	a.Save(action)
-	a.Save(f)
-
-	return action, nil
-}
-
-func Event(a data.Access, f models.Fixture) (models.Event, error) {
-	// Allow an eventable to hijack
-	if f.HasEventable() {
-		e, err := f.Eventable(a)
-		if err != nil {
-			return nil, err
-		}
-
-		return e.Event(a)
-	}
-
-	m, err := a.ModelFor(models.EventKind)
-	if err != nil {
-		return nil, err
-	}
-
-	event, ok := m.(models.Event)
-	if !ok {
-		return nil, models.CastError(models.EventKind)
-	}
-
-	event.SetName(f.Name())
-	u, err := a.Unmarshal(models.UserKind, data.AttrMap{
-		"id": f.UserID().(bson.ObjectId).Hex(),
-	})
-	if err != nil {
-		return nil, err
-	}
-	event.SetUser(u.(models.User))
-	f.IncludeEvent(event)
-
-	a.Save(u)
-	a.Save(event)
-	a.Save(f)
-
-	return event, nil
-}
 
 func Expired(f models.Fixture) bool {
 	return f.Expires().Before(time.Now())
 }
 
-func CanonicalYearlyDay(t time.Time) int {
-	return 100*int(t.Month()) + t.Day()
-}
-
-var cDate = CanonicalYearlyDay
-
 // only checks to month/day/year validity
-func OmitOnDate(f models.Fixture, t time.Time) bool {
+func ShouldOmitOnDate(f models.Fixture, t time.Time) bool {
 	exceptions := f.DateExceptions()
 	for i := range exceptions {
 		exception := exceptions[i]
-		if cDate(t) == cDate(exception) && t.Year() == exception.Year() {
+		if calendar.Yearday(t) == calendar.Yearday(exception) && t.Year() == exception.Year() {
 			return true
 		}
 	}
@@ -108,7 +24,7 @@ func OmitOnDate(f models.Fixture, t time.Time) bool {
 	return false
 }
 
-func Sort(f1 models.Fixture, f2 models.Fixture) (first models.Fixture, second models.Fixture) {
+func Order(f1 models.Fixture, f2 models.Fixture) (first models.Fixture, second models.Fixture) {
 	if f1.StartTime().Before(f2.StartTime()) {
 		first = f1
 		second = f2
@@ -119,7 +35,12 @@ func Sort(f1 models.Fixture, f2 models.Fixture) (first models.Fixture, second mo
 	return
 }
 
-func Conflicting(f1 models.Fixture, f2 models.Fixture) bool {
-	first, second := Sort(f1, f2)
+func Conflicts(f1 models.Fixture, f2 models.Fixture) bool {
+	first, second := Order(f1, f2)
 	return second.StartTime().Before(first.EndTime())
+}
+
+func Before(f1 models.Fixture, f2 models.Fixture) bool {
+	first, _ := Order(f1, f2)
+	return first == f1
 }

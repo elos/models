@@ -32,36 +32,24 @@ type Schedule interface {
 	ExcludeFixture(Fixture) error
 	FixturesIter(data.Access) (data.ModelIterator, error)
 	Fixtures(data.Access) ([]Fixture, error)
-	OrderedFixtures(data.Access) ([]Fixture, error)
 
 	FirstFixture(data.Access) (Fixture, error)
 	FirstFixtureSince(data.Access, time.Time) (Fixture, error)
+	OrderedFixtures(data.Access) ([]Fixture, error)
 }
 
 type Fixture interface {
 	data.Model
 	data.Nameable
 	data.Timeable
-
 	Userable
 	ActionableOps
 	EventableOps
-
 	Evented
 	Actioned
 
-	IncludeAction(Action) error
-	ExcludeAction(Action) error
-
-	IncludeEvent(Event) error
-	ExcludeEvent(Event) error
-
 	SetDescription(string)
 	Description() string
-
-	SetExpires(time.Time)
-	Expires() time.Time
-	Expired() bool
 
 	SetRank(int)
 	Rank() int
@@ -70,12 +58,26 @@ type Fixture interface {
 	Label() bool
 	AllDay() bool
 
+	SetExpires(time.Time)
+	Expires() time.Time
+	Expired() bool
+
 	AddDateException(time.Time)
 	DateExceptions() []time.Time
 	ShouldOmitOnDate(t time.Time) bool
 
 	SetSchedule(Schedule) error
-	Schedule(data.Access, Schedule) error
+	Schedule(data.Access) (Schedule, error)
+
+	IncludeAction(Action) error
+	ExcludeAction(Action) error
+	ActionsIter(data.Access) (data.ModelIterator, error)
+	Actions(data.Access) ([]Action, error)
+
+	IncludeEvent(Event) error
+	ExcludeEvent(Event) error
+	EventsIter(data.Access) (data.ModelIterator, error)
+	Events(data.Access) ([]Event, error)
 
 	Conflicts(Fixture) bool
 	Order(Fixture) (Fixture, Fixture)
