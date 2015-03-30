@@ -401,7 +401,7 @@ func (u *mongoUser) Actions(a data.Access) ([]models.Action, error) {
 	for iter.Next(m) {
 		action, ok := m.(models.Action)
 		if !ok {
-			return actions, models.CastError(models.EventKind)
+			return actions, models.CastError(models.ActionKind)
 		}
 
 		actions = append(actions, action)

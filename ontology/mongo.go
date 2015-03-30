@@ -40,6 +40,47 @@ func (o *mongoOntology) ExcludeClass(c models.Class) error {
 	return o.Schema().Unlink(o, c, Classes)
 }
 
+func (o *mongoOntology) ClassesIter(a data.Access) (data.ModelIterator, error) {
+	if !o.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return mongo.NewIDIter(o.ClassIDs, a), nil
+}
+
+func (o *mongoOntology) Classes(a data.Access) ([]models.Class, error) {
+	if !o.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	classes := make([]models.Class, 0)
+	iter, err := o.ClassesIter(a)
+	if err != nil {
+		return classes, err
+	}
+
+	m, err := a.ModelFor(models.ClassKind)
+	if err != nil {
+		return classes, err
+	}
+
+	for iter.Next(m) {
+		class, ok := m.(models.Class)
+		if !ok {
+			return classes, models.CastError(models.ClassKind)
+		}
+
+		classes = append(classes, class)
+
+		m, err = a.ModelFor(models.ClassKind)
+		if err != nil {
+			return classes, err
+		}
+	}
+
+	return classes, err
+}
+
 func (o *mongoOntology) IncludeObject(obj models.Object) error {
 	return o.Schema().Link(o, obj, Objects)
 }
@@ -48,20 +89,45 @@ func (o *mongoOntology) ExcludeObject(obj models.Object) error {
 	return o.Schema().Unlink(o, obj, Objects)
 }
 
-func (o *mongoOntology) Classes(a data.Access) (data.ModelIterator, error) {
-	if o.CanRead(a.Client()) {
-		return mongo.NewIDIter(o.ClassIDs, a), nil
-	} else {
+func (o *mongoOntology) ObjectsIter(a data.Access) (data.ModelIterator, error) {
+	if !o.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	return mongo.NewIDIter(o.ObjectIDs, a), nil
 }
 
-func (o *mongoOntology) Objects(a data.Access) (data.ModelIterator, error) {
-	if o.CanRead(a.Client()) {
-		return mongo.NewIDIter(o.ObjectIDs, a), nil
-	} else {
+func (o *mongoOntology) Objects(a data.Access) ([]models.Object, error) {
+	if !o.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	objects := make([]models.Object, 0)
+	iter, err := o.ObjectsIter(a)
+	if err != nil {
+		return objects, err
+	}
+
+	m, err := a.ModelFor(models.ObjectKind)
+	if err != nil {
+		return objects, err
+	}
+
+	for iter.Next(m) {
+		object, ok := m.(models.Object)
+		if !ok {
+			return objects, models.CastError(models.ObjectKind)
+		}
+
+		objects = append(objects, object)
+
+		m, err = a.ModelFor(models.ObjectKind)
+		if err != nil {
+			return objects, err
+		}
+	}
+
+	return objects, err
 }
 
 func (o *mongoOntology) Link(m data.Model, l data.Link) error {

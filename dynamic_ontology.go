@@ -8,12 +8,13 @@ type Ontology interface {
 
 	IncludeClass(Class) error
 	ExcludeClass(Class) error
+	ClassesIter(data.Access) (data.ModelIterator, error)
+	Classes(data.Access) ([]Class, error)
 
 	IncludeObject(Object) error
 	ExcludeObject(Object) error
-
-	Classes(data.Access) (data.ModelIterator, error)
-	Objects(data.Access) (data.ModelIterator, error)
+	ObjectsIter(data.Access) (data.ModelIterator, error)
+	Objects(data.Access) ([]Object, error)
 }
 
 type Class interface {
