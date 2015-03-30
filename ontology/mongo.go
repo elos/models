@@ -28,16 +28,54 @@ func (o *mongoOntology) Schema() data.Schema {
 	return schema
 }
 
+func (o *mongoOntology) Link(m data.Model, l data.Link) error {
+	if !data.Compatible(o, m) {
+		return data.ErrIncompatibleModels
+	}
+
+	switch l.Name {
+	case user:
+		return o.SetUserID(m.ID())
+	case classes:
+		o.ClassIDs = mongo.AddID(o.ClassIDs, m.ID().(bson.ObjectId))
+	case objects:
+		o.ObjectIDs = mongo.AddID(o.ObjectIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.NewLinkError(o, m, l)
+	}
+
+	return nil
+}
+
+func (o *mongoOntology) Unlink(m data.Model, l data.Link) error {
+	if !data.Compatible(o, m) {
+		return data.ErrIncompatibleModels
+	}
+
+	switch l.Name {
+	case user:
+		o.DropUserID()
+	case classes:
+		o.ClassIDs = mongo.DropID(o.ClassIDs, m.ID().(bson.ObjectId))
+	case objects:
+		o.ObjectIDs = mongo.DropID(o.ObjectIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.NewLinkError(o, m, l)
+	}
+
+	return nil
+}
+
 func (o *mongoOntology) SetUser(u models.User) error {
-	return o.Schema().Link(o, u, User)
+	return o.Schema().Link(o, u, user)
 }
 
 func (o *mongoOntology) IncludeClass(c models.Class) error {
-	return o.Schema().Link(o, c, Classes)
+	return o.Schema().Link(o, c, classes)
 }
 
 func (o *mongoOntology) ExcludeClass(c models.Class) error {
-	return o.Schema().Unlink(o, c, Classes)
+	return o.Schema().Unlink(o, c, classes)
 }
 
 func (o *mongoOntology) ClassesIter(a data.Access) (data.ModelIterator, error) {
@@ -82,11 +120,11 @@ func (o *mongoOntology) Classes(a data.Access) ([]models.Class, error) {
 }
 
 func (o *mongoOntology) IncludeObject(obj models.Object) error {
-	return o.Schema().Link(o, obj, Objects)
+	return o.Schema().Link(o, obj, objects)
 }
 
 func (o *mongoOntology) ExcludeObject(obj models.Object) error {
-	return o.Schema().Unlink(o, obj, Objects)
+	return o.Schema().Unlink(o, obj, objects)
 }
 
 func (o *mongoOntology) ObjectsIter(a data.Access) (data.ModelIterator, error) {
@@ -128,40 +166,4 @@ func (o *mongoOntology) Objects(a data.Access) ([]models.Object, error) {
 	}
 
 	return objects, err
-}
-
-func (o *mongoOntology) Link(m data.Model, l data.Link) error {
-	if !data.Compatible(o, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	switch l.Name {
-	case User:
-		return o.SetUserID(m.ID())
-	case Classes:
-		o.ClassIDs = mongo.AddID(o.ClassIDs, m.ID().(bson.ObjectId))
-	case Objects:
-		o.ObjectIDs = mongo.AddID(o.ObjectIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.NewLinkError(o, m, l)
-	}
-	return nil
-}
-
-func (o *mongoOntology) Unlink(m data.Model, l data.Link) error {
-	if !data.Compatible(o, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	switch l.Name {
-	case User:
-		o.DropUserID()
-	case Classes:
-		o.ClassIDs = mongo.DropID(o.ClassIDs, m.ID().(bson.ObjectId))
-	case Objects:
-		o.ObjectIDs = mongo.DropID(o.ObjectIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.NewLinkError(o, m, l)
-	}
-	return nil
 }

@@ -38,7 +38,8 @@ func (c *Class) Reload() error {
 }
 
 func (c *Class) NewObject() *Object {
-	return ObjectModel(c.space, c.model.NewObject(c.space.Access))
+	o, _ := c.model.NewObject(c.space.Access)
+	return ObjectModel(c.space, o)
 }
 
 func (c *Class) AddTrait(name string, tipe string) {

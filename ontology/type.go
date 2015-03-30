@@ -7,15 +7,13 @@ import (
 )
 
 var (
-	User    data.LinkName = models.OntologyUser
-	Classes data.LinkName = models.OntologyClasses
-	Objects data.LinkName = models.OntologyObjects
-)
-
-var (
 	kind    data.Kind   = models.OntologyKind
 	schema  data.Schema = models.Schema
 	version int         = models.DataVersion
+
+	user    data.LinkName = models.OntologyUser
+	classes data.LinkName = models.OntologyClasses
+	objects data.LinkName = models.OntologyObjects
 )
 
 func NewM(s data.Store) (data.Model, error) {

@@ -34,12 +34,58 @@ func (c *mongoClass) Schema() data.Schema {
 	return schema
 }
 
+func (c *mongoClass) Link(m data.Model, l data.Link) error {
+	if !data.Compatible(c, m) {
+		return data.ErrIncompatibleModels
+	}
+
+	id := m.ID().(bson.ObjectId)
+
+	switch l.Name {
+	case user:
+		return c.SetUserID(id)
+	case objects:
+		c.ObjectIDs = mongo.AddID(c.ObjectIDs, id)
+	case traits:
+		c.TraitIDs = mongo.AddID(c.TraitIDs, id)
+	case relationships:
+		c.RelationshipIDs = mongo.AddID(c.RelationshipIDs, id)
+	default:
+		return data.NewLinkError(c, m, l)
+	}
+
+	return nil
+}
+
+func (c *mongoClass) Unlink(m data.Model, l data.Link) error {
+	if !data.Compatible(c, m) {
+		return data.ErrIncompatibleModels
+	}
+
+	id := m.ID().(bson.ObjectId)
+
+	switch l.Name {
+	case user:
+		c.DropUserID()
+	case objects:
+		c.ObjectIDs = mongo.DropID(c.ObjectIDs, id)
+	case traits:
+		c.TraitIDs = mongo.DropID(c.TraitIDs, id)
+	case relationships:
+		c.RelationshipIDs = mongo.DropID(c.RelationshipIDs, id)
+	default:
+		return data.NewLinkError(c, m, l)
+	}
+
+	return nil
+}
+
 func (c *mongoClass) SetUser(u models.User) error {
-	return c.Schema().Link(c, u, User)
+	return c.Schema().Link(c, u, user)
 }
 
 func (c *mongoClass) SetOntology(o models.Ontology) error {
-	return c.Schema().Link(c, o, Ontology)
+	return c.Schema().Link(c, o, ontology)
 }
 
 func (c *mongoClass) Ontology(a data.Access) (models.Ontology, error) {
@@ -73,6 +119,11 @@ func (c *mongoClass) Traits() []*models.Trait {
 	return ts
 }
 
+func (c *mongoClass) Trait(name string) (*models.Trait, bool) {
+	t, ok := c.ETraits[name]
+	return t, ok
+}
+
 func (c *mongoClass) IncludeRelationship(r *models.Relationship) error {
 	c.ERelationships[r.Name] = r
 	return nil
@@ -91,90 +142,78 @@ func (c *mongoClass) Relationships() []*models.Relationship {
 	return rs
 }
 
-func (c *mongoClass) IncludeObject(o models.Object) error {
-	return c.Schema().Link(c, o, Objects)
-}
-
-func (c *mongoClass) ExcludeObject(o models.Object) error {
-	return c.Schema().Unlink(c, o, Objects)
-}
-
-func (c *mongoClass) Objects(a data.Access) (data.ModelIterator, error) {
-	if c.CanRead(a.Client()) {
-		return mongo.NewIDIter(c.ObjectIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
-	}
-}
-
-func (c *mongoClass) Link(m data.Model, l data.Link) error {
-	if !data.Compatible(c, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	id := m.ID().(bson.ObjectId)
-
-	switch l.Name {
-	case User:
-		return c.SetUserID(id)
-	case Objects:
-		c.ObjectIDs = mongo.AddID(c.ObjectIDs, id)
-	case Traits:
-		c.TraitIDs = mongo.AddID(c.TraitIDs, id)
-	case Relationships:
-		c.RelationshipIDs = mongo.AddID(c.RelationshipIDs, id)
-	default:
-		return data.NewLinkError(c, m, l)
-	}
-
-	return nil
-}
-
-func (c *mongoClass) Unlink(m data.Model, l data.Link) error {
-	if !data.Compatible(c, m) {
-		return data.ErrIncompatibleModels
-	}
-
-	id := m.ID().(bson.ObjectId)
-
-	switch l.Name {
-	case User:
-		c.DropUserID()
-	case Objects:
-		c.ObjectIDs = mongo.DropID(c.ObjectIDs, id)
-	case Traits:
-		c.TraitIDs = mongo.DropID(c.TraitIDs, id)
-	case Relationships:
-		c.RelationshipIDs = mongo.DropID(c.RelationshipIDs, id)
-	default:
-		return data.NewLinkError(c, m, l)
-	}
-
-	return nil
-}
-
 func (c *mongoClass) Relationship(name string) (*models.Relationship, bool) {
 	r, ok := c.ERelationships[name]
 	return r, ok
 }
 
-func (c *mongoClass) Trait(name string) (*models.Trait, bool) {
-	t, ok := c.ETraits[name]
-	return t, ok
+func (c *mongoClass) IncludeObject(obj models.Object) error {
+	return c.Schema().Link(c, obj, objects)
 }
 
-func (c *mongoClass) NewObject(a data.Access) models.Object {
-	m, _ := a.ModelFor(models.ObjectKind)
-	obj := m.(models.Object)
+func (c *mongoClass) ExcludeObject(obj models.Object) error {
+	return c.Schema().Unlink(c, obj, objects)
+}
 
-	m, _ = a.Unmarshal(models.OntologyKind, data.AttrMap{
-		"id": c.EOntologyID,
-	})
-	ont := m.(models.Ontology)
+func (c *mongoClass) ObjectsIter(a data.Access) (data.ModelIterator, error) {
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	return mongo.NewIDIter(c.ObjectIDs, a), nil
+}
+
+func (c *mongoClass) Objects(a data.Access) ([]models.Object, error) {
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
+
+	objects := make([]models.Object, 0)
+	iter, err := c.ObjectsIter(a)
+	if err != nil {
+		return objects, err
+	}
+
+	m, err := a.ModelFor(models.ObjectKind)
+	if err != nil {
+		return objects, err
+	}
+
+	for iter.Next(m) {
+		object, ok := m.(models.Object)
+		if !ok {
+			return objects, models.CastError(models.ObjectKind)
+		}
+
+		objects = append(objects, object)
+
+		m, err = a.ModelFor(models.ObjectKind)
+		if err != nil {
+			return objects, err
+		}
+	}
+
+	return objects, err
+}
+
+func (c *mongoClass) NewObject(a data.Access) (models.Object, error) {
+	m, err := a.ModelFor(models.ObjectKind)
+	if err != nil {
+		return nil, err
+	}
+	obj, ok := m.(models.Object)
+	if !ok {
+		return nil, models.CastError(models.ObjectKind)
+	}
+
+	ont, err := c.Ontology(a)
+	if err != nil {
+		return nil, err
+	}
 
 	obj.SetOntology(ont)
 	obj.SetClass(c)
 	obj.SetName(c.Name())
 
-	return obj
+	return obj, nil
 }

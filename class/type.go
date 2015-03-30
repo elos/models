@@ -7,17 +7,15 @@ import (
 )
 
 var (
-	User          data.LinkName = models.ClassUser
-	Ontology      data.LinkName = models.ClassOntology
-	Objects       data.LinkName = models.ClassObjects
-	Traits        data.LinkName = models.ClassTraits
-	Relationships data.LinkName = models.ClassRelationships
-)
-
-var (
 	kind    data.Kind   = models.ClassKind
 	schema  data.Schema = models.Schema
 	version int         = models.DataVersion
+
+	user          data.LinkName = models.ClassUser
+	ontology      data.LinkName = models.ClassOntology
+	objects       data.LinkName = models.ClassObjects
+	traits        data.LinkName = models.ClassTraits
+	relationships data.LinkName = models.ClassRelationships
 )
 
 func NewM(s data.Store) (data.Model, error) {
@@ -35,4 +33,13 @@ func New(s data.Store) (models.Class, error) {
 	default:
 		return nil, data.ErrInvalidDBType
 	}
+}
+
+func Create(s data.Store) (models.Class, error) {
+	c, err := New(s)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, s.Save(c)
 }

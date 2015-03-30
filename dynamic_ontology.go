@@ -17,6 +17,17 @@ type Ontology interface {
 	Objects(data.Access) ([]Object, error)
 }
 
+type Trait struct {
+	Name string
+	Type string
+}
+
+type Relationship struct {
+	Name    string
+	Other   string
+	Inverse string
+}
+
 type Class interface {
 	data.Model
 	data.Nameable
@@ -28,30 +39,19 @@ type Class interface {
 	IncludeTrait(*Trait) error
 	ExcludeTrait(*Trait) error
 	Traits() []*Trait
+	Trait(string) (*Trait, bool)
 
 	IncludeRelationship(*Relationship) error
 	ExcludeRelationship(*Relationship) error
 	Relationships() []*Relationship
+	Relationship(string) (*Relationship, bool)
 
 	IncludeObject(Object) error
 	ExcludeObject(Object) error
-	Objects(data.Access) (data.ModelIterator, error)
+	ObjectsIter(data.Access) (data.ModelIterator, error)
+	Objects(data.Access) ([]Object, error)
 
-	Trait(string) (*Trait, bool)
-	Relationship(string) (*Relationship, bool)
-
-	NewObject(a data.Access) Object
-}
-
-type Trait struct {
-	Name string
-	Type string
-}
-
-type Relationship struct {
-	Name    string
-	Other   string
-	Inverse string
+	NewObject(a data.Access) (Object, error)
 }
 
 type Object interface {
