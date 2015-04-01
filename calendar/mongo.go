@@ -203,10 +203,13 @@ func (c *mongoCalendar) YeardaySchedule(a data.Access, t time.Time) (models.Sche
 		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][yeardaySchedules])
 	}
 
-	s.SetID(id)
-	err = a.PopulateByID(s)
+	if !c.CanRead(a.Client()) {
+		return nil, data.ErrAccessDenial
+	}
 
-	return s, err
+	s.SetID(id)
+
+	return s, a.PopulateByID(s)
 }
 
 func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {

@@ -12,6 +12,7 @@ import (
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/schedule"
 	"github.com/elos/models/shared"
+	"github.com/elos/models/user"
 )
 
 func TestMongo(t *testing.T) {
@@ -241,9 +242,14 @@ func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
 func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {
 	access := data.NewAnonAccess(s)
 
+	u, err := user.Create(s)
+	shared.ExpectNoError("creating user", err, t)
+	err = c.SetUser(u)
+	shared.ExpectNoError("setting calendar user", err, t)
+
 	testTime := time.Now()
 
-	_, err := c.BaseSchedule(access)
+	_, err = c.BaseSchedule(access)
 	shared.ExpectAccessDenial("BaseSchedule", err, t)
 
 	_, err = c.WeekdaySchedule(access, testTime.Weekday())
