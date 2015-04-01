@@ -239,7 +239,22 @@ func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
 }
 
 func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {
-}
+	access := data.NewAnonAccess(s)
 
-func testAnonReadAccess(s data.Store, c models.Calendar, t *testing.T) {
+	testTime := time.Now()
+
+	_, err := c.BaseSchedule(access)
+	shared.ExpectAccessDenial("BaseSchedule", err, t)
+
+	_, err = c.WeekdaySchedule(access, testTime.Weekday())
+	shared.ExpectAccessDenial("WeekdaySchedule", err, t)
+
+	_, err = c.YeardaySchedule(access, testTime)
+	shared.ExpectAccessDenial("YeardaySchedule", err, t)
+
+	_, err = c.CurrentFixture(access)
+	shared.ExpectAccessDenial("CurrentFixture", err, t)
+
+	_, err = c.NextFixture(access)
+	shared.ExpectAccessDenial("NextFixture", err, t)
 }
