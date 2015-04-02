@@ -15,15 +15,17 @@ type Action interface {
 	data.Model
 	data.Nameable
 	data.Timeable
-	Userable
 
+	Userable
+	Actioned
+
+	SetCompleted(bool)
 	Completed() bool
-	Complete()
+
 	SetTask(Task) error
 	Task(data.Access) (Task, error)
 
-	SetActionable(Actionable)
-	Actionable(data.Access) (Actionable, error)
+	Complete()
 }
 
 type Event interface {

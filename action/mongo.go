@@ -17,10 +17,11 @@ type mongoAction struct {
 	mongo.Timed           `bson:",inline"`
 	shared.MongoUserOwned `bson:",inline"`
 
-	ECompleted     bool          `json:"completed" bson:"completed"`
-	ETaskID        bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
 	ActionableKind data.Kind     `json:"actionable_kind" bson:"actionable_kind"`
 	ActionableID   bson.ObjectId `json:"actionable_id" bson:"actionable_id,omitempty"`
+
+	ECompleted bool          `json:"completed" bson:"completed"`
+	ETaskID    bson.ObjectId `json:"task_id" bson:"task_id,omitempty"`
 }
 
 func (a *mongoAction) Kind() data.Kind {
@@ -33,63 +34,6 @@ func (a *mongoAction) Schema() data.Schema {
 
 func (a *mongoAction) Version() int {
 	return version
-}
-
-func (a *mongoAction) SetUser(u models.User) error {
-	return a.Schema().Link(a, u, User)
-}
-
-func (a *mongoAction) SetTask(t models.Task) error {
-	return a.Schema().Link(a, t, Task)
-}
-
-func (a *mongoAction) Task(access data.Access) (models.Task, error) {
-	m, err := access.ModelFor(models.TaskKind)
-	if err != nil {
-		return nil, err
-	}
-	t, ok := m.(models.Task)
-	if !ok {
-		return nil, errors.New("TODO")
-	}
-
-	t.SetID(a.ETaskID)
-
-	err = access.PopulateByID(t)
-	return t, err
-}
-
-func (a *mongoAction) Completed() bool {
-	return a.ECompleted
-}
-
-func (a *mongoAction) Complete() {
-	a.SetEndTime(time.Now())
-	a.ECompleted = true
-}
-
-func (a *mongoAction) SetActionable(actionable models.Actionable) {
-	a.ActionableKind = actionable.Kind()
-	a.ActionableID = actionable.ID().(bson.ObjectId)
-}
-
-func (a *mongoAction) Actionable(access data.Access) (models.Actionable, error) {
-	m, err := access.ModelFor(a.ActionableKind)
-	if err != nil {
-		return nil, err
-	}
-
-	m.SetID(a.ActionableID)
-	if err = access.PopulateByID(m); err != nil {
-		return nil, err
-	}
-
-	actionable, ok := m.(models.Actionable)
-	if !ok {
-		return nil, errors.New("failed to case model stored as an actionable")
-	}
-
-	return actionable, nil
 }
 
 func (a *mongoAction) Link(m data.Model, l data.Link) error {
@@ -116,4 +60,75 @@ func (a *mongoAction) Unlink(m data.Model, l data.Link) error {
 	}
 
 	return nil
+}
+
+func (a *mongoAction) SetUser(u models.User) error {
+	return a.Schema().Link(a, u, User)
+}
+
+func (a *mongoAction) SetActionable(actionable models.Actionable) {
+	a.ActionableKind = actionable.Kind()
+	a.ActionableID = actionable.ID().(bson.ObjectId)
+}
+
+func (a *mongoAction) Actionable(access data.Access) (models.Actionable, error) {
+	if !a.HasActionable() {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	m, err := access.ModelFor(a.ActionableKind)
+	if err != nil {
+		return nil, err
+	}
+
+	m.SetID(a.ActionableID)
+	if err = access.PopulateByID(m); err != nil {
+		return nil, err
+	}
+
+	err = access.PopulateByID(m)
+
+	return m.(models.Actionable), err
+}
+
+func (a *mongoAction) DropActionable() {
+	a.ActionableKind = data.Kind("")
+	a.ActionableID = *new(bson.ObjectId)
+}
+
+func (a *mongoAction) HasActionable() bool {
+	return !mongo.EmptyID(a.ActionableID) && !data.EmptyKind(a.ActionableKind)
+}
+
+func (a *mongoAction) SetCompleted(b bool) {
+	a.ECompleted = b
+}
+
+func (a *mongoAction) Completed() bool {
+	return a.ECompleted
+}
+
+func (a *mongoAction) SetTask(t models.Task) error {
+	return a.Schema().Link(a, t, Task)
+}
+
+func (a *mongoAction) Task(access data.Access) (models.Task, error) {
+	m, err := access.ModelFor(models.TaskKind)
+	if err != nil {
+		return nil, err
+	}
+	t, ok := m.(models.Task)
+	if !ok {
+		return nil, errors.New("TODO")
+	}
+
+	t.SetID(a.ETaskID)
+
+	err = access.PopulateByID(t)
+	return t, err
+}
+
+func (a *mongoAction) Complete() {
+	a.SetEndTime(time.Now())
+	a.SetCompleted(true)
 }
