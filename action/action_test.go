@@ -8,6 +8,7 @@ import (
 	"github.com/elos/models/action"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/shared"
+	"github.com/elos/models/task"
 )
 
 func TestMongo(t *testing.T) {
@@ -50,9 +51,33 @@ func testActioned(access data.Access, a models.Action, t *testing.T) {
 }
 
 func testCompleted(access data.Access, a models.Action, t *testing.T) {
+	if a.Completed() {
+		t.Errorf("Expect a new action not to be comleted")
+	}
+
+	a.SetCompleted(false)
+
+	if a.Completed() {
+		t.Errorf("Set completed to false, should be false")
+	}
+
+	a.SetCompleted(true)
+
+	if !a.Completed() {
+		t.Errorf("Set completed to true, should be true")
+	}
 }
 
 func testTask(access data.Access, a models.Action, t *testing.T) {
+	_, err := a.Task(access)
+	shared.ExpectEmptyLinkError("Task", err, t)
+
+	tsk, err := task.Create(access)
+	shared.ExpectNoError("creating task", err, t)
+
+	err = a.SetTask(tsk)
+	shared.ExpectNoError("setting task", err, t)
+
 }
 
 func testComplete(access data.Access, a models.Action, t *testing.T) {

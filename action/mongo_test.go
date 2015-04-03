@@ -6,10 +6,10 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/mongo"
-	"gopkg.in/mgo.v2/bson"
 
 	. "github.com/elos/models/action"
 	"github.com/elos/models/persistence"
+	"github.com/elos/models/shared"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
 )
@@ -91,15 +91,8 @@ func TestMongoAction(t *testing.T) {
 		t.Errorf("Complete() should complete an action")
 	}
 
-	tt, err := a.Task(access)
-
-	if err != data.ErrNotFound {
-		t.Errorf("Expected task to not be set", err)
-	}
-
-	if tt.ID() != *new(bson.ObjectId) {
-		t.Errorf("Current task id should be zero id")
-	}
+	_, err = a.Task(access)
+	shared.ExpectEmptyLinkError("Task", err, t)
 
 	ts, err := task.Create(store)
 
@@ -109,7 +102,7 @@ func TestMongoAction(t *testing.T) {
 
 	a.SetTask(ts)
 
-	tt, err = a.Task(access)
+	tt, err := a.Task(access)
 
 	if err != nil {
 		t.Errorf("Error getting task %s", err)
