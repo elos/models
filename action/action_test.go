@@ -2,13 +2,15 @@ package action_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/models/action"
 	"github.com/elos/models/persistence"
-	"github.com/elos/models/shared"
 	"github.com/elos/models/task"
+	"github.com/elos/testing/expect"
+	"github.com/elos/testing/modeltest"
 )
 
 func TestMongo(t *testing.T) {
@@ -42,9 +44,9 @@ func testAction(s data.Store, a models.Action, t *testing.T) {
 	testComplete(access, a, t)
 	testAccessProtection(s, a, t)
 
-	shared.TestUserable(s, a, t)
-	shared.TestUserOwnedAccessRights(s, a, t)
-	shared.TestAnonReadAccess(s, a, t)
+	modeltest.Userable(s, a, t)
+	modeltest.UserOwnedAccessRights(s, a, t)
+	modeltest.AnonReadAccess(s, a, t)
 }
 
 func testActioned(access data.Access, a models.Action, t *testing.T) {
@@ -70,17 +72,28 @@ func testCompleted(access data.Access, a models.Action, t *testing.T) {
 
 func testTask(access data.Access, a models.Action, t *testing.T) {
 	_, err := a.Task(access)
-	shared.ExpectEmptyLinkError("Task", err, t)
+	expect.EmptyLinkError("Task", err, t)
 
 	tsk, err := task.Create(access)
-	shared.ExpectNoError("creating task", err, t)
+	expect.NoError("creating task", err, t)
 
 	err = a.SetTask(tsk)
-	shared.ExpectNoError("setting task", err, t)
+	expect.NoError("setting task", err, t)
 
 }
 
 func testComplete(access data.Access, a models.Action, t *testing.T) {
+	a.SetCompleted(false)
+
+	a.Complete()
+
+	if !a.Completed() {
+		t.Errorf("Completed should be true")
+	}
+
+	if time.Now().Sub(a.EndTime()) > 1*time.Second {
+		t.Errorf("Should complete task and set end time")
+	}
 }
 
 func testAccessProtection(s data.Store, a models.Action, t *testing.T) {

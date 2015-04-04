@@ -11,9 +11,10 @@ import (
 	"github.com/elos/models/ontology"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/routine"
-	"github.com/elos/models/shared"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
+	"github.com/elos/testing/expect"
+	"github.com/elos/testing/modeltest"
 )
 
 func TestMongo(t *testing.T) {
@@ -60,7 +61,7 @@ func testUser(s data.Store, u models.User, t *testing.T) {
 	testRoutines(access, u, t)
 
 	testAccessProtection(s, u, t)
-	shared.TestAnonReadAccess(s, u, t)
+	modeltest.AnonReadAccess(s, u, t)
 }
 
 func testName(access data.Access, u models.User, t *testing.T) {
@@ -320,38 +321,38 @@ func testAccessProtection(s data.Store, u models.User, t *testing.T) {
 	access := data.NewAnonAccess(s)
 
 	_, err := u.CurrentAction(access)
-	shared.ExpectAccessDenial("CurrentAction", err, t)
+	expect.AccessDenial("CurrentAction", err, t)
 
 	_, err = u.CurrentActionable(access)
-	shared.ExpectAccessDenial("CurrentActionable", err, t)
+	expect.AccessDenial("CurrentActionable", err, t)
 
 	_, err = u.Calendar(access)
-	shared.ExpectAccessDenial("Calendar", err, t)
+	expect.AccessDenial("Calendar", err, t)
 
 	_, err = u.Ontology(access)
-	shared.ExpectAccessDenial("Ontology", err, t)
+	expect.AccessDenial("Ontology", err, t)
 
 	_, err = u.ActionsIter(access)
-	shared.ExpectAccessDenial("ActionsIter", err, t)
+	expect.AccessDenial("ActionsIter", err, t)
 
 	_, err = u.Actions(access)
-	shared.ExpectAccessDenial("Actions", err, t)
+	expect.AccessDenial("Actions", err, t)
 
 	_, err = u.EventsIter(access)
-	shared.ExpectAccessDenial("EventsIter", err, t)
+	expect.AccessDenial("EventsIter", err, t)
 
 	_, err = u.Events(access)
-	shared.ExpectAccessDenial("Events", err, t)
+	expect.AccessDenial("Events", err, t)
 
 	_, err = u.TasksIter(access)
-	shared.ExpectAccessDenial("TasksIter", err, t)
+	expect.AccessDenial("TasksIter", err, t)
 
 	_, err = u.Tasks(access)
-	shared.ExpectAccessDenial("Tasks", err, t)
+	expect.AccessDenial("Tasks", err, t)
 
 	_, err = u.RoutinesIter(access)
-	shared.ExpectAccessDenial("RoutinesIter", err, t)
+	expect.AccessDenial("RoutinesIter", err, t)
 
 	_, err = u.Routines(access)
-	shared.ExpectAccessDenial("Routines", err, t)
+	expect.AccessDenial("Routines", err, t)
 }

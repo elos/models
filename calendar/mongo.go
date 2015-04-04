@@ -254,3 +254,7 @@ func (c *mongoCalendar) StartAction(access data.Access, action models.Action) er
 func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action) error {
 	return CompleteAction(c, access, action)
 }
+
+func (c *mongoCalendar) IntegratedSchedule(a data.Access, t time.Time) (models.Schedule, error) {
+	return MergedScheduleForTime(a, c, t)
+}

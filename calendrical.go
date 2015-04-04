@@ -22,6 +22,7 @@ type Calendar interface {
 	CurrentFixture(data.Access) (Fixture, error)
 
 	NextFixture(data.Access) (Fixture, error)
+	IntegratedSchedule(data.Access, time.Time) (Schedule, error)
 }
 
 type Schedule interface {

@@ -6,10 +6,10 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/mongo"
+	"github.com/elos/testing/expect"
 
 	. "github.com/elos/models/action"
 	"github.com/elos/models/persistence"
-	"github.com/elos/models/shared"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
 )
@@ -92,7 +92,7 @@ func TestMongoAction(t *testing.T) {
 	}
 
 	_, err = a.Task(access)
-	shared.ExpectEmptyLinkError("Task", err, t)
+	expect.EmptyLinkError("Task", err, t)
 
 	ts, err := task.Create(store)
 

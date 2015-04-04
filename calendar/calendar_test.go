@@ -11,8 +11,9 @@ import (
 	"github.com/elos/models/fixture"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/schedule"
-	"github.com/elos/models/shared"
 	"github.com/elos/models/user"
+	"github.com/elos/testing/expect"
+	"github.com/elos/testing/modeltest"
 )
 
 func TestMongo(t *testing.T) {
@@ -46,12 +47,11 @@ func testCalendar(s data.Store, c models.Calendar, t *testing.T) {
 	testYeardaySchedules(access, c, t)
 	testCurrentFixture(access, c, t)
 	testNextFixture(access, c, t)
-
 	testAccessProtection(s, c, t)
 
-	shared.TestUserable(s, c, t)
-	shared.TestUserOwnedAccessRights(s, c, t)
-	shared.TestAnonReadAccess(s, c, t)
+	modeltest.Userable(s, c, t)
+	modeltest.UserOwnedAccessRights(s, c, t)
+	modeltest.AnonReadAccess(s, c, t)
 }
 
 func testActionable(access data.Access, c models.Calendar, t *testing.T) {
@@ -59,7 +59,7 @@ func testActionable(access data.Access, c models.Calendar, t *testing.T) {
 
 func testBaseSchedule(access data.Access, c models.Calendar, t *testing.T) {
 	_, err := c.BaseSchedule(access)
-	shared.ExpectEmptyLinkError("BaseSchedule", err, t)
+	expect.EmptyLinkError("BaseSchedule", err, t)
 
 	s, err := schedule.Create(access)
 	if err != nil {
@@ -98,7 +98,7 @@ func testWeekdaySchedules(access data.Access, c models.Calendar, t *testing.T) {
 		w := time.Weekday(i)
 
 		_, err := c.WeekdaySchedule(access, w)
-		shared.ExpectEmptyLinkError(fmt.Sprintf("Weekday: %s", w.String()), err, t)
+		expect.EmptyLinkError(fmt.Sprintf("Weekday: %s", w.String()), err, t)
 
 		s, err := schedule.Create(access)
 		if err != nil {
@@ -143,26 +143,26 @@ var monthDays = map[time.Month]int{
 
 func testYeardaySchedules(access data.Access, c models.Calendar, t *testing.T) {
 	err := access.Save(c)
-	shared.ExpectNoError("saving calendar", err, t)
+	expect.NoError("saving calendar", err, t)
 
 	for month, days := range monthDays {
 		for i := 1; i <= days; i++ {
 			yearday := time.Date(2015, month, i, 0, 0, 0, 0, time.UTC)
 
 			s, err := schedule.Create(access)
-			shared.ExpectNoError("creating schedule", err, t)
+			expect.NoError("creating schedule", err, t)
 
 			err = c.SetYeardaySchedule(s, yearday)
-			shared.ExpectNoError("setting yearday schedules", err, t)
+			expect.NoError("setting yearday schedules", err, t)
 
 			err = access.Save(c)
-			shared.ExpectNoError("saving calendar", err, t)
+			expect.NoError("saving calendar", err, t)
 
 			c, err := calendar.Find(access, c.ID())
-			shared.ExpectNoError("finding calendar", err, t)
+			expect.NoError("finding calendar", err, t)
 
 			sRetrieved, err := c.YeardaySchedule(access, yearday)
-			shared.ExpectNoError("retrieving yearday schedule", err, t)
+			expect.NoError("retrieving yearday schedule", err, t)
 
 			if sRetrieved.ID().String() != s.ID().String() {
 				t.Errorf("Retrieved yearday schedule doesn't match set yearday schedule")
@@ -178,19 +178,19 @@ func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
 	}
 
 	_, err = c.CurrentFixture(access)
-	shared.ExpectEmptyLinkError("CurrentFixture", err, t)
+	expect.EmptyLinkError("CurrentFixture", err, t)
 
 	err = c.SetCurrentFixture(f)
-	shared.ExpectNoError("setting current fixture", err, t)
+	expect.NoError("setting current fixture", err, t)
 
 	err = access.Save(c)
-	shared.ExpectNoError("saving calendar", err, t)
+	expect.NoError("saving calendar", err, t)
 
 	c, err = calendar.Find(access, c.ID())
-	shared.ExpectNoError("finding calendar", err, t)
+	expect.NoError("finding calendar", err, t)
 
 	fRetrieved, err := c.CurrentFixture(access)
-	shared.ExpectNoError("retrieving current fixture", err, t)
+	expect.NoError("retrieving current fixture", err, t)
 
 	if !data.EqualModels(f, fRetrieved) {
 		t.Errorf("Retrieved curret fixture doesn't match set current fixture")
@@ -200,39 +200,39 @@ func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
 // TODO: fix this to be actually test hard scenarios
 func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
 	sBase, err := schedule.Create(access)
-	shared.ExpectNoError("creating schedule", err, t)
+	expect.NoError("creating schedule", err, t)
 	sWeek, err := schedule.Create(access)
-	shared.ExpectNoError("creating schedule", err, t)
+	expect.NoError("creating schedule", err, t)
 	sYear, err := schedule.Create(access)
-	shared.ExpectNoError("creating schedule", err, t)
+	expect.NoError("creating schedule", err, t)
 
 	testTime := time.Now()
 
 	err = c.SetBaseSchedule(sBase)
-	shared.ExpectNoError("setting base schedule", err, t)
+	expect.NoError("setting base schedule", err, t)
 
 	err = c.SetWeekdaySchedule(sWeek, testTime.Weekday())
-	shared.ExpectNoError("setting weekday schedule", err, t)
+	expect.NoError("setting weekday schedule", err, t)
 
 	err = c.SetYeardaySchedule(sYear, testTime)
-	shared.ExpectNoError("setting yearday schedule", err, t)
+	expect.NoError("setting yearday schedule", err, t)
 
 	f, err := fixture.Create(access)
-	shared.ExpectNoError("creating fixture", err, t)
+	expect.NoError("creating fixture", err, t)
 
 	f.SetStartTime(testTime.Add(1 * time.Hour))
 	f.SetEndTime(testTime.Add(2 * time.Hour))
 
 	err = sBase.IncludeFixture(f)
-	shared.ExpectNoError("including fixture", err, t)
+	expect.NoError("including fixture", err, t)
 
 	err = access.Save(sBase)
-	shared.ExpectNoError("saving schedule", err, t)
+	expect.NoError("saving schedule", err, t)
 	err = access.Save(f)
-	shared.ExpectNoError("saving fixture", err, t)
+	expect.NoError("saving fixture", err, t)
 
 	nextF, err := c.NextFixture(access)
-	shared.ExpectNoError("retrieving next fixture", err, t)
+	expect.NoError("retrieving next fixture", err, t)
 
 	if !data.EqualModels(f, nextF) {
 		t.Errorf("Expected next fixture to be fixture on base schedule")
@@ -243,24 +243,24 @@ func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {
 	access := data.NewAnonAccess(s)
 
 	u, err := user.Create(s)
-	shared.ExpectNoError("creating user", err, t)
+	expect.NoError("creating user", err, t)
 	err = c.SetUser(u)
-	shared.ExpectNoError("setting calendar user", err, t)
+	expect.NoError("setting calendar user", err, t)
 
 	testTime := time.Now()
 
 	_, err = c.BaseSchedule(access)
-	shared.ExpectAccessDenial("BaseSchedule", err, t)
+	expect.AccessDenial("BaseSchedule", err, t)
 
 	_, err = c.WeekdaySchedule(access, testTime.Weekday())
-	shared.ExpectAccessDenial("WeekdaySchedule", err, t)
+	expect.AccessDenial("WeekdaySchedule", err, t)
 
 	_, err = c.YeardaySchedule(access, testTime)
-	shared.ExpectAccessDenial("YeardaySchedule", err, t)
+	expect.AccessDenial("YeardaySchedule", err, t)
 
 	_, err = c.CurrentFixture(access)
-	shared.ExpectAccessDenial("CurrentFixture", err, t)
+	expect.AccessDenial("CurrentFixture", err, t)
 
 	_, err = c.NextFixture(access)
-	shared.ExpectAccessDenial("NextFixture", err, t)
+	expect.AccessDenial("NextFixture", err, t)
 }
