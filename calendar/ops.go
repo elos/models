@@ -17,22 +17,37 @@ func Yearday(t time.Time) int {
 }
 
 func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
+	schedules := make([]models.Schedule, 0)
+
 	base, err := c.BaseSchedule(a)
 	if err != nil {
-		return
+		// We don't mind if it's an empty link error
+		if _, ok := err.(*data.EmptyLinkError); !ok {
+			return
+		}
+	} else {
+		schedules = append(schedules, base)
 	}
 
 	weekday, err := c.WeekdaySchedule(a, t.Weekday())
 	if err != nil {
-		return
+		if _, ok := err.(*data.EmptyLinkError); !ok {
+			return
+		}
+	} else {
+		schedules = append(schedules, weekday)
 	}
 
-	day, err := c.YeardaySchedule(a, t)
+	yearday, err := c.YeardaySchedule(a, t)
 	if err != nil {
-		return
+		if _, ok := err.(*data.EmptyLinkError); !ok {
+			return
+		}
+	} else {
+		schedules = append(schedules, yearday)
 	}
 
-	return schedule.Merge(a, base, weekday, day)
+	return schedule.Merge(a, schedules...)
 }
 
 func NextFixture(a data.Access, c models.Calendar) (first models.Fixture, err error) {

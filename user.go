@@ -2,6 +2,7 @@ package models
 
 import "github.com/elos/data"
 
+// See: https://github.com/elos/documentation/blob/master/data/models/user.md
 type User interface {
 	data.Model
 	data.Nameable

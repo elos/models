@@ -24,8 +24,8 @@ type mongoUser struct {
 	TaskIDs    mongo.IDSet `json:"task_ids"    bson:"task_ids"`
 	RoutineIDs mongo.IDSet `json:"routine_ids" bson:"routine_ids"`
 
-	EOntologyID     bson.ObjectId `json:"ontology_id"       bson:"ontology_id,omitempty"`
 	ECalendarID     bson.ObjectId `json:"calendar_id"       bson:"calendar_id,omitempty"`
+	EOntologyID     bson.ObjectId `json:"ontology_id"       bson:"ontology_id,omitempty"`
 	CurrentActionID bson.ObjectId `json:"current_action_id" bson:"current_action_id,omitempty"`
 	ActionableKind  data.Kind     `json:"actionable_kind"   bson:"actionable_kind"`
 	ActionableID    bson.ObjectId `json:"actionable_id"     bson:"actionable_id,omitempty"`

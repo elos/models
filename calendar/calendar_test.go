@@ -47,6 +47,7 @@ func testCalendar(s data.Store, c models.Calendar, t *testing.T) {
 	testYeardaySchedules(access, c, t)
 	testCurrentFixture(access, c, t)
 	testNextFixture(access, c, t)
+	testIntegratedSchedule(access, c, t)
 	testAccessProtection(s, c, t)
 
 	modeltest.Userable(s, c, t)
@@ -237,6 +238,9 @@ func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
 	if !data.EqualModels(f, nextF) {
 		t.Errorf("Expected next fixture to be fixture on base schedule")
 	}
+}
+
+func testIntegratedSchedule(access data.Access, c models.Calendar, t *testing.T) {
 }
 
 func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {
