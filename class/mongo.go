@@ -12,14 +12,13 @@ type mongoClass struct {
 	mongo.Model           `bson:",inline"`
 	mongo.Named           `bson:",inline"`
 	shared.MongoUserOwned `bson:",inline"`
-	shared.MongoObjects   `bson:",inline"`
 
-	EOntologyID     bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
-	TraitIDs        mongo.IDSet   `json:"trait_ids" bson:"trait_ids"`
-	RelationshipIDs mongo.IDSet   `json:"relationship_ids" bson:"relationship_ids"`
+	EOntologyID bson.ObjectId `json:"ontology_id" bson:"ontology_id,omitempty"`
 
 	ETraits        map[string]*models.Trait        `json:"traits" bson:"traits"`
 	ERelationships map[string]*models.Relationship `json:"relationships" bson:"relationships"`
+
+	shared.MongoObjects `bson:",inline"`
 }
 
 func (c *mongoClass) Kind() data.Kind {
@@ -46,10 +45,6 @@ func (c *mongoClass) Link(m data.Model, l data.Link) error {
 		return c.SetUserID(id)
 	case objects:
 		c.MongoObjects.IncludeObjectID(id)
-	case traits:
-		c.TraitIDs = mongo.AddID(c.TraitIDs, id)
-	case relationships:
-		c.RelationshipIDs = mongo.AddID(c.RelationshipIDs, id)
 	default:
 		return data.NewLinkError(c, m, l)
 	}
@@ -69,10 +64,6 @@ func (c *mongoClass) Unlink(m data.Model, l data.Link) error {
 		c.DropUserID()
 	case objects:
 		c.MongoObjects.ExcludeObjectID(id)
-	case traits:
-		c.TraitIDs = mongo.DropID(c.TraitIDs, id)
-	case relationships:
-		c.RelationshipIDs = mongo.DropID(c.RelationshipIDs, id)
 	default:
 		return data.NewLinkError(c, m, l)
 	}

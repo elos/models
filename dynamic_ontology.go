@@ -2,6 +2,7 @@ package models
 
 import "github.com/elos/data"
 
+// See: https://github.com/elos/documentation/blob/master/data/models/ontology.md
 type Ontology interface {
 	data.Model
 	Userable
@@ -28,6 +29,7 @@ type Relationship struct {
 	Inverse string
 }
 
+// See: https://github.com/elos/documentation/blob/master/data/models/class.md
 type Class interface {
 	data.Model
 	data.Nameable
