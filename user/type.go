@@ -105,20 +105,18 @@ func CreateAttrs(s data.Store, a data.AttrMap) (models.User, error) {
 		return user, err
 	}
 
-	id, present := a["id"]
-	id, valid := id.(data.ID)
-	if present && valid {
-		if err := user.SetID(id.(data.ID)); err != nil {
-			return user, err
-		}
-	} else {
-		if err := user.SetID(s.NewID()); err != nil {
-			return user, err
+	if idInterface, present := a["id"]; present {
+		idString, ok := idInterface.(string)
+		if ok {
+			id, err := s.ParseID(idString)
+			if err == nil {
+				user.SetID(id)
+			}
 		}
 	}
 
 	ca, present := a["created_at"]
-	ca, valid = ca.(time.Time)
+	ca, valid := ca.(time.Time)
 	if present && valid {
 		user.SetCreatedAt(ca.(time.Time))
 	} else {
