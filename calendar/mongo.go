@@ -1,6 +1,7 @@
 package calendar
 
 import (
+	"strings"
 	"time"
 
 	"github.com/elos/data"
@@ -147,7 +148,7 @@ func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) er
 		return data.ErrInvalidID
 	}
 
-	c.EWeekdaySchedules[t.String()] = id
+	c.EWeekdaySchedules[strings.ToLower(t.String())] = id
 	return nil
 }
 
@@ -162,7 +163,7 @@ func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.S
 		return nil, models.CastError(models.ScheduleKind)
 	}
 
-	id, ok := c.EWeekdaySchedules[t.String()]
+	id, ok := c.EWeekdaySchedules[strings.ToLower(t.String())]
 	if !ok {
 		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][weekdaySchedules])
 	}

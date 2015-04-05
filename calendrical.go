@@ -6,6 +6,7 @@ import (
 	"github.com/elos/data"
 )
 
+// See: https://github.com/elos/documentation/blob/master/data/models/calendar.md
 type Calendar interface {
 	Actionable
 
@@ -25,6 +26,7 @@ type Calendar interface {
 	IntegratedSchedule(data.Access, time.Time) (Schedule, error)
 }
 
+// See: https://github.com/elos/documentation/blob/master/data/models/schedule.md
 type Schedule interface {
 	data.Model
 	data.Timeable
@@ -39,6 +41,7 @@ type Schedule interface {
 	OrderedFixtures(data.Access) ([]Fixture, error)
 }
 
+// See: https://github.com/elos/documentation/blob/master/data/models/fixture.md
 type Fixture interface {
 	data.Model
 	data.Nameable
