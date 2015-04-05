@@ -7,20 +7,20 @@ import (
 )
 
 const (
-	DataVersion            = 1
-	UserKind     data.Kind = "user"
-	EventKind    data.Kind = "event"
-	TaskKind     data.Kind = "task"
-	ActionKind   data.Kind = "action"
-	RoutineKind  data.Kind = "routine"
-	SetKind      data.Kind = "set"
-	ScheduleKind data.Kind = "schedule"
-	FixtureKind  data.Kind = "fixture"
-	CalendarKind data.Kind = "calendar"
+	DataVersion = 1
 
-	OntologyKind data.Kind = "ontology"
+	ActionKind   data.Kind = "action"
+	CalendarKind data.Kind = "calendar"
 	ClassKind    data.Kind = "class"
+	EventKind    data.Kind = "event"
+	FixtureKind  data.Kind = "fixture"
 	ObjectKind   data.Kind = "object"
+	OntologyKind data.Kind = "ontology"
+	RoutineKind  data.Kind = "routine"
+	ScheduleKind data.Kind = "schedule"
+	SetKind      data.Kind = "set"
+	TaskKind     data.Kind = "task"
+	UserKind     data.Kind = "user"
 )
 
 const (
