@@ -80,26 +80,38 @@ func (c *mongoClass) SetOntology(o models.Ontology) error {
 }
 
 func (c *mongoClass) Ontology(a data.Access) (models.Ontology, error) {
-	m, _ := a.ModelFor(models.OntologyKind)
-	o := m.(models.Ontology)
+	if c.DBType() != a.Type() {
+		return nil, data.ErrInvalidDBType
+	}
 
-	if c.CanRead(a.Client()) {
-		o.SetID(c.EOntologyID)
-		err := a.PopulateByID(o)
-		return o, err
-	} else {
+	if mongo.EmptyID(c.EOntologyID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	if !c.CanRead(a.Client()) {
 		return nil, data.ErrAccessDenial
 	}
+
+	m, err := a.ModelFor(models.OntologyKind)
+	if err != nil {
+		return nil, err
+	}
+
+	o, ok := m.(models.Ontology)
+	if !ok {
+		return nil, models.CastError(models.OntologyKind)
+	}
+
+	o.SetID(c.EOntologyID)
+	return o, a.PopulateByID(o)
 }
 
-func (c *mongoClass) IncludeTrait(t *models.Trait) error {
+func (c *mongoClass) IncludeTrait(t *models.Trait) {
 	c.ETraits[t.Name] = t
-	return nil
 }
 
-func (c *mongoClass) ExcludeTrait(t *models.Trait) error {
+func (c *mongoClass) ExcludeTrait(t *models.Trait) {
 	delete(c.ETraits, t.Name)
-	return nil
 }
 
 func (c *mongoClass) Traits() []*models.Trait {
@@ -115,14 +127,12 @@ func (c *mongoClass) Trait(name string) (*models.Trait, bool) {
 	return t, ok
 }
 
-func (c *mongoClass) IncludeRelationship(r *models.Relationship) error {
+func (c *mongoClass) IncludeRelationship(r *models.Relationship) {
 	c.ERelationships[r.Name] = r
-	return nil
 }
 
-func (c *mongoClass) ExcludeRelationship(r *models.Relationship) error {
+func (c *mongoClass) ExcludeRelationship(r *models.Relationship) {
 	delete(c.ERelationships, r.Name)
-	return nil
 }
 
 func (c *mongoClass) Relationships() []*models.Relationship {

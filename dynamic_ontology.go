@@ -38,13 +38,13 @@ type Class interface {
 	SetOntology(Ontology) error
 	Ontology(data.Access) (Ontology, error)
 
-	IncludeTrait(*Trait) error
-	ExcludeTrait(*Trait) error
+	IncludeTrait(*Trait)
+	ExcludeTrait(*Trait)
 	Traits() []*Trait
 	Trait(string) (*Trait, bool)
 
-	IncludeRelationship(*Relationship) error
-	ExcludeRelationship(*Relationship) error
+	IncludeRelationship(*Relationship)
+	ExcludeRelationship(*Relationship)
 	Relationships() []*Relationship
 	Relationship(string) (*Relationship, bool)
 
@@ -56,6 +56,7 @@ type Class interface {
 	NewObject(a data.Access) (Object, error)
 }
 
+// See: https://github.com/elos/documentation/blob/master/data/models/object.md
 type Object interface {
 	data.Model
 	data.Nameable
