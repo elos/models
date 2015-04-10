@@ -38,10 +38,9 @@ func testAction(s data.Store, a models.Action, t *testing.T) {
 	testCompleted(store, a, t)
 	testTask(store, a, t)
 	testComplete(store, a, t)
-	testAccessProtection(s, a, t)
 
-	modeltest.Userable(s, a, t)
-	modeltest.UserOwnedAccessRights(s, a, t)
+	modeltest.Userable(store, a, t)
+	modeltest.UserOwnedAccessRights(store, a, t)
 }
 
 func testActioned(access models.Store, a models.Action, t *testing.T) {
@@ -67,7 +66,7 @@ func testCompleted(access models.Store, a models.Action, t *testing.T) {
 
 func testTask(access models.Store, a models.Action, t *testing.T) {
 	_, err := a.Task(access)
-	expect.EmptyLinkError("Task", err, t)
+	expect.EmptyRelationship("Task", err, t)
 
 	tsk, err := task.Create(access)
 	expect.NoError("creating task", err, t)

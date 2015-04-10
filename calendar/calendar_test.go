@@ -11,18 +11,13 @@ import (
 	"github.com/elos/models/fixture"
 	"github.com/elos/models/persistence"
 	"github.com/elos/models/schedule"
-	"github.com/elos/models/user"
 	"github.com/elos/testing/expect"
 	"github.com/elos/testing/modeltest"
 )
 
 func TestMongo(t *testing.T) {
 	s := persistence.Store(persistence.MongoMemoryDB())
-	c, err := calendar.New(s)
-	if err != nil {
-		t.Errorf("Error from calendar.New, expected no error but got %s", err)
-	}
-
+	c := calendar.New(s)
 	testCalendar(s, c, t)
 
 	if c.Version() != 1 {
@@ -39,28 +34,27 @@ func TestMongo(t *testing.T) {
 }
 
 func testCalendar(s data.Store, c models.Calendar, t *testing.T) {
-	access := data.NewAnonAccess(s)
+	store := persistence.ModelsStore(s)
 
-	testActionable(access, c, t)
-	testBaseSchedule(access, c, t)
-	testWeekdaySchedules(access, c, t)
-	testYeardaySchedules(access, c, t)
-	testCurrentFixture(access, c, t)
-	testNextFixture(access, c, t)
-	testIntegratedSchedule(access, c, t)
-	testAccessProtection(s, c, t)
+	testActionable(store, c, t)
+	testBaseSchedule(store, c, t)
+	testWeekdaySchedules(store, c, t)
+	testYeardaySchedules(store, c, t)
+	testCurrentFixture(store, c, t)
+	testNextFixture(store, c, t)
+	testIntegratedSchedule(store, c, t)
 
-	modeltest.Userable(s, c, t)
-	modeltest.UserOwnedAccessRights(s, c, t)
+	modeltest.Userable(store, c, t)
+	modeltest.UserOwnedAccessRights(store, c, t)
 	modeltest.AnonReadAccess(s, c, t)
 }
 
-func testActionable(access data.Access, c models.Calendar, t *testing.T) {
+func testActionable(access models.Store, c models.Calendar, t *testing.T) {
 }
 
-func testBaseSchedule(access data.Access, c models.Calendar, t *testing.T) {
+func testBaseSchedule(access models.Store, c models.Calendar, t *testing.T) {
 	_, err := c.BaseSchedule(access)
-	expect.EmptyLinkError("BaseSchedule", err, t)
+	expect.EmptyRelationship("BaseSchedule", err, t)
 
 	s, err := schedule.Create(access)
 	if err != nil {
@@ -90,7 +84,7 @@ func testBaseSchedule(access data.Access, c models.Calendar, t *testing.T) {
 	}
 }
 
-func testWeekdaySchedules(access data.Access, c models.Calendar, t *testing.T) {
+func testWeekdaySchedules(access models.Store, c models.Calendar, t *testing.T) {
 	if err := access.Save(c); err != nil {
 		t.Errorf("Error while saving calendar: %s", err)
 	}
@@ -99,7 +93,7 @@ func testWeekdaySchedules(access data.Access, c models.Calendar, t *testing.T) {
 		w := time.Weekday(i)
 
 		_, err := c.WeekdaySchedule(access, w)
-		expect.EmptyLinkError(fmt.Sprintf("Weekday: %s", w.String()), err, t)
+		expect.EmptyRelationship(fmt.Sprintf("Weekday: %s", w.String()), err, t)
 
 		s, err := schedule.Create(access)
 		if err != nil {
@@ -142,7 +136,7 @@ var monthDays = map[time.Month]int{
 	time.December:  31,
 }
 
-func testYeardaySchedules(access data.Access, c models.Calendar, t *testing.T) {
+func testYeardaySchedules(access models.Store, c models.Calendar, t *testing.T) {
 	err := access.Save(c)
 	expect.NoError("saving calendar", err, t)
 
@@ -172,14 +166,14 @@ func testYeardaySchedules(access data.Access, c models.Calendar, t *testing.T) {
 	}
 }
 
-func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
+func testCurrentFixture(access models.Store, c models.Calendar, t *testing.T) {
 	f, err := fixture.Create(access)
 	if err != nil {
 		t.Fatalf("Error creating fixture: %s", err)
 	}
 
 	_, err = c.CurrentFixture(access)
-	expect.EmptyLinkError("CurrentFixture", err, t)
+	expect.EmptyRelationship("CurrentFixture", err, t)
 
 	err = c.SetCurrentFixture(f)
 	expect.NoError("setting current fixture", err, t)
@@ -199,7 +193,7 @@ func testCurrentFixture(access data.Access, c models.Calendar, t *testing.T) {
 }
 
 // TODO: fix this to be actually test hard scenarios
-func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
+func testNextFixture(access models.Store, c models.Calendar, t *testing.T) {
 	sBase, err := schedule.Create(access)
 	expect.NoError("creating schedule", err, t)
 	sWeek, err := schedule.Create(access)
@@ -240,31 +234,5 @@ func testNextFixture(access data.Access, c models.Calendar, t *testing.T) {
 	}
 }
 
-func testIntegratedSchedule(access data.Access, c models.Calendar, t *testing.T) {
-}
-
-func testAccessProtection(s data.Store, c models.Calendar, t *testing.T) {
-	access := data.NewAnonAccess(s)
-
-	u, err := user.Create(s)
-	expect.NoError("creating user", err, t)
-	err = c.SetUser(u)
-	expect.NoError("setting calendar user", err, t)
-
-	testTime := time.Now()
-
-	_, err = c.BaseSchedule(access)
-	expect.AccessDenial("BaseSchedule", err, t)
-
-	_, err = c.WeekdaySchedule(access, testTime.Weekday())
-	expect.AccessDenial("WeekdaySchedule", err, t)
-
-	_, err = c.YeardaySchedule(access, testTime)
-	expect.AccessDenial("YeardaySchedule", err, t)
-
-	_, err = c.CurrentFixture(access)
-	expect.AccessDenial("CurrentFixture", err, t)
-
-	_, err = c.NextFixture(access)
-	expect.AccessDenial("NextFixture", err, t)
+func testIntegratedSchedule(access models.Store, c models.Calendar, t *testing.T) {
 }
