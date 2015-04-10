@@ -17,25 +17,22 @@ var (
 	version int         = models.DataVersion
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Schedule, error) {
+func New(s data.Store) models.Schedule {
 	switch s.Type() {
 	case mongo.DBType:
 		sched := &mongoSchedule{}
 		sched.SetID(s.NewID())
-		return sched, nil
+		return sched
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Schedule, error) {
-	sched, err := New(s)
-	if err != nil {
-		return nil, err
-	}
+	sched := New(s)
 	return sched, s.Save(sched)
 }

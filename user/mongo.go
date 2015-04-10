@@ -1,8 +1,6 @@
 package user
 
 import (
-	"errors"
-
 	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/mongo"
@@ -208,31 +206,18 @@ func (u *mongoUser) SetCurrentAction(a models.Action) error {
 }
 
 // Retrieves the current action
-func (u *mongoUser) CurrentAction(a data.Access) (models.Action, error) {
-	if a.Type() != u.DBType() {
+func (u *mongoUser) CurrentAction(s models.Store) (models.Action, error) {
+	if !s.Compatible(u) {
 		return nil, data.ErrInvalidDBType
 	}
 
-	m, err := a.ModelFor(models.ActionKind)
-	if err != nil {
-		return nil, err
+	if mongo.EmptyID(u.CurrentActionID) {
+		return nil, models.ErrEmptyRelationship
 	}
 
-	action, ok := m.(models.Action)
-	if !ok {
-		return nil, models.CastError(models.ActionKind)
-	}
-
-	if u.CanRead(a.Client()) {
-		if mongo.EmptyID(u.CurrentActionID) {
-			return nil, models.ErrEmptyRelationship
-		}
-
-		action.SetID(u.CurrentActionID)
-		return action, a.PopulateByID(action)
-	} else {
-		return nil, data.ErrAccessDenial
-	}
+	action := s.Action()
+	action.SetID(u.CurrentActionID)
+	return action, s.PopulateByID(action)
 }
 
 func (u *mongoUser) SetCurrentActionable(a models.Actionable) error {
@@ -251,12 +236,8 @@ func (u *mongoUser) SetCurrentActionable(a models.Actionable) error {
 	return nil
 }
 
-func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	if u.DBType() != a.Type() {
+func (u *mongoUser) CurrentActionable(s models.Store) (models.Actionable, error) {
+	if !s.Compatible(u) {
 		return nil, data.ErrInvalidDBType
 	}
 
@@ -264,22 +245,18 @@ func (u *mongoUser) CurrentActionable(a data.Access) (models.Actionable, error) 
 		return nil, models.ErrEmptyRelationship
 	}
 
-	m, err := a.ModelFor(u.ActionableKind)
+	m, err := s.ModelFor(u.ActionableKind)
 	if err != nil {
-		return nil, err
-	}
-
-	m.SetID(u.ActionableID)
-	if err = a.PopulateByID(m); err != nil {
 		return nil, err
 	}
 
 	actionable, ok := m.(models.Actionable)
 	if !ok {
-		return nil, errors.New("idk")
-	} else {
-		return actionable, nil
+		return nil, models.CastError("actionable")
 	}
+
+	actionable.SetID(u.ActionableID)
+	return actionable, s.PopulateByID(actionable)
 }
 
 func (u *mongoUser) ClearCurrentActionable() {
@@ -291,8 +268,8 @@ func (u *mongoUser) SetCalendar(c models.Calendar) error {
 	return u.Schema().Link(u, c, calendar)
 }
 
-func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
-	if u.DBType() != a.Type() {
+func (u *mongoUser) Calendar(s models.Store) (models.Calendar, error) {
+	if !s.Compatible(u) {
 		return nil, data.ErrInvalidDBType
 	}
 
@@ -300,22 +277,9 @@ func (u *mongoUser) Calendar(a data.Access) (models.Calendar, error) {
 		return nil, models.ErrEmptyRelationship
 	}
 
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	m, err := a.ModelFor(models.CalendarKind)
-	if err != nil {
-		return nil, err
-	}
-
-	c, ok := m.(models.Calendar)
-	if !ok {
-		return nil, models.CastError(models.CalendarKind)
-	}
-
+	c := s.Calendar()
 	c.SetID(u.ECalendarID)
-	return c, a.PopulateByID(c)
+	return c, s.PopulateByID(c)
 }
 
 // Sets the user's ontology, see u.Link for possible errors
@@ -339,31 +303,18 @@ func (u *mongoUser) SetOntology(o models.Ontology) error {
 	inspect to be able even to inspect the id of the returned ontology
 	if there is an error
 */
-func (u *mongoUser) Ontology(a data.Access) (models.Ontology, error) {
-	if a.Type() != u.DBType() {
+func (u *mongoUser) Ontology(s models.Store) (models.Ontology, error) {
+	if !s.Compatible(u) {
 		return nil, data.ErrInvalidDBType
-	}
-
-	m, err := a.ModelFor(models.OntologyKind)
-	if err != nil { // data.ErrUndefinedKind
-		return nil, err
-	}
-
-	o, ok := m.(models.Ontology)
-	if !ok {
-		return nil, models.CastError(models.OntologyKind)
-	}
-
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
 	}
 
 	if mongo.EmptyID(u.EOntologyID) {
 		return nil, models.ErrEmptyRelationship
 	}
 
+	o := s.Ontology()
 	o.SetID(u.EOntologyID)
-	return o, a.PopulateByID(o)
+	return o, s.PopulateByID(o)
 }
 
 func (u *mongoUser) IncludeAction(a models.Action) error {
@@ -374,45 +325,29 @@ func (u *mongoUser) ExcludeAction(a models.Action) error {
 	return u.Schema().Unlink(u, a, actions)
 }
 
-func (u *mongoUser) ActionsIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) ActionsIter(s models.Store) (data.ModelIterator, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.ActionIDs, a), nil
+	return mongo.NewIDIter(u.ActionIDs, s), nil
 }
 
-func (u *mongoUser) Actions(a data.Access) ([]models.Action, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) Actions(s models.Store) ([]models.Action, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	actions := make([]models.Action, 0)
-	iter, err := u.ActionsIter(a)
-	if err != nil {
-		return actions, err
-	}
+	iter := mongo.NewIDIter(u.ActionIDs, s)
 
-	m, err := a.ModelFor(models.ActionKind)
-	if err != nil {
-		return actions, err
-	}
-
-	for iter.Next(m) {
-		action, ok := m.(models.Action)
-		if !ok {
-			return actions, models.CastError(models.ActionKind)
-		}
-
+	action := s.Action()
+	for iter.Next(action) {
 		actions = append(actions, action)
-
-		m, err = a.ModelFor(models.ActionKind)
-		if err != nil {
-			return actions, err
-		}
+		action = s.Action()
 	}
 
-	return actions, nil
+	return actions, iter.Close()
 }
 
 func (u *mongoUser) IncludeEvent(e models.Event) error {
@@ -423,46 +358,30 @@ func (u *mongoUser) ExcludeEvent(e models.Event) error {
 	return u.Schema().Unlink(u, e, events)
 }
 
-func (u *mongoUser) EventsIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) EventsIter(s models.Store) (data.ModelIterator, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.EventIDs, a), nil
+	return mongo.NewIDIter(u.EventIDs, s), nil
 }
 
-func (u *mongoUser) Events(a data.Access) ([]models.Event, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) Events(s models.Store) ([]models.Event, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	events := make([]models.Event, 0)
 
-	iter, err := u.EventsIter(a)
-	if err != nil {
-		return events, err
+	iter := mongo.NewIDIter(u.EventIDs, s)
+
+	event := s.Event()
+	for iter.Next(event) {
+		events = append(events, event)
+		event = s.Event()
 	}
 
-	m, err := a.ModelFor(models.EventKind)
-	if err != nil {
-		return events, err
-	}
-
-	for iter.Next(m) {
-		e, ok := m.(models.Event)
-		if !ok {
-			return events, models.CastError(models.EventKind)
-		}
-
-		events = append(events, e)
-
-		m, err = a.ModelFor(models.EventKind)
-		if err != nil {
-			return events, err
-		}
-	}
-
-	return events, nil
+	return events, iter.Close()
 }
 
 func (u *mongoUser) IncludeTask(t models.Task) error {
@@ -473,43 +392,25 @@ func (u *mongoUser) ExcludeTask(t models.Task) error {
 	return u.Schema().Unlink(u, t, tasks)
 }
 
-func (u *mongoUser) TasksIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) TasksIter(s models.Store) (data.ModelIterator, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.TaskIDs, a), nil
+	return mongo.NewIDIter(u.TaskIDs, s), nil
 }
 
-func (u *mongoUser) Tasks(a data.Access) ([]models.Task, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) Tasks(s models.Store) ([]models.Task, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	tasks := make([]models.Task, 0)
-
-	iter, err := u.TasksIter(a)
-	if err != nil {
-		return tasks, err
-	}
-
-	m, err := a.ModelFor(models.TaskKind)
-	if err != nil {
-		return tasks, err
-	}
-
-	for iter.Next(m) {
-		t, ok := m.(models.Task)
-		if !ok {
-			return tasks, models.CastError(models.TaskKind)
-		}
-
-		tasks = append(tasks, t)
-
-		m, err = a.ModelFor(models.TaskKind)
-		if err != nil {
-			return tasks, err
-		}
+	iter := mongo.NewIDIter(u.TaskIDs, s)
+	task := s.Task()
+	for iter.Next(task) {
+		tasks = append(tasks, task)
+		task = s.Task()
 	}
 
 	return tasks, nil
@@ -523,43 +424,25 @@ func (u *mongoUser) ExcludeRoutine(r models.Routine) error {
 	return u.Schema().Unlink(u, r, routines)
 }
 
-func (u *mongoUser) RoutinesIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) RoutinesIter(s models.Store) (data.ModelIterator, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.RoutineIDs, a), nil
+	return mongo.NewIDIter(u.RoutineIDs, s), nil
 }
 
-func (u *mongoUser) Routines(a data.Access) ([]models.Routine, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoUser) Routines(s models.Store) ([]models.Routine, error) {
+	if !s.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	routines := make([]models.Routine, 0)
-
-	iter, err := u.RoutinesIter(a)
-	if err != nil {
-		return routines, err
-	}
-
-	m, err := a.ModelFor(models.RoutineKind)
-	if err != nil {
-		return routines, err
-	}
-
-	for iter.Next(m) {
-		r, ok := m.(models.Routine)
-		if !ok {
-			return routines, models.CastError(models.RoutineKind)
-		}
-
-		routines = append(routines, r)
-
-		m, err = a.ModelFor(models.RoutineKind)
-		if err != nil {
-			return routines, err
-		}
+	iter := mongo.NewIDIter(u.RoutineIDs, s)
+	routine := s.Routine()
+	for iter.Next(routine) {
+		routines = append(routines, routine)
+		routine = s.Routine()
 	}
 
 	return routines, nil

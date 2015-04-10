@@ -8,13 +8,20 @@ import (
 	"github.com/elos/models/structures"
 )
 
-func FirstFixture(s models.Schedule, a data.Access) (first models.Fixture, err error) {
-	return EarliestSince(s, a, *new(time.Time))
+func FirstFixture(s models.Schedule, store models.Store) (first models.Fixture, err error) {
+	return EarliestSince(s, store, *new(time.Time))
 }
 
-func EarliestSince(s models.Schedule, a data.Access, start time.Time) (models.Fixture, error) {
-	iter, _ := s.FixturesIter(a)
-	fixtures, _ := OrderFixtures(a, iter)
+func EarliestSince(s models.Schedule, store models.Store, start time.Time) (models.Fixture, error) {
+	iter, err := s.FixturesIter(store)
+	if err != nil {
+		return nil, err
+	}
+
+	fixtures, err := OrderFixtures(store, iter)
+	if err != nil {
+		return nil, err
+	}
 
 	for _, f := range fixtures {
 		if start.Before(f.StartTime()) {
@@ -25,32 +32,30 @@ func EarliestSince(s models.Schedule, a data.Access, start time.Time) (models.Fi
 	return nil, data.ErrNotFound
 }
 
-func OrderedFixtures(s models.Schedule, a data.Access) ([]models.Fixture, error) {
-	iter, err := s.FixturesIter(a)
+func OrderedFixtures(s models.Schedule, store models.Store) ([]models.Fixture, error) {
+	iter, err := s.FixturesIter(store)
 	if err != nil {
 		return nil, err
 	}
-	return OrderFixtures(a, iter)
+	return OrderFixtures(store, iter)
 }
 
-func OrderFixtures(a data.Access, iter data.ModelIterator) ([]models.Fixture, error) {
-	m, _ := a.ModelFor(models.FixtureKind)
-	f := m.(models.Fixture)
+func OrderFixtures(store models.Store, iter data.ModelIterator) ([]models.Fixture, error) {
 	tree := new(structures.TimeableTree)
-	fixtures := make([]models.Fixture, 0)
 	c := 0
 
+	f := store.Fixture()
 	for iter.Next(f) {
 		tree.Add(f)
+		f = store.Fixture()
 		c++
-		m, _ = a.ModelFor(models.FixtureKind)
-		f = m.(models.Fixture)
 	}
 
 	if err := iter.Close(); err != nil {
-		return fixtures, err
+		return nil, err
 	}
 
+	fixtures := make([]models.Fixture, 0)
 	s := tree.Stream()
 	for i := 0; i < c; i++ {
 		of := <-s

@@ -3,7 +3,6 @@ package calendar
 import (
 	"time"
 
-	"github.com/elos/data"
 	"github.com/elos/models"
 	"github.com/elos/models/schedule"
 )
@@ -16,51 +15,44 @@ func Yearday(t time.Time) int {
 	return 100*int(t.Month()) + t.Day()
 }
 
-func MergedScheduleForTime(a data.Access, c models.Calendar, t time.Time) (s models.Schedule, err error) {
+func MergedScheduleForTime(store models.Store, c models.Calendar, t time.Time) (s models.Schedule, err error) {
 	schedules := make([]models.Schedule, 0)
 
-	base, err := c.BaseSchedule(a)
-	if err != nil {
-		// We don't mind if it's an empty link error
-		if _, ok := err.(*data.EmptyLinkError); !ok {
-			return
-		}
+	base, err := c.BaseSchedule(store)
+	if err != nil && err != models.ErrEmptyRelationship {
+		return
 	} else {
 		schedules = append(schedules, base)
 	}
 
-	weekday, err := c.WeekdaySchedule(a, t.Weekday())
-	if err != nil {
-		if _, ok := err.(*data.EmptyLinkError); !ok {
-			return
-		}
+	weekday, err := c.WeekdaySchedule(store, t.Weekday())
+	if err != nil && err != models.ErrEmptyRelationship {
+		return
 	} else {
 		schedules = append(schedules, weekday)
 	}
 
-	yearday, err := c.YeardaySchedule(a, t)
-	if err != nil {
-		if _, ok := err.(*data.EmptyLinkError); !ok {
-			return
-		}
+	yearday, err := c.YeardaySchedule(store, t)
+	if err != nil && err != models.ErrEmptyRelationship {
+		return
 	} else {
 		schedules = append(schedules, yearday)
 	}
 
-	return schedule.Merge(a, schedules...)
+	return schedule.Merge(store, schedules...)
 }
 
-func NextFixture(a data.Access, c models.Calendar) (first models.Fixture, err error) {
-	s, err := MergedScheduleForTime(a, c, time.Now())
+func NextFixture(store models.Store, c models.Calendar) (first models.Fixture, err error) {
+	s, err := MergedScheduleForTime(store, c, time.Now())
 	if err != nil {
 		return nil, err
 	}
 
-	return s.FirstFixture(a)
+	return s.FirstFixture(store)
 }
 
-func CurrentFreeTime(a data.Access, c models.Calendar) time.Duration {
-	f, err := NextFixture(a, c)
+func CurrentFreeTime(store models.Store, c models.Calendar) time.Duration {
+	f, err := NextFixture(store, c)
 	if err != nil {
 		return 0
 	}
@@ -68,7 +60,7 @@ func CurrentFreeTime(a data.Access, c models.Calendar) time.Duration {
 	return f.StartTime().Sub(time.Now())
 }
 
-func FreeTimeOnDay(a data.Access, c models.Calendar, t time.Time) time.Duration {
+func FreeTimeOnDay(store models.Store, c models.Calendar, t time.Time) time.Duration {
 	/*
 		s, _ := MergedScheduleForTime(a, c, t)
 		iter, _ := s.Fixtures(a)
@@ -80,6 +72,6 @@ func FreeTimeOnDay(a data.Access, c models.Calendar, t time.Time) time.Duration 
 	return 0
 }
 
-func FreeTimeUntil(a data.Access, c models.Calendar, t time.Time) time.Duration {
+func FreeTimeUntil(store models.Store, c models.Calendar, t time.Time) time.Duration {
 	return 0
 }

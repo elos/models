@@ -18,19 +18,24 @@ var (
 	version int         = models.DataVersion
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Object, error) {
+func New(s data.Store) models.Object {
 	switch s.Type() {
 	case mongo.DBType:
 		o := &mongoObject{}
 		o.SetID(s.NewID())
 		o.Traits = make(map[string]string)
 		o.Relationships = make(map[string]mongo.IDSet)
-		return o, nil
+		return o
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
+}
+
+func Create(s data.Store) (models.Object, error) {
+	c := New(s)
+	return c, s.Save(c)
 }

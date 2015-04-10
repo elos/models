@@ -35,7 +35,7 @@ var (
 	about a particular model, and therefore store.ModelFor and
 	store.Unmarshal only work at the level of the data.Model interface.
 */
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
@@ -58,23 +58,19 @@ func NewM(s data.Store) (data.Model, error) {
 
 	Note that New will set the ID, but not the key for a user (which is a required field).
 */
-func New(s data.Store) (models.User, error) {
+func New(s data.Store) models.User {
 	switch s.Type() {
 	case mongo.DBType:
 		u := &mongoUser{}
 		u.SetID(s.NewID())
-		return u, nil
+		return u
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.User, error) {
-	u, err := New(s)
-	if err != nil {
-		return u, err
-	}
-
+	u := New(s)
 	return u, s.Save(u)
 }
 
@@ -100,10 +96,7 @@ func Create(s data.Store) (models.User, error) {
 	Most errors for create don't matter. But if the id is bad, Create complains.
 */
 func CreateAttrs(s data.Store, a data.AttrMap) (models.User, error) {
-	user, err := New(s)
-	if err != nil {
-		return user, err
-	}
+	user := New(s)
 
 	if idInterface, present := a["id"]; present {
 		idString, ok := idInterface.(string)

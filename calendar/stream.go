@@ -11,13 +11,13 @@ type FixtureStream struct {
 	iter data.ModelIterator
 	t    time.Time
 
-	data.Access
+	models.Store
 	models.Calendar
 
 	err error
 }
 
-func NewFixtureStream(a data.Access, c models.Calendar, start time.Time) {
+func NewFixtureStream(store models.Store, c models.Calendar, start time.Time) {
 
 }
 
@@ -58,13 +58,13 @@ func (f FixtureStream) advanceDay() {
 	fDiff := 24*time.Hour - diff
 	f.t = f.t.Add(fDiff).Round(time.Hour)
 
-	s, e := MergedScheduleForTime(f.Access, f.Calendar, f.t)
+	s, e := MergedScheduleForTime(f.Store, f.Calendar, f.t)
 	if e != nil {
 		f.err = e
 		return
 	}
 
-	iter, e := s.FixturesIter(f.Access)
+	iter, e := s.FixturesIter(f.Store)
 	if e != nil {
 		f.err = e
 		return

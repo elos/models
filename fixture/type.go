@@ -19,27 +19,23 @@ var (
 	version int         = models.DataVersion
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Fixture, error) {
+func New(s data.Store) models.Fixture {
 	switch s.Type() {
 	case mongo.DBType:
 		f := &mongoFixture{}
 		f.SetID(s.NewID())
 
-		return f, nil
+		return f
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Fixture, error) {
-	f, err := New(s)
-	if err != nil {
-		return f, err
-	}
-
+	f := New(s)
 	return f, s.Save(f)
 }

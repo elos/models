@@ -14,54 +14,58 @@ import (
 	"github.com/elos/models/schedule"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
-	"github.com/elos/mongo"
 )
 
-func MongoDB(addr string) (data.DB, error) {
-	db := mongo.NewDB()
-	if err := db.Connect(addr); err != nil {
-		return nil, err
+type modelsStore struct {
+	data.Store
+}
+
+func ModelsStore(s data.Store) models.Store {
+	return &modelsStore{
+		Store: s,
 	}
-	db.SetName("test")
-
-	db.RegisterKind(models.UserKind, "users")
-	db.RegisterKind(models.EventKind, "events")
-	db.RegisterKind(models.TaskKind, "tasks")
-	db.RegisterKind(models.RoutineKind, "routines")
-	db.RegisterKind(models.ActionKind, "actions")
-	db.RegisterKind(models.SetKind, "sets")
-	db.RegisterKind(models.FixtureKind, "fixtures")
-	db.RegisterKind(models.ScheduleKind, "schedules")
-	db.RegisterKind(models.OntologyKind, "ontologies")
-	db.RegisterKind(models.ClassKind, "classes")
-	db.RegisterKind(models.ObjectKind, "objects")
-	db.RegisterKind(models.CalendarKind, "calendars")
-
-	return db, nil
 }
 
-func MongoMemoryDB() data.DB {
-	db := data.NewMemoryDBWithType(mongo.DBType)
-	db.SetIDConstructor(func() data.ID {
-		return mongo.NewObjectID()
-	})
-	return db
+func (ms *modelsStore) Action() models.Action {
+	return action.New(ms.Store)
 }
 
-func Store(db data.DB) data.Store {
-	s := data.NewStore(db, models.Schema)
+func (ms *modelsStore) Calendar() models.Calendar {
+	return calendar.New(ms.Store)
+}
 
-	s.Register(models.UserKind, user.NewM)
-	s.Register(models.EventKind, event.NewM)
-	s.Register(models.TaskKind, task.NewM)
-	s.Register(models.RoutineKind, routine.NewM)
-	s.Register(models.ActionKind, action.NewM)
-	s.Register(models.FixtureKind, fixture.NewM)
-	s.Register(models.ScheduleKind, schedule.NewM)
-	s.Register(models.OntologyKind, ontology.NewM)
-	s.Register(models.ClassKind, class.NewM)
-	s.Register(models.ObjectKind, object.NewM)
-	s.Register(models.CalendarKind, calendar.NewM)
+func (ms *modelsStore) Class() models.Class {
+	return class.New(ms.Store)
+}
 
-	return s
+func (ms *modelsStore) Event() models.Event {
+	return event.New(ms.Store)
+}
+
+func (ms *modelsStore) Fixture() models.Fixture {
+	return fixture.New(ms.Store)
+}
+
+func (ms *modelsStore) Object() models.Object {
+	return object.New(ms.Store)
+}
+
+func (ms *modelsStore) Ontology() models.Ontology {
+	return ontology.New(ms.Store)
+}
+
+func (ms *modelsStore) Routine() models.Routine {
+	return routine.New(ms.Store)
+}
+
+func (ms *modelsStore) Schedule() models.Schedule {
+	return schedule.New(ms.Store)
+}
+
+func (ms *modelsStore) Task() models.Task {
+	return task.New(ms.Store)
+}
+
+func (ms *modelsStore) User() models.User {
+	return user.New(ms.Store)
 }

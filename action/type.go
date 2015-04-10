@@ -17,35 +17,28 @@ var (
 	version int         = models.DataVersion
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Action, error) {
+func New(s data.Store) models.Action {
 	switch s.Type() {
 	case mongo.DBType:
 		a := &mongoAction{}
 		a.SetID(s.NewID())
-		return a, nil
+		return a
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Action, error) {
-	a, err := New(s)
-	if err != nil {
-		return a, err
-	}
-
+	a := New(s)
 	return a, s.Save(a)
 }
 
 func CreateAttrs(s data.Store, a data.AttrMap) (models.Action, error) {
-	action, err := New(s)
-	if err != nil {
-		return action, err
-	}
+	action := New(s)
 
 	id, present := a["id"]
 	id, valid := id.(data.ID)

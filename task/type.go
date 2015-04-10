@@ -21,35 +21,28 @@ func Setup(s data.Schema, k data.Kind, v int) {
 	schema, kind, version = s, k, v
 }
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Task, error) {
+func New(s data.Store) models.Task {
 	switch s.Type() {
 	case mongo.DBType:
 		t := &mongoTask{}
 		t.SetID(s.NewID())
-		return t, nil
+		return t
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Task, error) {
-	t, err := New(s)
-	if err != nil {
-		return t, err
-	}
-
+	t := New(s)
 	return t, s.Save(t)
 }
 
 func CreateAttrs(s data.Store, a data.AttrMap) (models.Task, error) {
-	task, err := New(s)
-	if err != nil {
-		return task, err
-	}
+	task := New(s)
 
 	id, present := a["id"]
 	id, valid := id.(data.ID)

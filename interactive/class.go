@@ -33,12 +33,12 @@ func ClassModel(s *Space, m models.Class) *Class {
 }
 
 func (c *Class) Reload() error {
-	c.space.Access.PopulateByID(c.model)
+	c.space.Store.PopulateByID(c.model)
 	return data.TransferAttrs(c.model, c)
 }
 
 func (c *Class) NewObject() *Object {
-	o, _ := c.model.NewObject(c.space.Access)
+	o, _ := c.model.NewObject(c.space.Store.(models.Store))
 	return ObjectModel(c.space, o)
 }
 
@@ -49,7 +49,7 @@ func (c *Class) AddTrait(name string, tipe string) {
 	}
 
 	c.model.IncludeTrait(t)
-	c.space.Access.Save(c.model)
+	c.space.Store.Save(c.model)
 	data.TransferAttrs(c.model, c)
 }
 
@@ -61,12 +61,12 @@ func (c *Class) AddRelationship(name string, other string, inverse string) {
 	}
 
 	c.model.IncludeRelationship(r)
-	c.space.Access.Save(c.model)
+	c.space.Store.Save(c.model)
 	data.TransferAttrs(c.model, c)
 }
 
 func (c *Class) Ontology() *Ontology {
-	o, _ := c.model.Ontology(c.space.Access)
+	o, _ := c.model.Ontology(c.space.Store.(models.Store))
 	return OntologyModel(c.space, o)
 }
 
@@ -80,14 +80,14 @@ func (c *Class) Objects() []*Object {
 }
 
 func NewClass(s *Space) *Class {
-	m, _ := s.Access.ModelFor(models.ClassKind)
+	m, _ := s.Store.ModelFor(models.ClassKind)
 	return ClassModel(s, m.(models.Class))
 }
 
 func (s *Space) FindClass(id string) *Class {
-	m, _ := s.Access.Unmarshal(models.ClassKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.ClassKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return ClassModel(s, m.(models.Class))
 }

@@ -18,7 +18,7 @@ type Action interface {
 	Completed() bool
 
 	SetTask(Task) error
-	Task(data.Access) (Task, error)
+	Task(Store) (Task, error)
 
 	Complete()
 }
@@ -38,7 +38,8 @@ type Task interface {
 
 	AddDependency(Task) error
 	DropDependency(Task) error
-	Dependencies(data.Access) (data.ModelIterator, error)
+	DependenciesIter(Store) (data.ModelIterator, error)
+	Dependencies(Store) ([]Task, error)
 }
 
 type Routine interface {
@@ -49,12 +50,14 @@ type Routine interface {
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
-	Tasks(data.Access) (data.ModelIterator, error)
+	TasksIter(Store) (data.ModelIterator, error)
+	Tasks(Store) ([]Task, error)
 	TaskIDs() []data.ID
 
 	CompleteTask(Task) error
 	UncompleteTask(Task) error
-	CompletedTasks(data.Access) (data.ModelIterator, error)
+	CompletedTasksIter(Store) (data.ModelIterator, error)
+	CompletedTasks(Store) ([]Task, error)
 	CompletedTaskIDs() []data.ID
 
 	IncompleteTaskIDs() []data.ID
@@ -64,7 +67,7 @@ type Routine interface {
 	DropAction(Action) error
 
 	SetCurrentAction(Action)
-	CurrentAction(data.Access, Action) error
+	CurrentAction(Store) (Action, error)
 }
 
 type GeoPoint interface {

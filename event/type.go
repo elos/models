@@ -19,35 +19,28 @@ var (
 	version int         = models.DataVersion
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Event, error) {
+func New(s data.Store) models.Event {
 	switch s.Type() {
 	case mongo.DBType:
 		e := &mongoEvent{}
 		e.SetID(s.NewID())
-		return e, nil
+		return e
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Event, error) {
-	e, err := New(s)
-	if err != nil {
-		return e, err
-	}
-
+	e := New(s)
 	return e, s.Save(e)
 }
 
 func CreateAttrs(s data.Store, a data.AttrMap) (models.Event, error) {
-	event, err := New(s)
-	if err != nil {
-		return event, err
-	}
+	event := New(s)
 
 	id, present := a["id"]
 	id, valid := id.(data.ID)
@@ -81,10 +74,7 @@ func CreateAttrs(s data.Store, a data.AttrMap) (models.Event, error) {
 }
 
 func Find(s data.Store, id data.ID) (models.Event, error) {
-	event, err := New(s)
-	if err != nil {
-		return event, err
-	}
+	event := New(s)
 
 	id, ok := id.(bson.ObjectId)
 	if !ok {
@@ -92,25 +82,12 @@ func Find(s data.Store, id data.ID) (models.Event, error) {
 	}
 
 	event.SetID(id)
-
-	if err := s.PopulateByID(event); err != nil {
-		return event, err
-	}
-
-	return event, nil
+	return event, s.PopulateByID(event)
 }
 
 func FindBy(s data.Store, field string, value interface{}) (models.Event, error) {
-	event, err := New(s)
-	if err != nil {
-		return event, err
-	}
-
-	if err = s.PopulateByField(field, value, event); err != nil {
-		return event, err
-	}
-
-	return event, nil
+	event := New(s)
+	return event, s.PopulateByField(field, value, event)
 }
 
 func Validate(e models.Event) (bool, error) {

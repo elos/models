@@ -78,45 +78,28 @@ func (o *mongoOntology) ExcludeClass(c models.Class) error {
 	return o.Schema().Unlink(o, c, classes)
 }
 
-func (o *mongoOntology) ClassesIter(a data.Access) (data.ModelIterator, error) {
-	if !o.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (o *mongoOntology) ClassesIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(o.ClassIDs, a), nil
+	return mongo.NewIDIter(o.ClassIDs, store), nil
 }
 
-func (o *mongoOntology) Classes(a data.Access) ([]models.Class, error) {
-	if !o.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (o *mongoOntology) Classes(store models.Store) ([]models.Class, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	classes := make([]models.Class, 0)
-	iter, err := o.ClassesIter(a)
-	if err != nil {
-		return classes, err
-	}
-
-	m, err := a.ModelFor(models.ClassKind)
-	if err != nil {
-		return classes, err
-	}
-
-	for iter.Next(m) {
-		class, ok := m.(models.Class)
-		if !ok {
-			return classes, models.CastError(models.ClassKind)
-		}
-
+	iter := mongo.NewIDIter(o.ClassIDs, store)
+	class := store.Class()
+	for iter.Next(class) {
 		classes = append(classes, class)
-
-		m, err = a.ModelFor(models.ClassKind)
-		if err != nil {
-			return classes, err
-		}
+		class = store.Class()
 	}
 
-	return classes, err
+	return classes, iter.Close()
 }
 
 func (o *mongoOntology) IncludeObject(obj models.Object) error {
@@ -127,43 +110,26 @@ func (o *mongoOntology) ExcludeObject(obj models.Object) error {
 	return o.Schema().Unlink(o, obj, objects)
 }
 
-func (o *mongoOntology) ObjectsIter(a data.Access) (data.ModelIterator, error) {
-	if !o.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (o *mongoOntology) ObjectsIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(o.ObjectIDs, a), nil
+	return mongo.NewIDIter(o.ObjectIDs, store), nil
 }
 
-func (o *mongoOntology) Objects(a data.Access) ([]models.Object, error) {
-	if !o.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (o *mongoOntology) Objects(store models.Store) ([]models.Object, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	objects := make([]models.Object, 0)
-	iter, err := o.ObjectsIter(a)
-	if err != nil {
-		return objects, err
-	}
-
-	m, err := a.ModelFor(models.ObjectKind)
-	if err != nil {
-		return objects, err
-	}
-
-	for iter.Next(m) {
-		object, ok := m.(models.Object)
-		if !ok {
-			return objects, models.CastError(models.ObjectKind)
-		}
-
+	iter := mongo.NewIDIter(o.ObjectIDs, store)
+	object := store.Object()
+	for iter.Next(object) {
 		objects = append(objects, object)
-
-		m, err = a.ModelFor(models.ObjectKind)
-		if err != nil {
-			return objects, err
-		}
+		object = store.Object()
 	}
 
-	return objects, err
+	return objects, iter.Close()
 }

@@ -18,28 +18,24 @@ var (
 	relationships data.LinkName = models.ClassRelationships
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Class, error) {
+func New(s data.Store) models.Class {
 	switch s.Type() {
 	case mongo.DBType:
 		c := &mongoClass{}
 		c.SetID(s.NewID())
 		c.ETraits = make(map[string]*models.Trait)
 		c.ERelationships = make(map[string]*models.Relationship)
-		return c, nil
+		return c
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Class, error) {
-	c, err := New(s)
-	if err != nil {
-		return nil, err
-	}
-
+	c := New(s)
 	return c, s.Save(c)
 }

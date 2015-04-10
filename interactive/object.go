@@ -34,29 +34,29 @@ func ObjectModel(s *Space, m models.Object) *Object {
 }
 
 func NewObject(s *Space) *Object {
-	m, _ := s.Access.ModelFor(models.ObjectKind)
+	m, _ := s.Store.ModelFor(models.ObjectKind)
 	return ObjectModel(s, m.(models.Object))
 }
 
 func (o *Object) Reload() error {
-	o.space.Access.PopulateByID(o.model)
+	o.space.Store.PopulateByID(o.model)
 	return data.TransferAttrs(o.model, o)
 }
 
 func (o *Object) Ontology() *Ontology {
-	ontology, _ := o.model.Ontology(o.space.Access)
+	ontology, _ := o.model.Ontology(o.space.Store.(models.Store))
 	return OntologyModel(o.space, ontology)
 }
 
 func (o *Object) Class() *Class {
-	class, _ := o.model.Class(o.space.Access)
+	class, _ := o.model.Class(o.space.Store.(models.Store))
 	return ClassModel(o.space, class)
 }
 
 func (s *Space) FindObject(id string) *Object {
-	m, _ := s.Access.Unmarshal(models.ObjectKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.ObjectKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return ObjectModel(s, m.(models.Object))
 }

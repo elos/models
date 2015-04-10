@@ -7,19 +7,18 @@ import (
 	"github.com/elos/models"
 )
 
-func NextAction(c models.Calendar, a data.Access) (action models.Action, err error) {
-	current, err := c.CurrentFixture(a)
+func NextAction(c models.Calendar, store models.Store) (action models.Action, err error) {
+	current, err := c.CurrentFixture(store)
 	if err != nil {
 		return
 	}
 
-	action, err = current.NextAction(a)
-
+	action, err = current.NextAction(store)
 	return
 }
 
-func StartAction(c models.Calendar, access data.Access, action models.Action) error {
-	actionable, err := action.Actionable(access)
+func StartAction(c models.Calendar, store models.Store, action models.Action) error {
+	actionable, err := action.Actionable(store)
 	if err != nil {
 		return err
 	}
@@ -32,8 +31,8 @@ func StartAction(c models.Calendar, access data.Access, action models.Action) er
 	return c.SetCurrentFixture(actionFixture)
 }
 
-func CompleteAction(c models.Calendar, access data.Access, action models.Action) error {
-	actionable, err := action.Actionable(access)
+func CompleteAction(c models.Calendar, store models.Store, action models.Action) error {
+	actionable, err := action.Actionable(store)
 	if err != nil {
 		return err
 	}
@@ -43,7 +42,7 @@ func CompleteAction(c models.Calendar, access data.Access, action models.Action)
 		return errors.New("Actionable is not a fixture") // Invariant 1
 	}
 
-	cFixture, err := c.CurrentFixture(access)
+	cFixture, err := c.CurrentFixture(store)
 	if err != nil {
 		return err
 	}
@@ -56,5 +55,5 @@ func CompleteAction(c models.Calendar, access data.Access, action models.Action)
 		return err
 	}
 
-	return cFixture.CompleteAction(access, action)
+	return cFixture.CompleteAction(store, action)
 }

@@ -11,12 +11,12 @@ import (
 
 type ActionRoutine struct {
 	models.Routine
-	data.Access
+	models.Store
 }
 
-func NewActionRoutine(a data.Access, r models.Routine) *ActionRoutine {
+func NewActionRoutine(r models.Routine, store models.Store) *ActionRoutine {
 	return &ActionRoutine{
-		Access:  a,
+		Store:   store,
 		Routine: r,
 	}
 }
@@ -33,20 +33,18 @@ func (r *ActionRoutine) Next() (models.Action, error) {
 	i := rand.Intn(len(ids))
 	id := ids[i]
 
-	model, _ := r.Access.ModelFor(models.TaskKind)
-	task := model.(models.Task)
+	task := r.Store.Task()
 	task.SetID(id)
-	if err := r.Access.PopulateByID(task); err != nil {
+	if err := r.Store.PopulateByID(task); err != nil {
 		return nil, err
 	}
 
-	model, _ = r.Access.ModelFor(models.ActionKind)
-	action := model.(models.Action)
-	action.SetID(r.Access.NewID())
+	action := r.Store.Action()
+	action.SetID(r.Store.NewID())
 	action.SetName(task.Name())
 	action.SetTask(task)
 
-	u, err := r.Access.Unmarshal(models.UserKind, data.AttrMap{
+	u, err := r.Store.Unmarshal(models.UserKind, data.AttrMap{
 		"id": r.UserID().(bson.ObjectId).Hex(),
 	})
 	if err != nil {
@@ -65,13 +63,12 @@ func (r *ActionRoutine) Next() (models.Action, error) {
 }
 
 func (r *ActionRoutine) ForEachTask(f func(models.Task)) error {
-	iter, err := r.Routine.Tasks(r.Access)
+	iter, err := r.Routine.TasksIter(r.Store)
 	if err != nil {
 		return err
 	}
 
-	model, err := r.Access.ModelFor(models.TaskKind)
-	task := model.(models.Task)
+	task := r.Store.Task()
 
 	for iter.Next(task) {
 		go f(task)

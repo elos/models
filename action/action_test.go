@@ -15,11 +15,7 @@ import (
 
 func TestMongo(t *testing.T) {
 	s := persistence.Store(persistence.MongoMemoryDB())
-	a, err := action.New(s)
-	if err != nil {
-		t.Errorf("Error from calendar.New, expected no error but got %s", err)
-	}
-
+	a := action.New(s)
 	testAction(s, a, t)
 
 	if a.Version() != 1 {
@@ -36,23 +32,22 @@ func TestMongo(t *testing.T) {
 }
 
 func testAction(s data.Store, a models.Action, t *testing.T) {
-	access := data.NewAnonAccess(s)
+	store := persistence.ModelsStore(s)
 
-	testActioned(access, a, t)
-	testCompleted(access, a, t)
-	testTask(access, a, t)
-	testComplete(access, a, t)
+	testActioned(store, a, t)
+	testCompleted(store, a, t)
+	testTask(store, a, t)
+	testComplete(store, a, t)
 	testAccessProtection(s, a, t)
 
 	modeltest.Userable(s, a, t)
 	modeltest.UserOwnedAccessRights(s, a, t)
-	modeltest.AnonReadAccess(s, a, t)
 }
 
-func testActioned(access data.Access, a models.Action, t *testing.T) {
+func testActioned(access models.Store, a models.Action, t *testing.T) {
 }
 
-func testCompleted(access data.Access, a models.Action, t *testing.T) {
+func testCompleted(access models.Store, a models.Action, t *testing.T) {
 	if a.Completed() {
 		t.Errorf("Expect a new action not to be comleted")
 	}
@@ -70,7 +65,7 @@ func testCompleted(access data.Access, a models.Action, t *testing.T) {
 	}
 }
 
-func testTask(access data.Access, a models.Action, t *testing.T) {
+func testTask(access models.Store, a models.Action, t *testing.T) {
 	_, err := a.Task(access)
 	expect.EmptyLinkError("Task", err, t)
 
@@ -82,7 +77,7 @@ func testTask(access data.Access, a models.Action, t *testing.T) {
 
 }
 
-func testComplete(access data.Access, a models.Action, t *testing.T) {
+func testComplete(access models.Store, a models.Action, t *testing.T) {
 	a.SetCompleted(false)
 
 	a.Complete()
@@ -94,7 +89,4 @@ func testComplete(access data.Access, a models.Action, t *testing.T) {
 	if time.Now().Sub(a.EndTime()) > 1*time.Second {
 		t.Errorf("Should complete task and set end time")
 	}
-}
-
-func testAccessProtection(s data.Store, a models.Action, t *testing.T) {
 }

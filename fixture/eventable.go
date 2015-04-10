@@ -6,29 +6,21 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func NextEvent(a data.Access, f models.Fixture) (models.Event, error) {
+func NextEvent(f models.Fixture, store models.Store) (models.Event, error) {
 	// Allow an eventable to hijack
 	if f.HasEventable() {
-		e, err := f.Eventable(a)
+		e, err := f.Eventable(store)
 		if err != nil {
 			return nil, err
 		}
 
-		return e.NextEvent(a)
+		return e.NextEvent(store)
 	}
 
-	m, err := a.ModelFor(models.EventKind)
-	if err != nil {
-		return nil, err
-	}
-
-	event, ok := m.(models.Event)
-	if !ok {
-		return nil, models.CastError(models.EventKind)
-	}
+	event := store.Event()
 
 	event.SetName(f.Name())
-	u, err := a.Unmarshal(models.UserKind, data.AttrMap{
+	u, err := store.Unmarshal(models.UserKind, data.AttrMap{
 		"id": f.UserID().(bson.ObjectId).Hex(),
 	})
 	if err != nil {
@@ -37,9 +29,9 @@ func NextEvent(a data.Access, f models.Fixture) (models.Event, error) {
 	event.SetUser(u.(models.User))
 	f.IncludeEvent(event)
 
-	a.Save(u)
-	a.Save(event)
-	a.Save(f)
+	store.Save(u)
+	store.Save(event)
+	store.Save(f)
 
 	return event, nil
 }

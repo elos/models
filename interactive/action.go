@@ -30,7 +30,7 @@ func (this *Action) Delete() error {
 }
 
 func NewAction(s *Space) *Action {
-	a, _ := s.Access.ModelFor(models.ActionKind)
+	a, _ := s.Store.ModelFor(models.ActionKind)
 	a.SetID(s.NewID())
 	return ActionModel(s, a.(models.Action))
 }
@@ -56,14 +56,14 @@ func Actions(s *Space, models []models.Action) []*Action {
 }
 
 func (this *Action) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }
 
 func (this *Action) Complete() {
 	this.model.Complete()
-	this.space.Access.Save(this.model)
+	this.space.Store.Save(this.model)
 	this.space.Reload()
 }
 

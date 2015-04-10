@@ -3,6 +3,7 @@ package interactive
 import (
 	"github.com/elos/data"
 	"github.com/elos/models"
+	"github.com/elos/models/persistence"
 	"github.com/elos/models/user"
 	"github.com/robertkrimen/otto"
 	"gopkg.in/mgo.v2/bson"
@@ -20,11 +21,11 @@ type Space struct {
 	User *User
 }
 
-func Access(a data.Access) (space *Space, err error) {
+func Store(store models.Store, u models.User) (space *Space, err error) {
 	space = new(Space)
 
-	space.InteractiveStore = data.NewInteractiveStore(a)
-	space.User = space.FindUser(space.InteractiveStore.Access.Client().ID().(bson.ObjectId).Hex())
+	space.InteractiveStore = data.NewInteractiveStore(store)
+	space.User = space.FindUser(u.ID().(bson.ObjectId).Hex())
 
 	return
 }
@@ -35,7 +36,7 @@ func NewSpace(c *Credentials, store data.Store) (*Space, error) {
 		return nil, err
 	}
 
-	return Access(data.NewAccess(client, store))
+	return Store(persistence.ModelsStore(store), client)
 }
 
 func (s *Space) Expose(o *otto.Otto) {
@@ -95,58 +96,58 @@ func (s *Space) Expose(o *otto.Otto) {
 }
 
 func (s *Space) FindUser(id string) *User {
-	m, _ := s.Access.Unmarshal(models.UserKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.UserKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return UserModel(s, m.(models.User))
 }
 
 func (s *Space) FindAction(id string) *Action {
-	m, _ := s.Access.Unmarshal(models.ActionKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.ActionKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return ActionModel(s, m.(models.Action))
 }
 
 func (s *Space) FindRoutine(id string) *Routine {
-	m, _ := s.Access.Unmarshal(models.RoutineKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.RoutineKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return RoutineModel(s, m.(models.Routine))
 }
 
 func (s *Space) FindTask(id string) *Task {
-	m, _ := s.Access.Unmarshal(models.TaskKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.TaskKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return TaskModel(s, m.(models.Task))
 }
 
 func (s *Space) FindFixture(id string) *Fixture {
-	m, _ := s.Access.Unmarshal(models.FixtureKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.FixtureKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return FixtureModel(s, m.(models.Fixture))
 }
 
 func (s *Space) FindSchedule(id string) *Schedule {
-	m, _ := s.Access.Unmarshal(models.ScheduleKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.ScheduleKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return ScheduleModel(s, m.(models.Schedule))
 }
 
 func (s *Space) FindCalendar(id string) *Calendar {
-	m, _ := s.Access.Unmarshal(models.CalendarKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.CalendarKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return CalendarModel(s, m.(models.Calendar))
 }
 

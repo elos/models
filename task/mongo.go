@@ -67,8 +67,6 @@ func (t *mongoTask) Unlink(m data.Model, l data.Link) error {
 	return nil
 }
 
-// Accessors
-
 func (t *mongoTask) SetUser(u models.User) error {
 	return t.Schema().Link(t, u, User)
 }
@@ -81,10 +79,26 @@ func (t *mongoTask) DropDependency(other models.Task) error {
 	return t.Schema().Unlink(t, other, Dependencies)
 }
 
-func (t *mongoTask) Dependencies(a data.Access) (data.ModelIterator, error) {
-	if t.CanRead(a.Client()) {
-		return mongo.NewIDIter(t.TaskIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
+func (t *mongoTask) DependenciesIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(t) {
+		return nil, data.ErrInvalidDBType
 	}
+
+	return mongo.NewIDIter(t.TaskIDs, store), nil
+}
+
+func (t *mongoTask) Dependencies(store models.Store) ([]models.Task, error) {
+	if !store.Compatible(t) {
+		return nil, data.ErrInvalidDBType
+	}
+
+	tasks := make([]models.Task, 0)
+	iter := mongo.NewIDIter(t.TaskIDs, store)
+	task := store.Task()
+	for iter.Next(task) {
+		tasks = append(tasks, task)
+		task = store.Task()
+	}
+
+	return tasks, iter.Close()
 }

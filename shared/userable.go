@@ -30,17 +30,10 @@ func (o *MongoUserOwned) UserID() data.ID {
 	return o.EUserID
 }
 
-func (o *MongoUserOwned) User(a data.Access) (models.User, error) {
-	m, err := a.ModelFor(models.UserKind)
-	if err != nil {
-		return nil, err
-	}
-	u, ok := m.(models.User)
-	if !ok {
-		return nil, models.CastError(models.UserKind)
-	}
+func (o *MongoUserOwned) User(store models.Store) (models.User, error) {
+	u := store.User()
 	u.SetID(o.EUserID)
-	return u, a.PopulateByID(u)
+	return u, store.PopulateByID(u)
 }
 
 func (o *MongoUserOwned) Concerned() []data.ID {

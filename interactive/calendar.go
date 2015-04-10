@@ -32,7 +32,7 @@ func CalendarModel(s *Space, m models.Calendar) *Calendar {
 }
 
 func NewCalendar(s *Space) *Calendar {
-	c, _ := calendar.New(s.Access)
+	c := calendar.New(s.Store)
 	return CalendarModel(s, c)
 }
 
@@ -48,7 +48,7 @@ func (this *Calendar) Delete() error {
 }
 
 func (this *Calendar) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }

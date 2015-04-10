@@ -40,6 +40,40 @@ func (r *mongoRoutine) Valid() bool {
 	return true
 }
 
+func (r *mongoRoutine) Link(m data.Model, l data.Link) error {
+	switch l.Name {
+	case User:
+		return r.SetUserID(m.ID())
+	case Tasks:
+		r.ETaskIDs = mongo.AddID(r.ETaskIDs, m.ID().(bson.ObjectId))
+	case CompletedTasks:
+		r.ECompletedTaskIDs = mongo.AddID(r.ECompletedTaskIDs, m.ID().(bson.ObjectId))
+	case Actions:
+		r.EActionIDs = mongo.AddID(r.EActionIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.ErrUndefinedLink
+	}
+
+	return nil
+}
+
+func (r *mongoRoutine) Unlink(m data.Model, l data.Link) error {
+	switch l.Name {
+	case User:
+		r.DropUserID()
+	case Tasks:
+		r.ETaskIDs = mongo.DropID(r.ETaskIDs, m.ID().(bson.ObjectId))
+	case CompletedTasks:
+		r.ECompletedTaskIDs = mongo.DropID(r.ECompletedTaskIDs, m.ID().(bson.ObjectId))
+	case Actions:
+		r.EActionIDs = mongo.DropID(r.EActionIDs, m.ID().(bson.ObjectId))
+	default:
+		return data.ErrUndefinedLink
+	}
+
+	return nil
+}
+
 func (r *mongoRoutine) SetUser(u models.User) error {
 	return r.Schema().Link(r, u, User)
 }
@@ -52,12 +86,28 @@ func (r *mongoRoutine) ExcludeTask(t models.Task) error {
 	return r.Schema().Unlink(r, t, Tasks)
 }
 
-func (r *mongoRoutine) Tasks(a data.Access) (data.ModelIterator, error) {
-	if r.CanRead(a.Client()) {
-		return mongo.NewIDIter(r.ETaskIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
+func (r *mongoRoutine) TasksIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(r) {
+		return nil, data.ErrInvalidDBType
 	}
+
+	return mongo.NewIDIter(r.ETaskIDs, store), nil
+}
+
+func (r *mongoRoutine) Tasks(store models.Store) ([]models.Task, error) {
+	if !store.Compatible(r) {
+		return nil, data.ErrInvalidDBType
+	}
+
+	tasks := make([]models.Task, 0)
+	iter := mongo.NewIDIter(r.ETaskIDs, store)
+	task := store.Task()
+	for iter.Next(task) {
+		tasks = append(tasks, task)
+		task = store.Task()
+	}
+
+	return tasks, iter.Close()
 }
 
 func (r *mongoRoutine) CompleteTask(t models.Task) error {
@@ -68,20 +118,36 @@ func (r *mongoRoutine) UncompleteTask(t models.Task) error {
 	return r.Schema().Unlink(r, t, CompletedTasks)
 }
 
-func (r *mongoRoutine) CompletedTasks(a data.Access) (data.ModelIterator, error) {
-	if r.CanRead(a.Client()) {
-		return mongo.NewIDIter(r.ECompletedTaskIDs, a), nil
-	} else {
-		return nil, data.ErrAccessDenial
+func (r *mongoRoutine) CompletedTasksIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(r) {
+		return nil, data.ErrInvalidDBType
 	}
+
+	return mongo.NewIDIter(r.ECompletedTaskIDs, store), nil
+}
+
+func (r *mongoRoutine) CompletedTasks(store models.Store) ([]models.Task, error) {
+	if !store.Compatible(r) {
+		return nil, data.ErrInvalidDBType
+	}
+
+	tasks := make([]models.Task, 0)
+	iter := mongo.NewIDIter(r.ECompletedTaskIDs, store)
+	task := store.Task()
+	for iter.Next(task) {
+		tasks = append(tasks, task)
+		task = store.Task()
+	}
+
+	return tasks, iter.Close()
 }
 
 func (r *mongoRoutine) ActionCount() int {
 	return len(r.ETaskIDs) - len(r.ECompletedTaskIDs)
 }
 
-func (r *mongoRoutine) NextAction(a data.Access) (models.Action, error) {
-	return NewActionRoutine(a, r).Next()
+func (r *mongoRoutine) NextAction(store models.Store) (models.Action, error) {
+	return NewActionRoutine(r, store).Next()
 }
 
 func (r *mongoRoutine) CompletedTaskIDs() []data.ID {
@@ -112,68 +178,46 @@ func (r *mongoRoutine) SetCurrentAction(a models.Action) {
 	r.Schema().Link(r, a, CurrentAction)
 }
 
-func (r *mongoRoutine) CurrentAction(a data.Access, action models.Action) error {
+func (r *mongoRoutine) CurrentAction(store models.Store) (models.Action, error) {
+	if !store.Compatible(r) {
+		return nil, data.ErrInvalidDBType
+	}
+
+	if mongo.EmptyID(r.ECurrentActionID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	action := store.Action()
 	action.SetID(r.ECurrentActionID)
-	return a.PopulateByID(action)
+	return action, store.PopulateByID(action)
 }
 
-func (r *mongoRoutine) StartAction(access data.Access, a models.Action) error {
+func (r *mongoRoutine) StartAction(store models.Store, a models.Action) error {
 	panic("not implemented")
 }
 
-func (r *mongoRoutine) CompleteAction(access data.Access, a models.Action) error {
-	if a.ID() == r.ECurrentActionID {
+func (r *mongoRoutine) CompleteAction(store models.Store, action models.Action) error {
+	if action.ID() == r.ECurrentActionID {
 		r.ECurrentActionID = ""
 	}
 
-	a.Complete()
+	action.Complete()
 
-	task, _ := a.Task(access)
+	task, err := action.Task(store)
+	if err != nil {
+		return err
+	}
 
 	r.CompleteTask(task)
 
-	if err := access.Save(a); err != nil {
+	if err := store.Save(action); err != nil {
 		return err
 	}
-	if err := access.Save(task); err != nil {
+	if err := store.Save(task); err != nil {
 		return err
 	}
-	if err := access.Save(r); err != nil {
+	if err := store.Save(r); err != nil {
 		return err
-	}
-
-	return nil
-}
-
-func (r *mongoRoutine) Link(m data.Model, l data.Link) error {
-	switch l.Name {
-	case User:
-		return r.SetUserID(m.ID())
-	case Tasks:
-		r.ETaskIDs = mongo.AddID(r.ETaskIDs, m.ID().(bson.ObjectId))
-	case CompletedTasks:
-		r.ECompletedTaskIDs = mongo.AddID(r.ECompletedTaskIDs, m.ID().(bson.ObjectId))
-	case Actions:
-		r.EActionIDs = mongo.AddID(r.EActionIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.ErrUndefinedLink
-	}
-
-	return nil
-}
-
-func (r *mongoRoutine) Unlink(m data.Model, l data.Link) error {
-	switch l.Name {
-	case User:
-		r.DropUserID()
-	case Tasks:
-		r.ETaskIDs = mongo.DropID(r.ETaskIDs, m.ID().(bson.ObjectId))
-	case CompletedTasks:
-		r.ECompletedTaskIDs = mongo.DropID(r.ECompletedTaskIDs, m.ID().(bson.ObjectId))
-	case Actions:
-		r.EActionIDs = mongo.DropID(r.EActionIDs, m.ID().(bson.ObjectId))
-	default:
-		return data.ErrUndefinedLink
 	}
 
 	return nil

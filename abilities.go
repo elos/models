@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/elos/data"
-)
+import "github.com/elos/data"
 
 /*
 	Userable is the interface for a user-owned
@@ -10,7 +8,7 @@ import (
 */
 type Userable interface {
 	SetUser(User) error
-	User(data.Access) (User, error)
+	User(Store) (User, error)
 	UserID() data.ID
 }
 
@@ -24,9 +22,9 @@ type Userable interface {
 	and Userable interfaces. An example is Fixture.
 */
 type ActionableOps interface {
-	NextAction(data.Access) (Action, error)
-	StartAction(data.Access, Action) error
-	CompleteAction(data.Access, Action) error
+	NextAction(Store) (Action, error)
+	StartAction(Store, Action) error
+	CompleteAction(Store, Action) error
 }
 
 /*
@@ -39,7 +37,7 @@ type ActionableOps interface {
 	and Userable interfaces. An example is Fixture.
 */
 type EventableOps interface {
-	NextEvent(data.Access) (Event, error)
+	NextEvent(Store) (Event, error)
 }
 
 /*
@@ -72,14 +70,14 @@ type Eventable interface {
 
 type Actioned interface {
 	SetActionable(Actionable)
-	Actionable(data.Access) (Actionable, error)
+	Actionable(Store) (Actionable, error)
 	DropActionable()
 	HasActionable() bool
 }
 
 type Evented interface {
 	SetEventable(Eventable)
-	Eventable(data.Access) (Eventable, error)
+	Eventable(Store) (Eventable, error)
 	DropEventable()
 	HasEventable() bool
 }

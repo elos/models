@@ -77,41 +77,46 @@ func (o *mongoObject) SetOntology(ont models.Ontology) error {
 	return o.Schema().Link(o, ont, Ontology)
 }
 
-func (o *mongoObject) Ontology(a data.Access) (models.Ontology, error) {
-	m, _ := a.ModelFor(models.OntologyKind)
-	ontology := m.(models.Ontology)
-
-	if o.CanRead(a.Client()) {
-		ontology.SetID(o.EOntologyID)
-		err := a.PopulateByID(ontology)
-		return ontology, err
-	} else {
-		return nil, data.ErrAccessDenial
+func (o *mongoObject) Ontology(store models.Store) (models.Ontology, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
+
+	if mongo.EmptyID(o.EOntologyID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	ontology := store.Ontology()
+	ontology.SetID(o.EOntologyID)
+	return ontology, store.PopulateByID(ontology)
 }
 
 func (o *mongoObject) SetClass(c models.Class) error {
 	return o.Schema().Link(o, c, Class)
 }
 
-func (o *mongoObject) Class(a data.Access) (models.Class, error) {
-	m, _ := a.ModelFor(models.ClassKind)
-	c := m.(models.Class)
-
-	if o.CanRead(a.Client()) {
-		c.SetID(o.EClassID)
-		err := a.PopulateByID(c)
-		return c, err
-	} else {
-		return nil, data.ErrAccessDenial
+func (o *mongoObject) Class(store models.Store) (models.Class, error) {
+	if !store.Compatible(o) {
+		return nil, data.ErrInvalidDBType
 	}
+
+	if mongo.EmptyID(o.EClassID) {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	class := store.Class()
+	class.SetID(o.EClassID)
+	return class, store.PopulateByID(class)
 }
 
-func (o *mongoObject) SetTrait(a data.Access, name string, value string) error {
-	c, _ := o.Class(a)
+func (o *mongoObject) SetTrait(store models.Store, name string, value string) error {
+	class, err := o.Class(store)
+	if err != nil {
+		return err
+	}
 
-	_, ok := c.Trait(name)
-	if ok {
+	_, classDefHasTrait := class.Trait(name)
+	if classDefHasTrait {
 		o.Traits[name] = value
 		return nil
 	} else {
@@ -119,11 +124,14 @@ func (o *mongoObject) SetTrait(a data.Access, name string, value string) error {
 	}
 }
 
-func (o *mongoObject) AddRelationship(a data.Access, name string, other models.Object) error {
-	c, _ := o.Class(a)
+func (o *mongoObject) AddRelationship(store models.Store, name string, other models.Object) error {
+	class, err := o.Class(store)
+	if err != nil {
+		return err
+	}
 
-	r, ok := c.Relationship(name)
-	if !ok || r == nil {
+	r, classDefHasRelationship := class.Relationship(name)
+	if !classDefHasRelationship {
 		return errors.New("Invalid relationship name")
 	}
 
@@ -141,12 +149,14 @@ func (o *mongoObject) AddRelationship(a data.Access, name string, other models.O
 	return nil
 }
 
-func (o *mongoObject) DropRelationship(a data.Access, name string, other models.Object) error {
-	c, _ := o.Class(a)
+func (o *mongoObject) DropRelationship(store models.Store, name string, other models.Object) error {
+	class, err := o.Class(store)
+	if err != nil {
+		return err
+	}
 
-	r, ok := c.Relationship(name)
-
-	if !ok || r == nil {
+	r, classDefHasRelationship := class.Relationship(name)
+	if !classDefHasRelationship {
 		return errors.New("Invalid relationship name")
 	}
 

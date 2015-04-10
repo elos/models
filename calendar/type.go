@@ -28,7 +28,7 @@ var (
 		var s data.Store
 		s.Register(models.CalendarKind, calendar.NewM)
 */
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
@@ -44,25 +44,21 @@ func NewM(s data.Store) (data.Model, error) {
 
 	Currently supports the mongo db type.
 */
-func New(s data.Store) (models.Calendar, error) {
+func New(s data.Store) models.Calendar {
 	var c models.Calendar
 
 	switch s.Type() {
 	case mongo.DBType:
 		c = newMongoCalendar()
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 
 	c.SetID(s.NewID())
-	return c, nil
+	return c
 }
 
 func Create(s data.Store) (models.Calendar, error) {
-	c, err := New(s)
-	if err != nil {
-		return c, err
-	}
-
+	c := New(s)
 	return c, s.Save(c)
 }

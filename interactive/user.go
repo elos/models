@@ -53,7 +53,7 @@ func UserModel(s *Space, m models.User) *User {
 }
 
 func NewUser(s *Space) *User {
-	u, _ := s.Access.ModelFor(models.UserKind)
+	u, _ := s.Store.ModelFor(models.UserKind)
 	u.SetID(s.NewID())
 	return UserModel(s, u.(models.User))
 }
@@ -70,7 +70,7 @@ func (this *User) Delete() error {
 }
 
 func (this *User) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }
@@ -86,7 +86,7 @@ func (u *User) Add(v interface{}) {
 }
 
 func (u *User) Actions() []*Action {
-	actions, err := u.model.Actions(u.space.Access)
+	actions, err := u.model.Actions(u.space.Store.(models.Store))
 	if err != nil {
 		log.Print(err)
 		return nil
@@ -102,15 +102,15 @@ func (u *User) CurrentAction() *Action {
 func (u *User) SetCurrentAction(a *Action) {
 	other := a.Model()
 	u.model.SetCurrentAction(other)
-	u.space.Access.Save(u.model)
-	u.space.Access.Save(other)
+	u.space.Store.Save(u.model)
+	u.space.Store.Save(other)
 	u.space.Reload()
 }
 
 func (u *User) SetCurrentRoutine(r *Routine) {
 	other := r.Model()
 	u.model.SetCurrentActionable(other)
-	u.space.Access.Save(u.model)
-	u.space.Access.Save(other)
+	u.space.Store.Save(u.model)
+	u.space.Store.Save(other)
 	u.space.Reload()
 }

@@ -68,57 +68,39 @@ func (s *mongoSchedule) ExcludeFixture(f models.Fixture) error {
 	return s.Schema().Unlink(s, f, Fixtures)
 }
 
-func (s *mongoSchedule) FixturesIter(a data.Access) (data.ModelIterator, error) {
-	if !s.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (s *mongoSchedule) FixturesIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(s) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(s.EFixtureIDs, a), nil
+	return mongo.NewIDIter(s.EFixtureIDs, store), nil
 }
 
-func (s *mongoSchedule) Fixtures(a data.Access) ([]models.Fixture, error) {
-	if !s.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (s *mongoSchedule) Fixtures(store models.Store) ([]models.Fixture, error) {
+	if !store.Compatible(s) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	fixtures := make([]models.Fixture, 0)
-
-	iter, err := s.FixturesIter(a)
-	if err != nil {
-		return fixtures, err
+	iter := mongo.NewIDIter(s.EFixtureIDs, store)
+	fixture := store.Fixture()
+	for iter.Next(fixture) {
+		fixtures = append(fixtures, fixture)
+		fixture = store.Fixture()
 	}
 
-	m, err := a.ModelFor(models.FixtureKind)
-	if err != nil {
-		return fixtures, err
-	}
-
-	for iter.Next(m) {
-		e, ok := m.(models.Fixture)
-		if !ok {
-			return fixtures, models.CastError(models.FixtureKind)
-		}
-
-		fixtures = append(fixtures, e)
-
-		m, err = a.ModelFor(models.FixtureKind)
-		if err != nil {
-			return fixtures, err
-		}
-	}
-
-	return fixtures, nil
+	return fixtures, iter.Close()
 
 }
 
-func (s *mongoSchedule) FirstFixture(a data.Access) (models.Fixture, error) {
-	return FirstFixture(s, a)
+func (s *mongoSchedule) FirstFixture(store models.Store) (models.Fixture, error) {
+	return FirstFixture(s, store)
 }
 
-func (s *mongoSchedule) FirstFixtureSince(a data.Access, t time.Time) (models.Fixture, error) {
-	return EarliestSince(s, a, t)
+func (s *mongoSchedule) FirstFixtureSince(store models.Store, t time.Time) (models.Fixture, error) {
+	return EarliestSince(s, store, t)
 }
 
-func (s *mongoSchedule) OrderedFixtures(a data.Access) ([]models.Fixture, error) {
-	return OrderedFixtures(s, a)
+func (s *mongoSchedule) OrderedFixtures(store models.Store) ([]models.Fixture, error) {
+	return OrderedFixtures(s, store)
 }

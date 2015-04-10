@@ -34,7 +34,7 @@ func (this *Routine) Delete() error {
 }
 
 func (this *Routine) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }
@@ -44,7 +44,7 @@ func (this *Routine) Model() models.Routine {
 }
 
 func NewRoutine(s *Space) *Routine {
-	r, _ := s.Access.ModelFor(models.RoutineKind)
+	r, _ := s.Store.ModelFor(models.RoutineKind)
 	r.SetID(s.NewID())
 	return RoutineModel(s, r.(models.Routine))
 }
@@ -64,7 +64,7 @@ func (this *Routine) AddTask(t *Task) {
 	other := t.Model()
 	data.TransferAttrs(t, other)
 	this.model.IncludeTask(other)
-	this.space.Access.Save(other)
-	this.space.Access.Save(this.model)
+	this.space.Store.Save(other)
+	this.space.Store.Save(this.model)
 	this.space.Reload()
 }

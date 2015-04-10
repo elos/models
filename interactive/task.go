@@ -31,7 +31,7 @@ func (this *Task) Delete() error {
 }
 
 func (this *Task) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }
@@ -41,7 +41,7 @@ func (this *Task) Model() models.Task {
 }
 
 func NewTask(s *Space) *Task {
-	r, _ := s.Access.ModelFor(models.TaskKind)
+	r, _ := s.Store.ModelFor(models.TaskKind)
 	r.SetID(s.NewID())
 	return TaskModel(s, r.(models.Task))
 }

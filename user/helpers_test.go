@@ -74,10 +74,7 @@ func AuthenticateTest(t *testing.T) {
 func TestFind(t *testing.T) {
 	// Initialization and creating user
 	s := persistence.Store(persistence.MongoMemoryDB())
-	u, err := user.New(s)
-	if err != nil {
-		t.Errorf("Error while creating user: %s", err)
-	}
+	u := user.New(s)
 
 	testName := "Not a real name"
 	testKey := user.NewKey()
@@ -85,7 +82,7 @@ func TestFind(t *testing.T) {
 	u.SetName(testName)
 	u.SetKey(testKey)
 
-	if err = s.Save(u); err != nil {
+	if err := s.Save(u); err != nil {
 		t.Errorf("Error while saving user: %s", err)
 	}
 

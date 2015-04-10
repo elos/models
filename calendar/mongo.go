@@ -114,28 +114,18 @@ func (c *mongoCalendar) SetBaseSchedule(s models.Schedule) error {
 	return c.Schema().Link(c, s, baseSchedule)
 }
 
-func (c *mongoCalendar) BaseSchedule(a data.Access) (models.Schedule, error) {
-	m, err := a.ModelFor(models.ScheduleKind)
-	if err != nil {
-		return nil, err
-	}
-
-	s, ok := m.(models.Schedule)
-	if !ok {
-		return nil, models.CastError(models.ScheduleKind)
+func (c *mongoCalendar) BaseSchedule(store models.Store) (models.Schedule, error) {
+	if !store.Compatible(c) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	if mongo.EmptyID(c.EBaseScheduleID) {
-		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][baseSchedule])
+		return nil, models.ErrEmptyRelationship
 	}
 
-	s.SetID(c.EBaseScheduleID)
-
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	return s, a.PopulateByID(s)
+	schedule := store.Schedule()
+	schedule.SetID(c.EBaseScheduleID)
+	return schedule, store.PopulateByID(schedule)
 }
 
 func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) error {
@@ -152,29 +142,19 @@ func (c *mongoCalendar) SetWeekdaySchedule(s models.Schedule, t time.Weekday) er
 	return nil
 }
 
-func (c *mongoCalendar) WeekdaySchedule(a data.Access, t time.Weekday) (models.Schedule, error) {
-	m, err := a.ModelFor(models.ScheduleKind)
-	if err != nil {
-		return nil, err
-	}
-
-	s, ok := m.(models.Schedule)
-	if !ok {
-		return nil, models.CastError(models.ScheduleKind)
+func (c *mongoCalendar) WeekdaySchedule(s models.Store, t time.Weekday) (models.Schedule, error) {
+	if !s.Compatible(c) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	id, ok := c.EWeekdaySchedules[strings.ToLower(t.String())]
 	if !ok {
-		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][weekdaySchedules])
+		return nil, models.ErrEmptyRelationship
 	}
 
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	s.SetID(id)
-
-	return s, a.PopulateByID(s)
+	schedule := s.Schedule()
+	schedule.SetID(id)
+	return schedule, s.PopulateByID(schedule)
 }
 
 func (c *mongoCalendar) SetYeardaySchedule(s models.Schedule, t time.Time) error {
@@ -191,71 +171,55 @@ func (c *mongoCalendar) SetYeardaySchedule(s models.Schedule, t time.Time) error
 	return nil
 }
 
-func (c *mongoCalendar) YeardaySchedule(a data.Access, t time.Time) (models.Schedule, error) {
-	m, err := a.ModelFor(models.ScheduleKind)
-	if err != nil {
-		return nil, err
+func (c *mongoCalendar) YeardaySchedule(store models.Store, t time.Time) (models.Schedule, error) {
+	if !store.Compatible(c) {
+		return nil, data.ErrInvalidDBType
 	}
-
-	s, ok := m.(models.Schedule)
 
 	id, ok := c.EYeardaySchedules[string(Yearday(t))]
 	if !ok {
-		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][yeardaySchedules])
+		return nil, models.ErrEmptyRelationship
 	}
 
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	s.SetID(id)
-
-	return s, a.PopulateByID(s)
+	schedule := store.Schedule()
+	schedule.SetID(id)
+	return schedule, store.PopulateByID(schedule)
 }
 
 func (c *mongoCalendar) SetCurrentFixture(f models.Fixture) error {
 	return c.Schema().Link(c, f, currentFixture)
 }
 
-func (c *mongoCalendar) CurrentFixture(a data.Access) (models.Fixture, error) {
+func (c *mongoCalendar) CurrentFixture(store models.Store) (models.Fixture, error) {
+	if !store.Compatible(c) {
+		return nil, data.ErrInvalidDBType
+	}
+
 	if mongo.EmptyID(c.ECurrentFixtureID) {
-		return nil, data.NewEmptyLinkError(c, models.RMap[models.CalendarKind][currentFixture])
+		return nil, models.ErrEmptyRelationship
 	}
 
-	m, err := a.ModelFor(models.FixtureKind)
-	if err != nil {
-		return nil, err
-	}
-
-	f, ok := m.(models.Fixture)
-	if !ok {
-		return nil, models.CastError(models.FixtureKind)
-	}
-
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	f.SetID(c.ECurrentFixtureID)
-	return f, a.PopulateByID(f)
+	fixture := store.Fixture()
+	fixture.SetID(c.ECurrentFixtureID)
+	return fixture, store.PopulateByID(fixture)
 }
 
-func (c *mongoCalendar) NextFixture(a data.Access) (first models.Fixture, err error) {
-	return NextFixture(a, c)
+func (c *mongoCalendar) NextFixture(store models.Store) (first models.Fixture, err error) {
+	return NextFixture(store, c)
 }
 
-func (c *mongoCalendar) NextAction(a data.Access) (action models.Action, err error) {
-	return NextAction(c, a)
+func (c *mongoCalendar) NextAction(s models.Store) (action models.Action, err error) {
+	return NextAction(c, s)
 }
 
-func (c *mongoCalendar) StartAction(access data.Access, action models.Action) error {
-	return StartAction(c, access, action)
+func (c *mongoCalendar) StartAction(s models.Store, action models.Action) error {
+	return StartAction(c, s, action)
 }
 
-func (c *mongoCalendar) CompleteAction(access data.Access, action models.Action) error {
-	return CompleteAction(c, access, action)
+func (c *mongoCalendar) CompleteAction(s models.Store, action models.Action) error {
+	return CompleteAction(c, s, action)
 }
 
-func (c *mongoCalendar) IntegratedSchedule(a data.Access, t time.Time) (models.Schedule, error) {
-	return MergedScheduleForTime(a, c, t)
+func (c *mongoCalendar) IntegratedSchedule(s models.Store, t time.Time) (models.Schedule, error) {
+	return MergedScheduleForTime(s, c, t)
 }

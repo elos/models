@@ -70,24 +70,27 @@ func (a *mongoAction) SetActionable(actionable models.Actionable) {
 	a.ActionableID = actionable.ID().(bson.ObjectId)
 }
 
-func (a *mongoAction) Actionable(access data.Access) (models.Actionable, error) {
+func (a *mongoAction) Actionable(s models.Store) (models.Actionable, error) {
+	if !s.Compatible(a) {
+		return nil, data.ErrInvalidDBType
+	}
+
 	if !a.HasActionable() {
 		return nil, models.ErrEmptyRelationship
 	}
 
-	m, err := access.ModelFor(a.ActionableKind)
+	m, err := s.ModelFor(a.ActionableKind)
 	if err != nil {
 		return nil, err
 	}
 
-	m.SetID(a.ActionableID)
-	if err = access.PopulateByID(m); err != nil {
-		return nil, err
+	actionable, ok := m.(models.Actionable)
+	if !ok {
+		return nil, models.CastError("actionable")
 	}
 
-	err = access.PopulateByID(m)
-
-	return m.(models.Actionable), err
+	actionable.SetID(a.ActionableID)
+	return actionable, s.PopulateByID(actionable)
 }
 
 func (a *mongoAction) DropActionable() {
@@ -111,28 +114,18 @@ func (a *mongoAction) SetTask(t models.Task) error {
 	return a.Schema().Link(a, t, Task)
 }
 
-func (a *mongoAction) Task(access data.Access) (models.Task, error) {
-	m, err := access.ModelFor(models.TaskKind)
-	if err != nil {
-		return nil, err
-	}
-
-	t, ok := m.(models.Task)
-	if !ok {
-		return nil, models.CastError(models.TaskKind)
-	}
-
-	if !a.CanRead(access.Client()) {
-		return nil, data.ErrAccessDenial
+func (a *mongoAction) Task(s models.Store) (models.Task, error) {
+	if !s.Compatible(a) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	if mongo.EmptyID(a.ETaskID) {
-		return nil, data.NewEmptyLinkError(a, models.RMap[models.ActionKind][Task])
+		return nil, models.ErrEmptyRelationship
 	}
 
+	t := s.Task()
 	t.SetID(a.ETaskID)
-
-	return t, access.PopulateByID(t)
+	return t, s.PopulateByID(t)
 }
 
 func (a *mongoAction) Complete() {

@@ -5,27 +5,19 @@ import (
 	"github.com/elos/models"
 )
 
-func NextAction(f models.Fixture, access data.Access) (models.Action, error) {
+func NextAction(f models.Fixture, store models.Store) (models.Action, error) {
 	// Allow an actionable to hijack
 	if f.HasActionable() {
-		if actionable, err := f.Actionable(access); err == nil {
-			return actionable.NextAction(access)
+		if actionable, err := f.Actionable(store); err == nil {
+			return actionable.NextAction(store)
 		} else {
 			return nil, err
 		}
 	}
 
-	m, err := access.ModelFor(models.ActionKind)
-	if err != nil {
-		return nil, err
-	}
+	action := store.Action()
 
-	action, ok := m.(models.Action)
-	if !ok {
-		return nil, models.CastError(models.ActionKind)
-	}
-
-	user, err := f.User(access)
+	user, err := f.User(store)
 	if err != nil {
 		return nil, err
 	}
@@ -35,9 +27,9 @@ func NextAction(f models.Fixture, access data.Access) (models.Action, error) {
 	action.SetUser(user)
 	f.IncludeAction(action)
 
-	access.Save(user)
-	access.Save(action)
-	access.Save(f)
+	store.Save(user)
+	store.Save(action)
+	store.Save(f)
 
 	return action, nil
 }

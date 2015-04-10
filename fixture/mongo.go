@@ -84,15 +84,15 @@ func (f *mongoFixture) SetUser(u models.User) error {
 	return f.Schema().Link(f, u, User)
 }
 
-func (f *mongoFixture) NextAction(a data.Access) (models.Action, error) {
-	return NextAction(f, a)
+func (f *mongoFixture) NextAction(store models.Store) (models.Action, error) {
+	return NextAction(f, store)
 }
 
-func (f *mongoFixture) StartAction(access data.Access, action models.Action) error {
+func (f *mongoFixture) StartAction(store models.Store, action models.Action) error {
 	return nil
 }
 
-func (f *mongoFixture) CompleteAction(access data.Access, action models.Action) error {
+func (f *mongoFixture) CompleteAction(store models.Store, action models.Action) error {
 	if _, present := f.EActionIDs.IndexID(action.ID().(bson.ObjectId)); !present {
 		return data.ErrNotFound
 	}
@@ -100,11 +100,11 @@ func (f *mongoFixture) CompleteAction(access data.Access, action models.Action) 
 	// fixture can do any clean up, none right now
 
 	action.Complete()
-	return access.Save(action)
+	return store.Save(action)
 }
 
-func (f *mongoFixture) NextEvent(a data.Access) (models.Event, error) {
-	return NextEvent(a, f)
+func (f *mongoFixture) NextEvent(store models.Store) (models.Event, error) {
+	return NextEvent(f, store)
 }
 
 // Setting the fixture's actionable to itself is a no-op
@@ -117,21 +117,27 @@ func (f *mongoFixture) SetActionable(a models.Actionable) {
 	f.EActionableID = a.ID().(bson.ObjectId)
 }
 
-func (f *mongoFixture) Actionable(a data.Access) (models.Actionable, error) {
+func (f *mongoFixture) Actionable(store models.Store) (models.Actionable, error) {
+	if !store.Compatible(f) {
+		return nil, data.ErrInvalidDBType
+	}
+
 	if !f.HasActionable() {
 		return nil, models.ErrEmptyRelationship
 	}
 
-	m, err := a.ModelFor(f.EActionableKind)
+	m, err := store.ModelFor(f.EActionableKind)
 	if err != nil {
 		return nil, err
 	}
 
+	actionable, ok := m.(models.Actionable)
+	if !ok {
+		return nil, models.CastError("actionable")
+	}
+
 	m.SetID(f.EActionableID)
-
-	err = a.PopulateByID(m)
-
-	return m.(models.Actionable), err
+	return actionable, store.PopulateByID(actionable)
 }
 
 func (f *mongoFixture) DropActionable() {
@@ -153,15 +159,26 @@ func (f *mongoFixture) SetEventable(e models.Eventable) {
 	f.EEventableID = e.ID().(bson.ObjectId)
 }
 
-func (f *mongoFixture) Eventable(a data.Access) (models.Eventable, error) {
-	m, err := a.ModelFor(f.EEventableKind)
+func (f *mongoFixture) Eventable(store models.Store) (models.Eventable, error) {
+	if !store.Compatible(f) {
+		return nil, data.ErrInvalidDBType
+	}
+
+	if !f.HasEventable() {
+		return nil, models.ErrEmptyRelationship
+	}
+
+	m, err := store.ModelFor(f.EEventableKind)
 	if err != nil {
 		return nil, err
 	}
+	eventable, ok := m.(models.Eventable)
+	if !ok {
+		return nil, models.CastError("eventable")
+	}
 
-	m.SetID(f.EEventableID)
-	err = a.PopulateByID(m)
-	return m.(models.Eventable), err
+	eventable.SetID(f.EEventableID)
+	return eventable, store.PopulateByID(eventable)
 }
 
 func (f *mongoFixture) DropEventable() {
@@ -229,11 +246,10 @@ func (f *mongoFixture) SetSchedule(s models.Schedule) error {
 	return f.Schema().Link(f, s, Schedule)
 }
 
-func (f *mongoFixture) Schedule(a data.Access) (models.Schedule, error) {
-	m, _ := a.ModelFor(models.ScheduleKind)
-	s := m.(models.Schedule)
+func (f *mongoFixture) Schedule(store models.Store) (models.Schedule, error) {
+	s := store.Schedule()
 	s.SetID(f.EScheduleID)
-	return s, a.PopulateByID(s)
+	return s, store.PopulateByID(s)
 }
 
 func (f *mongoFixture) IncludeAction(a models.Action) error {
@@ -244,45 +260,28 @@ func (f *mongoFixture) ExcludeAction(a models.Action) error {
 	return f.Schema().Unlink(f, a, Actions)
 }
 
-func (u *mongoFixture) ActionsIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (f *mongoFixture) ActionsIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(f) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.EActionIDs, a), nil
+	return mongo.NewIDIter(f.EActionIDs, store), nil
 }
 
-func (u *mongoFixture) Actions(a data.Access) ([]models.Action, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (u *mongoFixture) Actions(store models.Store) ([]models.Action, error) {
+	if !store.Compatible(u) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	actions := make([]models.Action, 0)
-	iter, err := u.ActionsIter(a)
-	if err != nil {
-		return actions, err
-	}
-
-	m, err := a.ModelFor(models.ActionKind)
-	if err != nil {
-		return actions, err
-	}
-
-	for iter.Next(m) {
-		action, ok := m.(models.Action)
-		if !ok {
-			return actions, models.CastError(models.ActionKind)
-		}
-
+	iter := mongo.NewIDIter(u.EActionIDs, store)
+	action := store.Action()
+	for iter.Next(action) {
 		actions = append(actions, action)
-
-		m, err = a.ModelFor(models.ActionKind)
-		if err != nil {
-			return actions, err
-		}
+		action = store.Action()
 	}
 
-	return actions, nil
+	return actions, iter.Close()
 }
 
 func (f *mongoFixture) IncludeEvent(e models.Event) error {
@@ -293,43 +292,25 @@ func (f *mongoFixture) ExcludeEvent(e models.Event) error {
 	return f.Schema().Unlink(f, e, Events)
 }
 
-func (u *mongoFixture) EventsIter(a data.Access) (data.ModelIterator, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (f *mongoFixture) EventsIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(f) {
+		return nil, data.ErrInvalidDBType
 	}
 
-	return mongo.NewIDIter(u.EEventIDs, a), nil
+	return mongo.NewIDIter(f.EEventIDs, store), nil
 }
 
-func (u *mongoFixture) Events(a data.Access) ([]models.Event, error) {
-	if !u.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (f *mongoFixture) Events(store models.Store) ([]models.Event, error) {
+	if !store.Compatible(f) {
+		return nil, data.ErrInvalidDBType
 	}
 
 	events := make([]models.Event, 0)
-
-	iter, err := u.EventsIter(a)
-	if err != nil {
-		return events, err
-	}
-
-	m, err := a.ModelFor(models.EventKind)
-	if err != nil {
-		return events, err
-	}
-
-	for iter.Next(m) {
-		e, ok := m.(models.Event)
-		if !ok {
-			return events, models.CastError(models.EventKind)
-		}
-
-		events = append(events, e)
-
-		m, err = a.ModelFor(models.EventKind)
-		if err != nil {
-			return events, err
-		}
+	iter := mongo.NewIDIter(f.EEventIDs, store)
+	event := store.Event()
+	for iter.Next(event) {
+		events = append(events, event)
+		event = store.Event()
 	}
 
 	return events, nil

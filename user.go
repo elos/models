@@ -11,35 +11,35 @@ type User interface {
 	Key() string
 
 	SetCurrentAction(Action) error
-	CurrentAction(data.Access) (Action, error)
+	CurrentAction(Store) (Action, error)
 
 	SetCurrentActionable(Actionable) error
-	CurrentActionable(data.Access) (Actionable, error)
+	CurrentActionable(Store) (Actionable, error)
 	ClearCurrentActionable()
 
 	SetCalendar(Calendar) error
-	Calendar(data.Access) (Calendar, error)
+	Calendar(Store) (Calendar, error)
 
 	SetOntology(Ontology) error
-	Ontology(data.Access) (Ontology, error)
+	Ontology(Store) (Ontology, error)
 
 	IncludeAction(Action) error
 	ExcludeAction(Action) error
-	ActionsIter(data.Access) (data.ModelIterator, error)
-	Actions(data.Access) ([]Action, error)
+	ActionsIter(Store) (data.ModelIterator, error)
+	Actions(Store) ([]Action, error)
 
 	IncludeEvent(Event) error
 	ExcludeEvent(Event) error
-	EventsIter(data.Access) (data.ModelIterator, error)
-	Events(data.Access) ([]Event, error)
+	EventsIter(Store) (data.ModelIterator, error)
+	Events(Store) ([]Event, error)
 
 	IncludeTask(Task) error
 	ExcludeTask(Task) error
-	TasksIter(data.Access) (data.ModelIterator, error)
-	Tasks(data.Access) ([]Task, error)
+	TasksIter(Store) (data.ModelIterator, error)
+	Tasks(Store) ([]Task, error)
 
 	IncludeRoutine(Routine) error
 	ExcludeRoutine(Routine) error
-	RoutinesIter(data.Access) (data.ModelIterator, error)
-	Routines(data.Access) ([]Routine, error)
+	RoutinesIter(Store) (data.ModelIterator, error)
+	Routines(Store) ([]Routine, error)
 }

@@ -28,7 +28,7 @@ func (this *Fixture) Save() {
 }
 
 func NewFixture(s *Space) *Fixture {
-	f, _ := s.Access.ModelFor(models.FixtureKind)
+	f, _ := s.Store.ModelFor(models.FixtureKind)
 	f.SetID(s.NewID())
 	return FixtureModel(s, f.(models.Fixture))
 }
@@ -54,7 +54,7 @@ func Fixtures(s *Space, models []models.Fixture) []*Fixture {
 }
 
 func (this *Fixture) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }

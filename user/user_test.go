@@ -13,16 +13,12 @@ import (
 	"github.com/elos/models/routine"
 	"github.com/elos/models/task"
 	"github.com/elos/models/user"
-	"github.com/elos/testing/expect"
 	"github.com/elos/testing/modeltest"
 )
 
 func TestMongo(t *testing.T) {
 	s := persistence.Store(persistence.MongoMemoryDB())
-	u, err := user.New(s)
-	if err != nil {
-		t.Errorf("Error from user.New, expected no error but got %s", err)
-	}
+	u := user.New(s)
 	testUser(s, u, t)
 
 	if u.Version() != 1 {
@@ -48,23 +44,22 @@ func TestMongo(t *testing.T) {
 	specific, only at the heigh models.User interface level.
 */
 func testUser(s data.Store, u models.User, t *testing.T) {
-	access := data.NewAccess(u, s)
+	store := persistence.ModelsStore(s)
 
-	testName(access, u, t)
-	testKey(access, u, t)
-	testCurrentAction(access, u, t)
-	testCurrentActionable(access, u, t)
-	testCalendar(access, u, t)
-	testOntology(access, u, t)
-	testEvents(access, u, t)
-	testTasks(access, u, t)
-	testRoutines(access, u, t)
+	testName(store, u, t)
+	testKey(store, u, t)
+	testCurrentAction(store, u, t)
+	testCurrentActionable(store, u, t)
+	testCalendar(store, u, t)
+	testOntology(store, u, t)
+	testEvents(store, u, t)
+	testTasks(store, u, t)
+	testRoutines(store, u, t)
 
-	testAccessProtection(s, u, t)
 	modeltest.AnonReadAccess(s, u, t)
 }
 
-func testName(access data.Access, u models.User, t *testing.T) {
+func testName(access models.Store, u models.User, t *testing.T) {
 	testName := "Nick Landolfi Jr. III -hypens .periods" // all valid
 	u.SetName(testName)
 	if u.Name() != testName {
@@ -72,7 +67,7 @@ func testName(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testKey(access data.Access, u models.User, t *testing.T) {
+func testKey(access models.Store, u models.User, t *testing.T) {
 	testKey := user.NewKey()
 	u.SetKey(testKey)
 	if u.Key() != testKey {
@@ -80,7 +75,7 @@ func testKey(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testCurrentAction(access data.Access, u models.User, t *testing.T) {
+func testCurrentAction(access models.Store, u models.User, t *testing.T) {
 	act, err := action.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating action: %s", err)
@@ -100,7 +95,7 @@ func testCurrentAction(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testCurrentActionable(access data.Access, u models.User, t *testing.T) {
+func testCurrentActionable(access models.Store, u models.User, t *testing.T) {
 	// We will use routine as the actionable
 	r, err := routine.Create(access)
 	if err != nil {
@@ -131,7 +126,7 @@ func testCurrentActionable(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testCalendar(access data.Access, u models.User, t *testing.T) {
+func testCalendar(access models.Store, u models.User, t *testing.T) {
 	c, err := calendar.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating calendar: %s", err)
@@ -151,7 +146,7 @@ func testCalendar(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testOntology(access data.Access, u models.User, t *testing.T) {
+func testOntology(access models.Store, u models.User, t *testing.T) {
 	o, err := ontology.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating ontology: %s", err)
@@ -172,7 +167,7 @@ func testOntology(access data.Access, u models.User, t *testing.T) {
 
 }
 
-func testEvents(access data.Access, u models.User, t *testing.T) {
+func testEvents(access models.Store, u models.User, t *testing.T) {
 	e1, err := event.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating event: %s", err)
@@ -219,7 +214,7 @@ func testEvents(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testTasks(access data.Access, u models.User, t *testing.T) {
+func testTasks(access models.Store, u models.User, t *testing.T) {
 	t1, err := task.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating task: %s", err)
@@ -266,7 +261,7 @@ func testTasks(access data.Access, u models.User, t *testing.T) {
 	}
 }
 
-func testRoutines(access data.Access, u models.User, t *testing.T) {
+func testRoutines(access models.Store, u models.User, t *testing.T) {
 	r1, err := routine.Create(access)
 	if err != nil {
 		t.Fatalf("Error while creating routine: %s", err)
@@ -311,48 +306,4 @@ func testRoutines(access data.Access, u models.User, t *testing.T) {
 	if r2Copy.ID().String() != r2.ID().String() {
 		t.Errorf("Expected to find t2 as the only event")
 	}
-}
-
-/*
-	testAccessProtection ensures that each of a users accessors
-	are access protected
-*/
-func testAccessProtection(s data.Store, u models.User, t *testing.T) {
-	access := data.NewAnonAccess(s)
-
-	_, err := u.CurrentAction(access)
-	expect.AccessDenial("CurrentAction", err, t)
-
-	_, err = u.CurrentActionable(access)
-	expect.AccessDenial("CurrentActionable", err, t)
-
-	_, err = u.Calendar(access)
-	expect.AccessDenial("Calendar", err, t)
-
-	_, err = u.Ontology(access)
-	expect.AccessDenial("Ontology", err, t)
-
-	_, err = u.ActionsIter(access)
-	expect.AccessDenial("ActionsIter", err, t)
-
-	_, err = u.Actions(access)
-	expect.AccessDenial("Actions", err, t)
-
-	_, err = u.EventsIter(access)
-	expect.AccessDenial("EventsIter", err, t)
-
-	_, err = u.Events(access)
-	expect.AccessDenial("Events", err, t)
-
-	_, err = u.TasksIter(access)
-	expect.AccessDenial("TasksIter", err, t)
-
-	_, err = u.Tasks(access)
-	expect.AccessDenial("Tasks", err, t)
-
-	_, err = u.RoutinesIter(access)
-	expect.AccessDenial("RoutinesIter", err, t)
-
-	_, err = u.Routines(access)
-	expect.AccessDenial("Routines", err, t)
 }

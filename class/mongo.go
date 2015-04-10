@@ -79,8 +79,8 @@ func (c *mongoClass) SetOntology(o models.Ontology) error {
 	return c.Schema().Link(c, o, ontology)
 }
 
-func (c *mongoClass) Ontology(a data.Access) (models.Ontology, error) {
-	if c.DBType() != a.Type() {
+func (c *mongoClass) Ontology(store models.Store) (models.Ontology, error) {
+	if !store.Compatible(c) {
 		return nil, data.ErrInvalidDBType
 	}
 
@@ -88,22 +88,9 @@ func (c *mongoClass) Ontology(a data.Access) (models.Ontology, error) {
 		return nil, models.ErrEmptyRelationship
 	}
 
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
-	}
-
-	m, err := a.ModelFor(models.OntologyKind)
-	if err != nil {
-		return nil, err
-	}
-
-	o, ok := m.(models.Ontology)
-	if !ok {
-		return nil, models.CastError(models.OntologyKind)
-	}
-
-	o.SetID(c.EOntologyID)
-	return o, a.PopulateByID(o)
+	ontology := store.Ontology()
+	ontology.SetID(c.EOntologyID)
+	return ontology, store.PopulateByID(ontology)
 }
 
 func (c *mongoClass) IncludeTrait(t *models.Trait) {
@@ -156,22 +143,20 @@ func (c *mongoClass) ExcludeObject(obj models.Object) error {
 	return c.Schema().Unlink(c, obj, objects)
 }
 
-func (c *mongoClass) ObjectsIter(a data.Access) (data.ModelIterator, error) {
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (c *mongoClass) ObjectsIter(store models.Store) (data.ModelIterator, error) {
+	if !store.Compatible(c) {
+		return nil, data.ErrInvalidDBType
 	}
-
-	return c.MongoObjects.ObjectsIter(a), nil
+	return c.MongoObjects.ObjectsIter(store), nil
 }
 
-func (c *mongoClass) Objects(a data.Access) ([]models.Object, error) {
-	if !c.CanRead(a.Client()) {
-		return nil, data.ErrAccessDenial
+func (c *mongoClass) Objects(store models.Store) ([]models.Object, error) {
+	if !store.Compatible(c) {
+		return nil, data.ErrInvalidDBType
 	}
-
-	return c.MongoObjects.Objects(a)
+	return c.MongoObjects.Objects(store)
 }
 
-func (c *mongoClass) NewObject(a data.Access) (models.Object, error) {
-	return NewObject(c, a)
+func (c *mongoClass) NewObject(store models.Store) (models.Object, error) {
+	return NewObject(c, store)
 }

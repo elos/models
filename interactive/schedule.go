@@ -28,7 +28,7 @@ func (this *Schedule) Save() {
 }
 
 func NewSchedule(s *Space) *Schedule {
-	f, _ := s.Access.ModelFor(models.ScheduleKind)
+	f, _ := s.Store.ModelFor(models.ScheduleKind)
 	f.SetID(s.NewID())
 	return ScheduleModel(s, f.(models.Schedule))
 }
@@ -45,7 +45,7 @@ func ScheduleModel(s *Space, m models.Schedule) *Schedule {
 }
 
 func (this *Schedule) Reload() error {
-	this.space.Access.PopulateByID(this.model)
+	this.space.Store.PopulateByID(this.model)
 	data.TransferAttrs(this.model, this)
 	return nil
 }
@@ -55,7 +55,7 @@ func (this *Schedule) Model() models.Schedule {
 }
 
 func (s *Schedule) Fixtures() []*Fixture {
-	fixtures, err := s.model.Fixtures(s.space.Access)
+	fixtures, err := s.model.Fixtures(s.space.Store.(models.Store))
 
 	if err != nil {
 		log.Print(err)

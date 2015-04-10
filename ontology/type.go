@@ -16,26 +16,22 @@ var (
 	objects data.LinkName = models.OntologyObjects
 )
 
-func NewM(s data.Store) (data.Model, error) {
+func NewM(s data.Store) data.Model {
 	return New(s)
 }
 
-func New(s data.Store) (models.Ontology, error) {
+func New(s data.Store) models.Ontology {
 	switch s.Type() {
 	case mongo.DBType:
 		o := &mongoOntology{}
 		o.SetID(s.NewID())
-		return o, nil
+		return o
 	default:
-		return nil, data.ErrInvalidDBType
+		panic(data.ErrInvalidDBType)
 	}
 }
 
 func Create(s data.Store) (models.Ontology, error) {
-	o, err := New(s)
-	if err != nil {
-		return o, err
-	}
-
+	o := New(s)
 	return o, s.Save(o)
 }

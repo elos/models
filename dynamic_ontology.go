@@ -9,13 +9,13 @@ type Ontology interface {
 
 	IncludeClass(Class) error
 	ExcludeClass(Class) error
-	ClassesIter(data.Access) (data.ModelIterator, error)
-	Classes(data.Access) ([]Class, error)
+	ClassesIter(Store) (data.ModelIterator, error)
+	Classes(Store) ([]Class, error)
 
 	IncludeObject(Object) error
 	ExcludeObject(Object) error
-	ObjectsIter(data.Access) (data.ModelIterator, error)
-	Objects(data.Access) ([]Object, error)
+	ObjectsIter(Store) (data.ModelIterator, error)
+	Objects(Store) ([]Object, error)
 }
 
 type Trait struct {
@@ -36,7 +36,7 @@ type Class interface {
 	Userable
 
 	SetOntology(Ontology) error
-	Ontology(data.Access) (Ontology, error)
+	Ontology(Store) (Ontology, error)
 
 	IncludeTrait(*Trait)
 	ExcludeTrait(*Trait)
@@ -50,10 +50,10 @@ type Class interface {
 
 	IncludeObject(Object) error
 	ExcludeObject(Object) error
-	ObjectsIter(data.Access) (data.ModelIterator, error)
-	Objects(data.Access) ([]Object, error)
+	ObjectsIter(Store) (data.ModelIterator, error)
+	Objects(Store) ([]Object, error)
 
-	NewObject(a data.Access) (Object, error)
+	NewObject(a Store) (Object, error)
 }
 
 // See: https://github.com/elos/documentation/blob/master/data/models/object.md
@@ -62,12 +62,12 @@ type Object interface {
 	data.Nameable
 
 	SetOntology(Ontology) error
-	Ontology(data.Access) (Ontology, error)
+	Ontology(Store) (Ontology, error)
 
 	SetClass(Class) error
-	Class(data.Access) (Class, error)
+	Class(Store) (Class, error)
 
-	SetTrait(data.Access, string, string) error
-	AddRelationship(data.Access, string, Object) error
-	DropRelationship(data.Access, string, Object) error
+	SetTrait(Store, string, string) error
+	AddRelationship(Store, string, Object) error
+	DropRelationship(Store, string, Object) error
 }

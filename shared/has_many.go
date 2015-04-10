@@ -39,32 +39,19 @@ func (c *MongoObjects) ExcludeObject(obj models.Object) error {
 	return nil
 }
 
-func (c *MongoObjects) ObjectsIter(a data.Access) data.ModelIterator {
-	return mongo.NewIDIter(c.ObjectIDs, a)
+func (c *MongoObjects) ObjectsIter(store models.Store) data.ModelIterator {
+	return mongo.NewIDIter(c.ObjectIDs, store)
 }
 
-func (c *MongoObjects) Objects(a data.Access) ([]models.Object, error) {
+func (c *MongoObjects) Objects(store models.Store) ([]models.Object, error) {
 	objects := make([]models.Object, 0)
-	iter := c.ObjectsIter(a)
 
-	m, err := a.ModelFor(models.ObjectKind)
-	if err != nil {
-		return objects, err
-	}
-
-	for iter.Next(m) {
-		object, ok := m.(models.Object)
-		if !ok {
-			return objects, models.CastError(models.ObjectKind)
-		}
-
+	iter := c.ObjectsIter(store)
+	object := store.Object()
+	for iter.Next(object) {
 		objects = append(objects, object)
-
-		m, err = a.ModelFor(models.ObjectKind)
-		if err != nil {
-			return objects, err
-		}
+		object = store.Object()
 	}
 
-	return objects, err
+	return objects, iter.Close()
 }

@@ -31,19 +31,19 @@ func OntologyModel(s *Space, m models.Ontology) *Ontology {
 }
 
 func NewOntology(s *Space) *Ontology {
-	m, _ := s.Access.ModelFor(models.OntologyKind)
+	m, _ := s.Store.ModelFor(models.OntologyKind)
 	return OntologyModel(s, m.(models.Ontology))
 }
 
 func (o *Ontology) Reload() error {
-	o.space.Access.PopulateByID(o.model)
+	o.space.Store.PopulateByID(o.model)
 	return data.TransferAttrs(o.model, o)
 }
 
 func (s *Space) FindOntology(id string) *Ontology {
-	m, _ := s.Access.Unmarshal(models.OntologyKind, data.AttrMap{
+	m, _ := s.Store.Unmarshal(models.OntologyKind, data.AttrMap{
 		"id": id,
 	})
-	s.Access.PopulateByID(m)
+	s.Store.PopulateByID(m)
 	return OntologyModel(s, m.(models.Ontology))
 }

@@ -65,10 +65,7 @@ func Authenticate(s data.Store, id string, key string) (models.User, bool, error
 	or an error from store.PopulateByID
 */
 func Find(s data.Store, id data.ID) (models.User, error) {
-	user, err := New(s)
-	if err != nil {
-		return nil, err
-	}
+	user := New(s)
 
 	id, ok := id.(bson.ObjectId)
 	if !ok {
@@ -96,16 +93,8 @@ func Find(s data.Store, id data.ID) (models.User, error) {
 	error
 */
 func FindBy(s data.Store, field string, value interface{}) (models.User, error) {
-	user, err := New(s)
-	if err != nil {
-		return user, err
-	}
-
-	if err = s.PopulateByField(field, value, user); err != nil {
-		return user, err
-	}
-
-	return user, nil
+	user := New(s)
+	return user, s.PopulateByField(field, value, user)
 }
 
 /*

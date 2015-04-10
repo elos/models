@@ -17,13 +17,8 @@ import (
 	or an error from store.PopulateByID
 */
 func Find(s data.Store, id data.ID) (models.Fixture, error) {
-	fixture, err := New(s)
-	if err != nil {
-		return nil, err
-	}
-
+	fixture := New(s)
 	fixture.SetID(id)
-
 	// Find a user that has specified id
 	return fixture, s.PopulateByID(fixture)
 }
