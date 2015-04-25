@@ -19,22 +19,28 @@ func MergedScheduleForTime(store models.Store, c models.Calendar, t time.Time) (
 	schedules := make([]models.Schedule, 0)
 
 	base, err := c.BaseSchedule(store)
-	if err != nil && err != models.ErrEmptyRelationship {
-		return
+	if err != nil {
+		if err != models.ErrEmptyRelationship {
+			return
+		}
 	} else {
 		schedules = append(schedules, base)
 	}
 
 	weekday, err := c.WeekdaySchedule(store, t.Weekday())
-	if err != nil && err != models.ErrEmptyRelationship {
-		return
+	if err != nil {
+		if err != models.ErrEmptyRelationship {
+			return
+		}
 	} else {
 		schedules = append(schedules, weekday)
 	}
 
 	yearday, err := c.YeardaySchedule(store, t)
-	if err != nil && err != models.ErrEmptyRelationship {
-		return
+	if err != nil {
+		if err != models.ErrEmptyRelationship {
+			return
+		}
 	} else {
 		schedules = append(schedules, yearday)
 	}
