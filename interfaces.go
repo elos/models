@@ -3,7 +3,7 @@ package models
 import (
 	"errors"
 
-	"github.com/elos/d"
+	"github.com/elos/data"
 )
 
 var ErrEmptyLink = errors.New("EMPTY LINK")
@@ -18,9 +18,9 @@ var ErrEmptyLink = errors.New("EMPTY LINK")
 	and Userable interfaces. An example is Fixture.
 */
 type ActionableOps interface {
-	NextAction(d.Store) (Action, error)
-	StartAction(d.Store, Action) error
-	CompleteAction(d.Store, Action) error
+	NextAction(data.Store) (Action, error)
+	StartAction(data.Store, Action) error
+	CompleteAction(data.Store, Action) error
 }
 
 /*
@@ -33,15 +33,15 @@ type ActionableOps interface {
 	and Userable interfaces. An example is Fixture.
 */
 type EventableOps interface {
-	NextEvent(d.Store) (Event, error)
+	NextEvent(data.Store) (Event, error)
 }
 
 type Actionable interface {
-	d.Model
+	data.Model
 	ActionableOps
 }
 
 type Eventable interface {
-	d.Model
+	data.Model
 	EventableOps
 }

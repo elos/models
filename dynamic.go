@@ -1,12 +1,12 @@
-package m
+package models
 
 import (
 	"fmt"
 
-	"github.com/elos/d"
+	"github.com/elos/data"
 )
 
-func ModelFor(k d.Kind) d.Model {
+func ModelFor(k data.Kind) data.Model {
 	switch k {
 
 	case ActionKind:

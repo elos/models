@@ -1,35 +1,35 @@
 package models
 
-import "github.com/elos/d"
+import "github.com/elos/data"
 
 const (
-	ActionKind d.Kind = "action"
+	ActionKind data.Kind = "action"
 
-	AttributeKind d.Kind = "attribute"
+	AttributeKind data.Kind = "attribute"
 
-	CalendarKind d.Kind = "calendar"
+	CalendarKind data.Kind = "calendar"
 
-	ClassKind d.Kind = "class"
+	ClassKind data.Kind = "class"
 
-	EventKind d.Kind = "event"
+	EventKind data.Kind = "event"
 
-	FixtureKind d.Kind = "fixture"
+	FixtureKind data.Kind = "fixture"
 
-	LinkKind d.Kind = "link"
+	LinkKind data.Kind = "link"
 
-	ObjectKind d.Kind = "object"
+	ObjectKind data.Kind = "object"
 
-	OntologyKind d.Kind = "ontology"
+	OntologyKind data.Kind = "ontology"
 
-	RelationKind d.Kind = "relation"
+	RelationKind data.Kind = "relation"
 
-	RoutineKind d.Kind = "routine"
+	RoutineKind data.Kind = "routine"
 
-	ScheduleKind d.Kind = "schedule"
+	ScheduleKind data.Kind = "schedule"
 
-	TaskKind d.Kind = "task"
+	TaskKind data.Kind = "task"
 
-	TraitKind d.Kind = "trait"
+	TraitKind data.Kind = "trait"
 
-	UserKind d.Kind = "user"
+	UserKind data.Kind = "user"
 )

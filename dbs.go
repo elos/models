@@ -1,11 +1,11 @@
 package models
 
 import (
-	"github.com/elos/d"
-	"github.com/elos/d/builtin/mongo"
+	"github.com/elos/data"
+	"github.com/elos/data/builtin/mongo"
 )
 
-func MongoDB(addr string) (d.DB, error) {
+func MongoDB(addr string) (data.DB, error) {
 	db := mongo.NewDB()
 	if err := db.Connect(addr); err != nil {
 		return nil, err
