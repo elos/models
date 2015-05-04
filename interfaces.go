@@ -18,9 +18,9 @@ var ErrEmptyLink = errors.New("EMPTY LINK")
 	and Userable interfaces. An example is Fixture.
 */
 type ActionableOps interface {
-	NextAction(data.Store) (Action, error)
-	StartAction(data.Store, Action) error
-	CompleteAction(data.Store, Action) error
+	NextAction(data.DB) (Action, error)
+	StartAction(data.DB, Action) error
+	CompleteAction(data.DB, Action) error
 }
 
 /*
@@ -33,7 +33,7 @@ type ActionableOps interface {
 	and Userable interfaces. An example is Fixture.
 */
 type EventableOps interface {
-	NextEvent(data.Store) (Event, error)
+	NextEvent(data.DB) (Event, error)
 }
 
 type Actionable interface {

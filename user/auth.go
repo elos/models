@@ -3,11 +3,9 @@ package user
 import (
 	"fmt"
 
-	"github.com/elos/d"
 	"github.com/elos/data"
+	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/models"
-	"github.com/elos/mongo"
-	"gopkg.in/mgo.v2/bson"
 )
 
 /*
@@ -40,7 +38,7 @@ if authed {
 	}
 }
 */
-func Authenticate(s d.Store, id string, key string) (*models.User, bool, error) {
+func Authenticate(s data.Store, id string, key string) (*models.User, bool, error) {
 	user, err := Find(s, mongo.NewObjectIDFromHex(id))
 
 	if err != nil {
@@ -65,15 +63,15 @@ u, err := Find(s, id)
 The error could be data.ErrInvalidDBType, data.ErrInvalidID,
 or an error from store.PopulateByID
 */
-func Find(s d.Store, id data.ID) (*models.User, error) {
+func Find(s data.Store, id data.ID) (*models.User, error) {
 	user := models.NewUser()
 
-	bid, ok := id.(bson.ObjectId)
-	if !ok {
-		return nil, data.ErrInvalidID
+	bid, err := mongo.ParseObjectID(id.String())
+	if err != nil {
+		return nil, err
 	}
 
-	user.SetID(d.ID(bid.Hex()))
+	user.SetID(data.ID(bid.Hex()))
 
 	// Find a user that has specified id
 	if err := s.PopulateByID(user); err != nil {

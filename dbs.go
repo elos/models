@@ -6,10 +6,12 @@ import (
 )
 
 func MongoDB(addr string) (data.DB, error) {
-	db := mongo.NewDB()
-	if err := db.Connect(addr); err != nil {
-		return nil, err
+	db, err := mongo.New(&mongo.Opts{Addr: addr})
+
+	if err != nil {
+		return db, err
 	}
+
 	db.SetName("test")
 
 	db.RegisterKind(ActionKind, "actions")
