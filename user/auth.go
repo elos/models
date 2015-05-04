@@ -38,8 +38,8 @@ if authed {
 	}
 }
 */
-func Authenticate(s data.Store, id string, key string) (*models.User, bool, error) {
-	user, err := Find(s, mongo.NewObjectIDFromHex(id))
+func Authenticate(db data.DB, id string, key string) (*models.User, bool, error) {
+	user, err := Find(db, mongo.NewObjectIDFromHex(id))
 
 	if err != nil {
 		return nil, false, err
@@ -63,7 +63,7 @@ u, err := Find(s, id)
 The error could be data.ErrInvalidDBType, data.ErrInvalidID,
 or an error from store.PopulateByID
 */
-func Find(s data.Store, id data.ID) (*models.User, error) {
+func Find(db data.DB, id data.ID) (*models.User, error) {
 	user := models.NewUser()
 
 	bid, err := mongo.ParseObjectID(id.String())
@@ -74,7 +74,7 @@ func Find(s data.Store, id data.ID) (*models.User, error) {
 	user.SetID(data.ID(bid.Hex()))
 
 	// Find a user that has specified id
-	if err := s.PopulateByID(user); err != nil {
+	if err := db.PopulateByID(user); err != nil {
 		return nil, err
 	}
 
