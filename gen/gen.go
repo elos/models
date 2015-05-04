@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/elos/gen/metis"
-	"github.com/elos/gen/metis/ego"
+	"github.com/elos/metis"
+	"github.com/elos/metis/ego"
 )
 
 func main() {
-	models, _ := metis.ParseGlob("models/*json")
+	models, _ := metis.ParseGlob("./definitions/models/*json")
 	s := metis.BuildSchema(models...)
 
 	if err := s.Valid(); err != nil {
@@ -18,12 +18,12 @@ func main() {
 	}
 
 	for _, m := range models {
-		ego.MakeGo(m).WriteFile("../models/" + m.Kind + ".go")
+		ego.MakeGo(m).WriteFile("../" + m.Kind + ".go")
 	}
 
-	ego.WriteKindsFile(s, "../models/kinds.go")
-	ego.WriteDynamicFile(s, "../models/dynamic.go")
-	ego.WriteDBsFile(s, "../models/dbs.go")
+	ego.WriteKindsFile(s, "../kinds.go")
+	ego.WriteDynamicFile(s, "../dynamic.go")
+	ego.WriteDBsFile(s, "../dbs.go")
 
 	/*
 		for _, m := range models {
