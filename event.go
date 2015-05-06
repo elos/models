@@ -17,6 +17,7 @@ type Event struct {
 	Id        string    `json:"id" bson:"_id,omitempty"`
 	Name      string    `json:"name" bson:"name"`
 	StartTime time.Time `json:"start_time" bson:"start_time"`
+	Tags      []string  `json:"tags" bson:"tags"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 	UserID    string    `json:"user_id" bson:"user_id"`
 }
@@ -77,6 +78,8 @@ func (event *Event) GetBSON() (interface{}, error) {
 
 		StartTime time.Time `json:"start_time" bson:"start_time"`
 
+		Tags []string `json:"tags" bson:"tags"`
+
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
 		UserID string `json:"user_id" bson:"user_id"`
@@ -89,6 +92,8 @@ func (event *Event) GetBSON() (interface{}, error) {
 		Name: event.Name,
 
 		StartTime: event.StartTime,
+
+		Tags: event.Tags,
 
 		UpdatedAt: event.UpdatedAt,
 
@@ -110,6 +115,8 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 		StartTime time.Time `json:"start_time" bson:"start_time"`
 
+		Tags []string `json:"tags" bson:"tags"`
+
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
 		UserID string `json:"user_id" bson:"user_id"`
@@ -129,6 +136,8 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 	event.Name = tmp.Name
 
 	event.StartTime = tmp.StartTime
+
+	event.Tags = tmp.Tags
 
 	event.UpdatedAt = tmp.UpdatedAt
 
