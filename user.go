@@ -15,6 +15,7 @@ type User struct {
 	ActionsIDs            []string  `json:"actions_ids" bson:"actions_ids"`
 	CalendarID            string    `json:"calendar_id" bson:"calendar_id"`
 	CreatedAt             time.Time `json:"created_at" bson:"created_at"`
+	CurrentActionID       string    `json:"current_action_id" bson:"current_action_id"`
 	CurrentActionableID   string    `json:"current_actionable_id" bson:"current_actionable_id"`
 	CurrentActionableKind string    `json:"current_actionable_kind" bson:"current_actionable_kind"`
 	EventsIDs             []string  `json:"events_ids" bson:"events_ids"`
@@ -22,6 +23,7 @@ type User struct {
 	Key                   string    `json:"key" bson:"key"`
 	Name                  string    `json:"name" bson:"name"`
 	OntologyID            string    `json:"ontology_id" bson:"ontology_id"`
+	PublicKeys            []string  `json:"public_keys" bson:"public_keys"`
 	RoutinesIDs           []string  `json:"routines_ids" bson:"routines_ids"`
 	TasksIDs              []string  `json:"tasks_ids" bson:"tasks_ids"`
 	UpdatedAt             time.Time `json:"updated_at" bson:"updated_at"`
@@ -98,6 +100,23 @@ func (user *User) Calendar(db data.DB) (*Calendar, error) {
 	pid, _ := mongo.ParseObjectID(user.CalendarID)
 	calendar.SetID(data.ID(pid.Hex()))
 	return calendar, db.PopulateByID(calendar)
+
+}
+
+func (user *User) SetCurrentAction(action *Action) error {
+	user.CurrentActionID = action.ID().String()
+	return nil
+}
+
+func (user *User) CurrentAction(db data.DB) (*Action, error) {
+	if user.CurrentActionID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	action := NewAction()
+	pid, _ := mongo.ParseObjectID(user.CurrentActionID)
+	action.SetID(data.ID(pid.Hex()))
+	return action, db.PopulateByID(action)
 
 }
 
@@ -246,11 +265,15 @@ func (user *User) GetBSON() (interface{}, error) {
 
 		Name string `json:"name" bson:"name"`
 
+		PublicKeys []string `json:"public_keys" bson:"public_keys"`
+
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
 		ActionsIDs []string `json:"actions_ids" bson:"actions_ids"`
 
 		CalendarID string `json:"calendar_id" bson:"calendar_id"`
+
+		CurrentActionID string `json:"current_action_id" bson:"current_action_id"`
 
 		CurrentActionableID string `json:"current_actionable_id" bson:"current_actionable_id"`
 
@@ -271,11 +294,15 @@ func (user *User) GetBSON() (interface{}, error) {
 
 		Name: user.Name,
 
+		PublicKeys: user.PublicKeys,
+
 		UpdatedAt: user.UpdatedAt,
 
 		ActionsIDs: user.ActionsIDs,
 
 		CalendarID: user.CalendarID,
+
+		CurrentActionID: user.CurrentActionID,
 
 		CurrentActionableID: user.CurrentActionableID,
 
@@ -303,11 +330,15 @@ func (user *User) SetBSON(raw bson.Raw) error {
 
 		Name string `json:"name" bson:"name"`
 
+		PublicKeys []string `json:"public_keys" bson:"public_keys"`
+
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
 		ActionsIDs []string `json:"actions_ids" bson:"actions_ids"`
 
 		CalendarID string `json:"calendar_id" bson:"calendar_id"`
+
+		CurrentActionID string `json:"current_action_id" bson:"current_action_id"`
 
 		CurrentActionableID string `json:"current_actionable_id" bson:"current_actionable_id"`
 
@@ -335,11 +366,15 @@ func (user *User) SetBSON(raw bson.Raw) error {
 
 	user.Name = tmp.Name
 
+	user.PublicKeys = tmp.PublicKeys
+
 	user.UpdatedAt = tmp.UpdatedAt
 
 	user.ActionsIDs = tmp.ActionsIDs
 
 	user.CalendarID = tmp.CalendarID
+
+	user.CurrentActionID = tmp.CurrentActionID
 
 	user.CurrentActionableID = tmp.CurrentActionableID
 
