@@ -6,7 +6,7 @@ import (
 	"github.com/elos/data"
 )
 
-func ModelFor(k data.Kind) data.Model {
+func ModelFor(k data.Kind) data.Record {
 	switch k {
 
 	case ActionKind:

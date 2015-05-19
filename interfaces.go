@@ -37,11 +37,11 @@ type EventableOps interface {
 }
 
 type Actionable interface {
-	data.Model
+	data.Record
 	ActionableOps
 }
 
 type Eventable interface {
-	data.Model
+	data.Record
 	EventableOps
 }
