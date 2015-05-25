@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/elos/metis"
-	"github.com/elos/metis/ego"
+	"github.com/elos/metis/builtin/ego"
 )
 
 func main() {

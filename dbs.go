@@ -38,6 +38,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(ScheduleKind, "schedules")
 
+	db.RegisterKind(SessionKind, "sessions")
+
 	db.RegisterKind(TaskKind, "tasks")
 
 	db.RegisterKind(TraitKind, "traits")

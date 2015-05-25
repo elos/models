@@ -27,6 +27,8 @@ const (
 
 	ScheduleKind data.Kind = "schedule"
 
+	SessionKind data.Kind = "session"
+
 	TaskKind data.Kind = "task"
 
 	TraitKind data.Kind = "trait"

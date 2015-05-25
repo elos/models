@@ -24,3 +24,7 @@ func RandomString(n int) string {
 func NewKey() string {
 	return RandomString(64)
 }
+
+func NewToken() string {
+	return RandomString(32)
+}

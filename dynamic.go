@@ -45,6 +45,9 @@ func ModelFor(k data.Kind) data.Record {
 	case ScheduleKind:
 		return NewSchedule()
 
+	case SessionKind:
+		return NewSession()
+
 	case TaskKind:
 		return NewTask()
 
