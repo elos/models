@@ -65,6 +65,30 @@ func (link *Link) Class(db data.DB) (*Class, error) {
 
 }
 
+func (link *Link) ClassOrCreate(db data.DB) (*Class, error) {
+	class, err := link.Class(db)
+
+	if err == ErrEmptyLink {
+		class := NewClass()
+		class.SetID(db.NewID())
+		if err := link.SetClass(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(link); err != nil {
+			return nil, err
+		}
+
+		return class, nil
+	} else {
+		return class, err
+	}
+}
+
 func (link *Link) IncludeRelation(relation *Relation) {
 	link.RelationsIDs = append(link.RelationsIDs, relation.ID().String())
 }

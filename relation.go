@@ -62,6 +62,30 @@ func (relation *Relation) Link(db data.DB) (*Link, error) {
 
 }
 
+func (relation *Relation) LinkOrCreate(db data.DB) (*Link, error) {
+	link, err := relation.Link(db)
+
+	if err == ErrEmptyLink {
+		link := NewLink()
+		link.SetID(db.NewID())
+		if err := relation.SetLink(link); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(link); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(relation); err != nil {
+			return nil, err
+		}
+
+		return link, nil
+	} else {
+		return link, err
+	}
+}
+
 func (relation *Relation) SetObject(object *Object) error {
 	relation.ObjectID = object.ID().String()
 	return nil
@@ -77,6 +101,30 @@ func (relation *Relation) Object(db data.DB) (*Object, error) {
 	object.SetID(data.ID(pid.Hex()))
 	return object, db.PopulateByID(object)
 
+}
+
+func (relation *Relation) ObjectOrCreate(db data.DB) (*Object, error) {
+	object, err := relation.Object(db)
+
+	if err == ErrEmptyLink {
+		object := NewObject()
+		object.SetID(db.NewID())
+		if err := relation.SetObject(object); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(object); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(relation); err != nil {
+			return nil, err
+		}
+
+		return object, nil
+	} else {
+		return object, err
+	}
 }
 
 // BSON {{{

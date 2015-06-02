@@ -87,6 +87,30 @@ func (action *Action) Task(db data.DB) (*Task, error) {
 
 }
 
+func (action *Action) TaskOrCreate(db data.DB) (*Task, error) {
+	task, err := action.Task(db)
+
+	if err == ErrEmptyLink {
+		task := NewTask()
+		task.SetID(db.NewID())
+		if err := action.SetTask(task); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(task); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		return task, nil
+	} else {
+		return task, err
+	}
+}
+
 func (action *Action) SetUser(user *User) error {
 	action.UserID = user.ID().String()
 	return nil
@@ -102,6 +126,30 @@ func (action *Action) User(db data.DB) (*User, error) {
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
+}
+
+func (action *Action) UserOrCreate(db data.DB) (*User, error) {
+	user, err := action.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := action.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
 }
 
 // BSON {{{

@@ -62,6 +62,30 @@ func (attribute *Attribute) Object(db data.DB) (*Object, error) {
 
 }
 
+func (attribute *Attribute) ObjectOrCreate(db data.DB) (*Object, error) {
+	object, err := attribute.Object(db)
+
+	if err == ErrEmptyLink {
+		object := NewObject()
+		object.SetID(db.NewID())
+		if err := attribute.SetObject(object); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(object); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(attribute); err != nil {
+			return nil, err
+		}
+
+		return object, nil
+	} else {
+		return object, err
+	}
+}
+
 func (attribute *Attribute) SetTrait(trait *Trait) error {
 	attribute.TraitID = trait.ID().String()
 	return nil
@@ -77,6 +101,30 @@ func (attribute *Attribute) Trait(db data.DB) (*Trait, error) {
 	trait.SetID(data.ID(pid.Hex()))
 	return trait, db.PopulateByID(trait)
 
+}
+
+func (attribute *Attribute) TraitOrCreate(db data.DB) (*Trait, error) {
+	trait, err := attribute.Trait(db)
+
+	if err == ErrEmptyLink {
+		trait := NewTrait()
+		trait.SetID(db.NewID())
+		if err := attribute.SetTrait(trait); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(trait); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(attribute); err != nil {
+			return nil, err
+		}
+
+		return trait, nil
+	} else {
+		return trait, err
+	}
 }
 
 // BSON {{{

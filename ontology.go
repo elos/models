@@ -126,6 +126,30 @@ func (ontology *Ontology) User(db data.DB) (*User, error) {
 
 }
 
+func (ontology *Ontology) UserOrCreate(db data.DB) (*User, error) {
+	user, err := ontology.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := ontology.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(ontology); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (ontology *Ontology) GetBSON() (interface{}, error) {
 

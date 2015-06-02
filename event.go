@@ -64,6 +64,30 @@ func (event *Event) User(db data.DB) (*User, error) {
 
 }
 
+func (event *Event) UserOrCreate(db data.DB) (*User, error) {
+	user, err := event.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := event.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(event); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (event *Event) GetBSON() (interface{}, error) {
 

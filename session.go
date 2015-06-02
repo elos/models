@@ -62,6 +62,30 @@ func (session *Session) User(db data.DB) (*User, error) {
 
 }
 
+func (session *Session) UserOrCreate(db data.DB) (*User, error) {
+	user, err := session.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := session.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(session); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (session *Session) GetBSON() (interface{}, error) {
 

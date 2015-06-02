@@ -96,6 +96,30 @@ func (object *Object) Class(db data.DB) (*Class, error) {
 
 }
 
+func (object *Object) ClassOrCreate(db data.DB) (*Class, error) {
+	class, err := object.Class(db)
+
+	if err == ErrEmptyLink {
+		class := NewClass()
+		class.SetID(db.NewID())
+		if err := object.SetClass(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(object); err != nil {
+			return nil, err
+		}
+
+		return class, nil
+	} else {
+		return class, err
+	}
+}
+
 func (object *Object) SetOntology(ontology *Ontology) error {
 	object.OntologyID = ontology.ID().String()
 	return nil
@@ -111,6 +135,30 @@ func (object *Object) Ontology(db data.DB) (*Ontology, error) {
 	ontology.SetID(data.ID(pid.Hex()))
 	return ontology, db.PopulateByID(ontology)
 
+}
+
+func (object *Object) OntologyOrCreate(db data.DB) (*Ontology, error) {
+	ontology, err := object.Ontology(db)
+
+	if err == ErrEmptyLink {
+		ontology := NewOntology()
+		ontology.SetID(db.NewID())
+		if err := object.SetOntology(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(object); err != nil {
+			return nil, err
+		}
+
+		return ontology, nil
+	} else {
+		return ontology, err
+	}
 }
 
 func (object *Object) IncludeRelation(relation *Relation) {

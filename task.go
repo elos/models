@@ -96,6 +96,30 @@ func (task *Task) User(db data.DB) (*User, error) {
 
 }
 
+func (task *Task) UserOrCreate(db data.DB) (*User, error) {
+	user, err := task.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := task.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(task); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (task *Task) GetBSON() (interface{}, error) {
 

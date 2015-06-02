@@ -20,7 +20,7 @@ func (s *Schedule) OrderedFixtures(db data.DB) ([]*Fixture, error) {
 	return s.Fixtures(db)
 }
 
-func MergedFixtures(s, db data.DB, schedules ...*Schedule) ([]*Fixture, error) {
+func MergedFixtures(db data.DB, schedules ...*Schedule) ([]*Fixture, error) {
 	fixtures := make([]*Fixture, 0)
 
 	for _, s := range schedules {

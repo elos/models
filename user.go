@@ -103,6 +103,30 @@ func (user *User) Calendar(db data.DB) (*Calendar, error) {
 
 }
 
+func (user *User) CalendarOrCreate(db data.DB) (*Calendar, error) {
+	calendar, err := user.Calendar(db)
+
+	if err == ErrEmptyLink {
+		calendar := NewCalendar()
+		calendar.SetID(db.NewID())
+		if err := user.SetCalendar(calendar); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		return calendar, nil
+	} else {
+		return calendar, err
+	}
+}
+
 func (user *User) SetCurrentAction(action *Action) error {
 	user.CurrentActionID = action.ID().String()
 	return nil
@@ -118,6 +142,30 @@ func (user *User) CurrentAction(db data.DB) (*Action, error) {
 	action.SetID(data.ID(pid.Hex()))
 	return action, db.PopulateByID(action)
 
+}
+
+func (user *User) CurrentActionOrCreate(db data.DB) (*Action, error) {
+	action, err := user.CurrentAction(db)
+
+	if err == ErrEmptyLink {
+		action := NewAction()
+		action.SetID(db.NewID())
+		if err := user.SetCurrentAction(action); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		return action, nil
+	} else {
+		return action, err
+	}
 }
 
 func (user *User) SetCurrentActionable(actionable Actionable) error {
@@ -187,6 +235,30 @@ func (user *User) Ontology(db data.DB) (*Ontology, error) {
 	ontology.SetID(data.ID(pid.Hex()))
 	return ontology, db.PopulateByID(ontology)
 
+}
+
+func (user *User) OntologyOrCreate(db data.DB) (*Ontology, error) {
+	ontology, err := user.Ontology(db)
+
+	if err == ErrEmptyLink {
+		ontology := NewOntology()
+		ontology.SetID(db.NewID())
+		if err := user.SetOntology(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		return ontology, nil
+	} else {
+		return ontology, err
+	}
 }
 
 func (user *User) IncludeRoutine(routine *Routine) {

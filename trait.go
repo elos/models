@@ -95,6 +95,30 @@ func (trait *Trait) Class(db data.DB) (*Class, error) {
 
 }
 
+func (trait *Trait) ClassOrCreate(db data.DB) (*Class, error) {
+	class, err := trait.Class(db)
+
+	if err == ErrEmptyLink {
+		class := NewClass()
+		class.SetID(db.NewID())
+		if err := trait.SetClass(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(trait); err != nil {
+			return nil, err
+		}
+
+		return class, nil
+	} else {
+		return class, err
+	}
+}
+
 // BSON {{{
 func (trait *Trait) GetBSON() (interface{}, error) {
 

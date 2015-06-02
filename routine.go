@@ -131,6 +131,30 @@ func (routine *Routine) CurrentAction(db data.DB) (*Action, error) {
 
 }
 
+func (routine *Routine) CurrentActionOrCreate(db data.DB) (*Action, error) {
+	action, err := routine.CurrentAction(db)
+
+	if err == ErrEmptyLink {
+		action := NewAction()
+		action.SetID(db.NewID())
+		if err := routine.SetCurrentAction(action); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(routine); err != nil {
+			return nil, err
+		}
+
+		return action, nil
+	} else {
+		return action, err
+	}
+}
+
 func (routine *Routine) IncludeTask(task *Task) {
 	routine.TasksIDs = append(routine.TasksIDs, task.ID().String())
 }
@@ -178,6 +202,30 @@ func (routine *Routine) User(db data.DB) (*User, error) {
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
+}
+
+func (routine *Routine) UserOrCreate(db data.DB) (*User, error) {
+	user, err := routine.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := routine.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(routine); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
 }
 
 // BSON {{{

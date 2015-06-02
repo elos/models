@@ -130,6 +130,30 @@ func (class *Class) Ontology(db data.DB) (*Ontology, error) {
 
 }
 
+func (class *Class) OntologyOrCreate(db data.DB) (*Ontology, error) {
+	ontology, err := class.Ontology(db)
+
+	if err == ErrEmptyLink {
+		ontology := NewOntology()
+		ontology.SetID(db.NewID())
+		if err := class.SetOntology(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(ontology); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		return ontology, nil
+	} else {
+		return ontology, err
+	}
+}
+
 func (class *Class) IncludeTrait(trait *Trait) {
 	class.TraitsIDs = append(class.TraitsIDs, trait.ID().String())
 }
@@ -177,6 +201,30 @@ func (class *Class) User(db data.DB) (*User, error) {
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
+}
+
+func (class *Class) UserOrCreate(db data.DB) (*User, error) {
+	user, err := class.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := class.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
 }
 
 // BSON {{{

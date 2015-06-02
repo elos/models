@@ -96,6 +96,30 @@ func (schedule *Schedule) User(db data.DB) (*User, error) {
 
 }
 
+func (schedule *Schedule) UserOrCreate(db data.DB) (*User, error) {
+	user, err := schedule.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := schedule.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (schedule *Schedule) GetBSON() (interface{}, error) {
 

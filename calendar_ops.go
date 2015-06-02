@@ -1,6 +1,7 @@
 package models
 
 import (
+	"log"
 	"time"
 
 	"github.com/elos/data"
@@ -36,26 +37,23 @@ func (c *Calendar) YeardaySchedule(t time.Time, db data.DB) (*Schedule, error) {
 	return schedule, db.PopulateByID(schedule)
 }
 
-func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) ([]*Schedule, error) {
-	schedules := make([]*Schedule, 3)
+func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
+	schedules := make([]*Schedule, 0)
 
-	if base, err := c.BaseSchedule(db); err == nil {
-		schedules[0] = base
-	} else {
-		return schedules, err
+	if base, err := c.BaseScheduleOrCreate(db); err == nil {
+		log.Printf("Base, base: %+v, err: %s", base, err)
+		schedules = append(schedules, base)
 	}
 
 	if weekday, err := c.WeekdaySchedule(t, db); err == nil {
-		schedules[1] = weekday
-	} else {
-		return schedules, err
+		schedules = append(schedules, weekday)
 	}
 
 	if yearday, err := c.YeardaySchedule(t, db); err == nil {
-		schedules[2] = yearday
-	} else {
-		return schedules, err
+		schedules = append(schedules, yearday)
 	}
 
-	return schedules, nil
+	log.Print(schedules)
+
+	return schedules
 }

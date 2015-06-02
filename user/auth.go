@@ -1,7 +1,7 @@
 package user
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
@@ -38,18 +38,19 @@ if authed {
 	}
 }
 */
-func Authenticate(db data.DB, id string, key string) (*models.User, bool, error) {
-	user, err := Find(db, mongo.NewObjectIDFromHex(id))
+func Authenticate(db data.DB, stringID string, key string) (*models.User, error) {
+	id, err := db.ParseID(stringID)
 
+	user, err := Find(db, id)
 	if err != nil {
-		return nil, false, err
+		return nil, err
 	}
 
 	if user.Key != key {
-		return nil, false, fmt.Errorf("Invalid key")
+		return nil, errors.New("invalid key")
 	}
 
-	return user, true, nil
+	return user, nil
 }
 
 /*

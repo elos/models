@@ -178,6 +178,30 @@ func (fixture *Fixture) User(db data.DB) (*User, error) {
 
 }
 
+func (fixture *Fixture) UserOrCreate(db data.DB) (*User, error) {
+	user, err := fixture.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := fixture.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(fixture); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (fixture *Fixture) GetBSON() (interface{}, error) {
 

@@ -65,6 +65,30 @@ func (calendar *Calendar) BaseSchedule(db data.DB) (*Schedule, error) {
 
 }
 
+func (calendar *Calendar) BaseScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.BaseSchedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetBaseSchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
 func (calendar *Calendar) SetCurrentFixture(fixture *Fixture) error {
 	calendar.CurrentFixtureID = fixture.ID().String()
 	return nil
@@ -82,6 +106,30 @@ func (calendar *Calendar) CurrentFixture(db data.DB) (*Fixture, error) {
 
 }
 
+func (calendar *Calendar) CurrentFixtureOrCreate(db data.DB) (*Fixture, error) {
+	fixture, err := calendar.CurrentFixture(db)
+
+	if err == ErrEmptyLink {
+		fixture := NewFixture()
+		fixture.SetID(db.NewID())
+		if err := calendar.SetCurrentFixture(fixture); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(fixture); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return fixture, nil
+	} else {
+		return fixture, err
+	}
+}
+
 func (calendar *Calendar) SetUser(user *User) error {
 	calendar.UserID = user.ID().String()
 	return nil
@@ -97,6 +145,30 @@ func (calendar *Calendar) User(db data.DB) (*User, error) {
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
+}
+
+func (calendar *Calendar) UserOrCreate(db data.DB) (*User, error) {
+	user, err := calendar.User(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := calendar.SetUser(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
 }
 
 // BSON {{{
