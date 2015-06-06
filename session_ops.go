@@ -1,8 +1,12 @@
 package models
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 func NewSessionForUser(u *User) *Session {
+	log.Print("don't use")
 	s := &Session{
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),
@@ -10,7 +14,7 @@ func NewSessionForUser(u *User) *Session {
 		ExpiresAfter: 3600,
 	}
 
-	s.SetUser(u)
+	s.SetOwner(u)
 
 	return s
 }
