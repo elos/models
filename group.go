@@ -26,6 +26,15 @@ func NewGroup() *Group {
 	return &Group{}
 }
 
+func FindGroup(db data.DB, id data.ID) (*Group, error) {
+
+	group := NewGroup()
+	group.SetID(id)
+
+	return group, db.PopulateByID(group)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (group *Group) Kind() data.Kind {

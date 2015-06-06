@@ -28,6 +28,15 @@ func NewClass() *Class {
 	return &Class{}
 }
 
+func FindClass(db data.DB, id data.ID) (*Class, error) {
+
+	class := NewClass()
+	class.SetID(id)
+
+	return class, db.PopulateByID(class)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (class *Class) Kind() data.Kind {

@@ -25,6 +25,15 @@ func NewTrait() *Trait {
 	return &Trait{}
 }
 
+func FindTrait(db data.DB, id data.ID) (*Trait, error) {
+
+	trait := NewTrait()
+	trait.SetID(id)
+
+	return trait, db.PopulateByID(trait)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (trait *Trait) Kind() data.Kind {

@@ -30,6 +30,15 @@ func NewRoutine() *Routine {
 	return &Routine{}
 }
 
+func FindRoutine(db data.DB, id data.ID) (*Routine, error) {
+
+	routine := NewRoutine()
+	routine.SetID(id)
+
+	return routine, db.PopulateByID(routine)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (routine *Routine) Kind() data.Kind {

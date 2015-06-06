@@ -33,6 +33,15 @@ func NewPerson() *Person {
 	return &Person{}
 }
 
+func FindPerson(db data.DB, id data.ID) (*Person, error) {
+
+	person := NewPerson()
+	person.SetID(id)
+
+	return person, db.PopulateByID(person)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (person *Person) Kind() data.Kind {

@@ -28,6 +28,15 @@ func NewLink() *Link {
 	return &Link{}
 }
 
+func FindLink(db data.DB, id data.ID) (*Link, error) {
+
+	link := NewLink()
+	link.SetID(id)
+
+	return link, db.PopulateByID(link)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (link *Link) Kind() data.Kind {

@@ -36,6 +36,15 @@ func NewFixture() *Fixture {
 	return &Fixture{}
 }
 
+func FindFixture(db data.DB, id data.ID) (*Fixture, error) {
+
+	fixture := NewFixture()
+	fixture.SetID(id)
+
+	return fixture, db.PopulateByID(fixture)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (fixture *Fixture) Kind() data.Kind {

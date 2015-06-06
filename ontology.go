@@ -25,6 +25,15 @@ func NewOntology() *Ontology {
 	return &Ontology{}
 }
 
+func FindOntology(db data.DB, id data.ID) (*Ontology, error) {
+
+	ontology := NewOntology()
+	ontology.SetID(id)
+
+	return ontology, db.PopulateByID(ontology)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (ontology *Ontology) Kind() data.Kind {

@@ -27,6 +27,15 @@ func NewTask() *Task {
 	return &Task{}
 }
 
+func FindTask(db data.DB, id data.ID) (*Task, error) {
+
+	task := NewTask()
+	task.SetID(id)
+
+	return task, db.PopulateByID(task)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (task *Task) Kind() data.Kind {

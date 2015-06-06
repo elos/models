@@ -27,6 +27,15 @@ func NewObject() *Object {
 	return &Object{}
 }
 
+func FindObject(db data.DB, id data.ID) (*Object, error) {
+
+	object := NewObject()
+	object.SetID(id)
+
+	return object, db.PopulateByID(object)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (object *Object) Kind() data.Kind {

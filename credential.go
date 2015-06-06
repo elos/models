@@ -26,6 +26,15 @@ func NewCredential() *Credential {
 	return &Credential{}
 }
 
+func FindCredential(db data.DB, id data.ID) (*Credential, error) {
+
+	credential := NewCredential()
+	credential.SetID(id)
+
+	return credential, db.PopulateByID(credential)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (credential *Credential) Kind() data.Kind {

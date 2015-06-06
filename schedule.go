@@ -26,6 +26,15 @@ func NewSchedule() *Schedule {
 	return &Schedule{}
 }
 
+func FindSchedule(db data.DB, id data.ID) (*Schedule, error) {
+
+	schedule := NewSchedule()
+	schedule.SetID(id)
+
+	return schedule, db.PopulateByID(schedule)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (schedule *Schedule) Kind() data.Kind {

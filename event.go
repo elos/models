@@ -27,6 +27,15 @@ func NewEvent() *Event {
 	return &Event{}
 }
 
+func FindEvent(db data.DB, id data.ID) (*Event, error) {
+
+	event := NewEvent()
+	event.SetID(id)
+
+	return event, db.PopulateByID(event)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (event *Event) Kind() data.Kind {

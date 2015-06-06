@@ -28,6 +28,15 @@ func NewCalendar() *Calendar {
 	return &Calendar{}
 }
 
+func FindCalendar(db data.DB, id data.ID) (*Calendar, error) {
+
+	calendar := NewCalendar()
+	calendar.SetID(id)
+
+	return calendar, db.PopulateByID(calendar)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (calendar *Calendar) Kind() data.Kind {

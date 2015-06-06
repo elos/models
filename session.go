@@ -25,6 +25,15 @@ func NewSession() *Session {
 	return &Session{}
 }
 
+func FindSession(db data.DB, id data.ID) (*Session, error) {
+
+	session := NewSession()
+	session.SetID(id)
+
+	return session, db.PopulateByID(session)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (session *Session) Kind() data.Kind {

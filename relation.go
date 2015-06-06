@@ -25,6 +25,15 @@ func NewRelation() *Relation {
 	return &Relation{}
 }
 
+func FindRelation(db data.DB, id data.ID) (*Relation, error) {
+
+	relation := NewRelation()
+	relation.SetID(id)
+
+	return relation, db.PopulateByID(relation)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (relation *Relation) Kind() data.Kind {

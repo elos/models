@@ -30,6 +30,15 @@ func NewAction() *Action {
 	return &Action{}
 }
 
+func FindAction(db data.DB, id data.ID) (*Action, error) {
+
+	action := NewAction()
+	action.SetID(id)
+
+	return action, db.PopulateByID(action)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (action *Action) Kind() data.Kind {

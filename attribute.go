@@ -25,6 +25,15 @@ func NewAttribute() *Attribute {
 	return &Attribute{}
 }
 
+func FindAttribute(db data.DB, id data.ID) (*Attribute, error) {
+
+	attribute := NewAttribute()
+	attribute.SetID(id)
+
+	return attribute, db.PopulateByID(attribute)
+
+}
+
 // Kind is derived from the models package and is
 // defined in type.go, shared among implementations
 func (attribute *Attribute) Kind() data.Kind {
