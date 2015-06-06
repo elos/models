@@ -22,15 +22,21 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(ClassKind, "classes")
 
+	db.RegisterKind(CredentialKind, "credentials")
+
 	db.RegisterKind(EventKind, "events")
 
 	db.RegisterKind(FixtureKind, "fixtures")
+
+	db.RegisterKind(GroupKind, "groups")
 
 	db.RegisterKind(LinkKind, "links")
 
 	db.RegisterKind(ObjectKind, "objects")
 
 	db.RegisterKind(OntologyKind, "ontologies")
+
+	db.RegisterKind(PersonKind, "persons")
 
 	db.RegisterKind(RelationKind, "relations")
 

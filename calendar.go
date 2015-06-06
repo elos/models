@@ -17,8 +17,9 @@ type Calendar struct {
 	CurrentFixtureID string         `json:"current_fixture_id" bson:"current_fixture_id"`
 	Id               string         `json:"id" bson:"_id,omitempty"`
 	Name             string         `json:"name" bson:"name"`
+	OwnerID          string         `json:"owner_id" bson:"owner_id"`
+	PersonID         string         `json:"person_id" bson:"person_id"`
 	UpdatedAt        time.Time      `json:"updated_at" bson:"updated_at"`
-	UserID           string         `json:"user_id" bson:"user_id"`
 	WeekdaySchedules map[int]string `json:"weekday_schedules" bson:"weekday_schedules"`
 	YeardaySchedules map[int]string `json:"yearday_schedules" bson:"yearday_schedules"`
 }
@@ -130,30 +131,30 @@ func (calendar *Calendar) CurrentFixtureOrCreate(db data.DB) (*Fixture, error) {
 	}
 }
 
-func (calendar *Calendar) SetUser(user *User) error {
-	calendar.UserID = user.ID().String()
+func (calendar *Calendar) SetOwner(user *User) error {
+	calendar.OwnerID = user.ID().String()
 	return nil
 }
 
-func (calendar *Calendar) User(db data.DB) (*User, error) {
-	if calendar.UserID == "" {
+func (calendar *Calendar) Owner(db data.DB) (*User, error) {
+	if calendar.OwnerID == "" {
 		return nil, ErrEmptyLink
 	}
 
 	user := NewUser()
-	pid, _ := mongo.ParseObjectID(calendar.UserID)
+	pid, _ := mongo.ParseObjectID(calendar.OwnerID)
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
 }
 
-func (calendar *Calendar) UserOrCreate(db data.DB) (*User, error) {
-	user, err := calendar.User(db)
+func (calendar *Calendar) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := calendar.Owner(db)
 
 	if err == ErrEmptyLink {
 		user := NewUser()
 		user.SetID(db.NewID())
-		if err := calendar.SetUser(user); err != nil {
+		if err := calendar.SetOwner(user); err != nil {
 			return nil, err
 		}
 
@@ -168,6 +169,47 @@ func (calendar *Calendar) UserOrCreate(db data.DB) (*User, error) {
 		return user, nil
 	} else {
 		return user, err
+	}
+}
+
+func (calendar *Calendar) SetPerson(person *Person) error {
+	calendar.PersonID = person.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) Person(db data.DB) (*Person, error) {
+	if calendar.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(calendar.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (calendar *Calendar) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := calendar.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := calendar.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
 	}
 }
 
@@ -191,7 +233,9 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 
 		CurrentFixtureID string `json:"current_fixture_id" bson:"current_fixture_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{
 
 		CreatedAt: calendar.CreatedAt,
@@ -208,7 +252,9 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 
 		CurrentFixtureID: calendar.CurrentFixtureID,
 
-		UserID: calendar.UserID,
+		OwnerID: calendar.OwnerID,
+
+		PersonID: calendar.PersonID,
 	}, nil
 
 }
@@ -232,7 +278,9 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 		CurrentFixtureID string `json:"current_fixture_id" bson:"current_fixture_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -256,7 +304,9 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 	calendar.CurrentFixtureID = tmp.CurrentFixtureID
 
-	calendar.UserID = tmp.UserID
+	calendar.OwnerID = tmp.OwnerID
+
+	calendar.PersonID = tmp.PersonID
 
 	return nil
 

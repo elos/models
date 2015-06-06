@@ -11,15 +11,21 @@ const (
 
 	ClassKind data.Kind = "class"
 
+	CredentialKind data.Kind = "credential"
+
 	EventKind data.Kind = "event"
 
 	FixtureKind data.Kind = "fixture"
+
+	GroupKind data.Kind = "group"
 
 	LinkKind data.Kind = "link"
 
 	ObjectKind data.Kind = "object"
 
 	OntologyKind data.Kind = "ontology"
+
+	PersonKind data.Kind = "person"
 
 	RelationKind data.Kind = "relation"
 

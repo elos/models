@@ -17,9 +17,9 @@ type Schedule struct {
 	FixturesIDs []string  `json:"fixtures_ids" bson:"fixtures_ids"`
 	Id          string    `json:"id" bson:"_id,omitempty"`
 	Name        string    `json:"name" bson:"name"`
+	OwnerID     string    `json:"owner_id" bson:"owner_id"`
 	StartTime   time.Time `json:"start_time" bson:"start_time"`
 	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
-	UserID      string    `json:"user_id" bson:"user_id"`
 }
 
 func NewSchedule() *Schedule {
@@ -79,30 +79,30 @@ func (schedule *Schedule) Fixtures(db data.DB) ([]*Fixture, error) {
 	return fixtures, nil
 }
 
-func (schedule *Schedule) SetUser(user *User) error {
-	schedule.UserID = user.ID().String()
+func (schedule *Schedule) SetOwner(user *User) error {
+	schedule.OwnerID = user.ID().String()
 	return nil
 }
 
-func (schedule *Schedule) User(db data.DB) (*User, error) {
-	if schedule.UserID == "" {
+func (schedule *Schedule) Owner(db data.DB) (*User, error) {
+	if schedule.OwnerID == "" {
 		return nil, ErrEmptyLink
 	}
 
 	user := NewUser()
-	pid, _ := mongo.ParseObjectID(schedule.UserID)
+	pid, _ := mongo.ParseObjectID(schedule.OwnerID)
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
 }
 
-func (schedule *Schedule) UserOrCreate(db data.DB) (*User, error) {
-	user, err := schedule.User(db)
+func (schedule *Schedule) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := schedule.Owner(db)
 
 	if err == ErrEmptyLink {
 		user := NewUser()
 		user.SetID(db.NewID())
-		if err := schedule.SetUser(user); err != nil {
+		if err := schedule.SetOwner(user); err != nil {
 			return nil, err
 		}
 
@@ -138,7 +138,7 @@ func (schedule *Schedule) GetBSON() (interface{}, error) {
 
 		FixturesIDs []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: schedule.CreatedAt,
@@ -153,7 +153,7 @@ func (schedule *Schedule) GetBSON() (interface{}, error) {
 
 		FixturesIDs: schedule.FixturesIDs,
 
-		UserID: schedule.UserID,
+		OwnerID: schedule.OwnerID,
 	}, nil
 
 }
@@ -175,7 +175,7 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 		FixturesIDs []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -197,7 +197,7 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 	schedule.FixturesIDs = tmp.FixturesIDs
 
-	schedule.UserID = tmp.UserID
+	schedule.OwnerID = tmp.OwnerID
 
 	return nil
 

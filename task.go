@@ -16,10 +16,11 @@ type Task struct {
 	EndTime             time.Time `json:"end_time" bson:"end_time"`
 	Id                  string    `json:"id" bson:"_id,omitempty"`
 	Name                string    `json:"name" bson:"name"`
+	OwnerID             string    `json:"owner_id" bson:"owner_id"`
+	PersonID            string    `json:"person_id" bson:"person_id"`
 	StartTime           time.Time `json:"start_time" bson:"start_time"`
 	TaskDependenciesIDs []string  `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	UpdatedAt           time.Time `json:"updated_at" bson:"updated_at"`
-	UserID              string    `json:"user_id" bson:"user_id"`
 }
 
 func NewTask() *Task {
@@ -45,6 +46,88 @@ func (task *Task) SetID(id data.ID) {
 
 func (task *Task) ID() data.ID {
 	return data.ID(task.Id)
+}
+
+func (task *Task) SetOwner(user *User) error {
+	task.OwnerID = user.ID().String()
+	return nil
+}
+
+func (task *Task) Owner(db data.DB) (*User, error) {
+	if task.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(task.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (task *Task) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := task.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := task.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(task); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
+func (task *Task) SetPerson(person *Person) error {
+	task.PersonID = person.ID().String()
+	return nil
+}
+
+func (task *Task) Person(db data.DB) (*Person, error) {
+	if task.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(task.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (task *Task) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := task.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := task.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(task); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
+	}
 }
 
 func (task *Task) IncludeTaskDependency(taskDependency *Task) {
@@ -79,47 +162,6 @@ func (task *Task) TaskDependencies(db data.DB) ([]*Task, error) {
 	return task_dependencies, nil
 }
 
-func (task *Task) SetUser(user *User) error {
-	task.UserID = user.ID().String()
-	return nil
-}
-
-func (task *Task) User(db data.DB) (*User, error) {
-	if task.UserID == "" {
-		return nil, ErrEmptyLink
-	}
-
-	user := NewUser()
-	pid, _ := mongo.ParseObjectID(task.UserID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
-
-}
-
-func (task *Task) UserOrCreate(db data.DB) (*User, error) {
-	user, err := task.User(db)
-
-	if err == ErrEmptyLink {
-		user := NewUser()
-		user.SetID(db.NewID())
-		if err := task.SetUser(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(task); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else {
-		return user, err
-	}
-}
-
 // BSON {{{
 func (task *Task) GetBSON() (interface{}, error) {
 
@@ -136,9 +178,11 @@ func (task *Task) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	}{
 
 		CreatedAt: task.CreatedAt,
@@ -151,9 +195,11 @@ func (task *Task) GetBSON() (interface{}, error) {
 
 		UpdatedAt: task.UpdatedAt,
 
-		TaskDependenciesIDs: task.TaskDependenciesIDs,
+		OwnerID: task.OwnerID,
 
-		UserID: task.UserID,
+		PersonID: task.PersonID,
+
+		TaskDependenciesIDs: task.TaskDependenciesIDs,
 	}, nil
 
 }
@@ -173,9 +219,11 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -195,9 +243,11 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 	task.UpdatedAt = tmp.UpdatedAt
 
-	task.TaskDependenciesIDs = tmp.TaskDependenciesIDs
+	task.OwnerID = tmp.OwnerID
 
-	task.UserID = tmp.UserID
+	task.PersonID = tmp.PersonID
+
+	task.TaskDependenciesIDs = tmp.TaskDependenciesIDs
 
 	return nil
 

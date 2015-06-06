@@ -16,10 +16,11 @@ type Event struct {
 	EndTime   time.Time `json:"end_time" bson:"end_time"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
 	Name      string    `json:"name" bson:"name"`
+	OwnerID   string    `json:"owner_id" bson:"owner_id"`
+	PersonID  string    `json:"person_id" bson:"person_id"`
 	StartTime time.Time `json:"start_time" bson:"start_time"`
 	Tags      []string  `json:"tags" bson:"tags"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
-	UserID    string    `json:"user_id" bson:"user_id"`
 }
 
 func NewEvent() *Event {
@@ -47,30 +48,30 @@ func (event *Event) ID() data.ID {
 	return data.ID(event.Id)
 }
 
-func (event *Event) SetUser(user *User) error {
-	event.UserID = user.ID().String()
+func (event *Event) SetOwner(user *User) error {
+	event.OwnerID = user.ID().String()
 	return nil
 }
 
-func (event *Event) User(db data.DB) (*User, error) {
-	if event.UserID == "" {
+func (event *Event) Owner(db data.DB) (*User, error) {
+	if event.OwnerID == "" {
 		return nil, ErrEmptyLink
 	}
 
 	user := NewUser()
-	pid, _ := mongo.ParseObjectID(event.UserID)
+	pid, _ := mongo.ParseObjectID(event.OwnerID)
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
 }
 
-func (event *Event) UserOrCreate(db data.DB) (*User, error) {
-	user, err := event.User(db)
+func (event *Event) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := event.Owner(db)
 
 	if err == ErrEmptyLink {
 		user := NewUser()
 		user.SetID(db.NewID())
-		if err := event.SetUser(user); err != nil {
+		if err := event.SetOwner(user); err != nil {
 			return nil, err
 		}
 
@@ -85,6 +86,47 @@ func (event *Event) UserOrCreate(db data.DB) (*User, error) {
 		return user, nil
 	} else {
 		return user, err
+	}
+}
+
+func (event *Event) SetPerson(person *Person) error {
+	event.PersonID = person.ID().String()
+	return nil
+}
+
+func (event *Event) Person(db data.DB) (*Person, error) {
+	if event.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(event.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (event *Event) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := event.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := event.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(event); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
 	}
 }
 
@@ -106,7 +148,9 @@ func (event *Event) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{
 
 		CreatedAt: event.CreatedAt,
@@ -121,7 +165,9 @@ func (event *Event) GetBSON() (interface{}, error) {
 
 		UpdatedAt: event.UpdatedAt,
 
-		UserID: event.UserID,
+		OwnerID: event.OwnerID,
+
+		PersonID: event.PersonID,
 	}, nil
 
 }
@@ -143,7 +189,9 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -165,7 +213,9 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 	event.UpdatedAt = tmp.UpdatedAt
 
-	event.UserID = tmp.UserID
+	event.OwnerID = tmp.OwnerID
+
+	event.PersonID = tmp.PersonID
 
 	return nil
 

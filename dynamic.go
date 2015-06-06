@@ -21,11 +21,17 @@ func ModelFor(k data.Kind) data.Record {
 	case ClassKind:
 		return NewClass()
 
+	case CredentialKind:
+		return NewCredential()
+
 	case EventKind:
 		return NewEvent()
 
 	case FixtureKind:
 		return NewFixture()
+
+	case GroupKind:
+		return NewGroup()
 
 	case LinkKind:
 		return NewLink()
@@ -35,6 +41,9 @@ func ModelFor(k data.Kind) data.Record {
 
 	case OntologyKind:
 		return NewOntology()
+
+	case PersonKind:
+		return NewPerson()
 
 	case RelationKind:
 		return NewRelation()

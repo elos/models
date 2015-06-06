@@ -19,10 +19,11 @@ type Action struct {
 	EndTime        time.Time `json:"end_time" bson:"end_time"`
 	Id             string    `json:"id" bson:"_id,omitempty"`
 	Name           string    `json:"name" bson:"name"`
+	OwnerID        string    `json:"owner_id" bson:"owner_id"`
+	PersonID       string    `json:"person_id" bson:"person_id"`
 	StartTime      time.Time `json:"start_time" bson:"start_time"`
 	TaskID         string    `json:"task_id" bson:"task_id"`
 	UpdatedAt      time.Time `json:"updated_at" bson:"updated_at"`
-	UserID         string    `json:"user_id" bson:"user_id"`
 }
 
 func NewAction() *Action {
@@ -70,6 +71,88 @@ func (action *Action) Actionable(db data.DB) (Actionable, error) {
 
 }
 
+func (action *Action) SetOwner(user *User) error {
+	action.OwnerID = user.ID().String()
+	return nil
+}
+
+func (action *Action) Owner(db data.DB) (*User, error) {
+	if action.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(action.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (action *Action) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := action.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := action.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
+func (action *Action) SetPerson(person *Person) error {
+	action.PersonID = person.ID().String()
+	return nil
+}
+
+func (action *Action) Person(db data.DB) (*Person, error) {
+	if action.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(action.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (action *Action) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := action.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := action.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(action); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
+	}
+}
+
 func (action *Action) SetTask(task *Task) error {
 	action.TaskID = task.ID().String()
 	return nil
@@ -111,47 +194,6 @@ func (action *Action) TaskOrCreate(db data.DB) (*Task, error) {
 	}
 }
 
-func (action *Action) SetUser(user *User) error {
-	action.UserID = user.ID().String()
-	return nil
-}
-
-func (action *Action) User(db data.DB) (*User, error) {
-	if action.UserID == "" {
-		return nil, ErrEmptyLink
-	}
-
-	user := NewUser()
-	pid, _ := mongo.ParseObjectID(action.UserID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
-
-}
-
-func (action *Action) UserOrCreate(db data.DB) (*User, error) {
-	user, err := action.User(db)
-
-	if err == ErrEmptyLink {
-		user := NewUser()
-		user.SetID(db.NewID())
-		if err := action.SetUser(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(action); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else {
-		return user, err
-	}
-}
-
 // BSON {{{
 func (action *Action) GetBSON() (interface{}, error) {
 
@@ -174,9 +216,11 @@ func (action *Action) GetBSON() (interface{}, error) {
 
 		ActionableKind string `json:"actionable_kind" bson:"actionable_kind"`
 
-		TaskID string `json:"task_id" bson:"task_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TaskID string `json:"task_id" bson:"task_id"`
 	}{
 
 		Completed: action.Completed,
@@ -195,9 +239,11 @@ func (action *Action) GetBSON() (interface{}, error) {
 
 		ActionableKind: action.ActionableKind,
 
-		TaskID: action.TaskID,
+		OwnerID: action.OwnerID,
 
-		UserID: action.UserID,
+		PersonID: action.PersonID,
+
+		TaskID: action.TaskID,
 	}, nil
 
 }
@@ -223,9 +269,11 @@ func (action *Action) SetBSON(raw bson.Raw) error {
 
 		ActionableKind string `json:"actionable_kind" bson:"actionable_kind"`
 
-		TaskID string `json:"task_id" bson:"task_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TaskID string `json:"task_id" bson:"task_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -251,9 +299,11 @@ func (action *Action) SetBSON(raw bson.Raw) error {
 
 	action.ActionableKind = tmp.ActionableKind
 
-	action.TaskID = tmp.TaskID
+	action.OwnerID = tmp.OwnerID
 
-	action.UserID = tmp.UserID
+	action.PersonID = tmp.PersonID
+
+	action.TaskID = tmp.TaskID
 
 	return nil
 

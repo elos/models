@@ -19,9 +19,9 @@ type Class struct {
 	Name       string    `json:"name" bson:"name"`
 	ObjectsIDs []string  `json:"objects_ids" bson:"objects_ids"`
 	OntologyID string    `json:"ontology_id" bson:"ontology_id"`
+	OwnerID    string    `json:"owner_id" bson:"owner_id"`
 	TraitsIDs  []string  `json:"traits_ids" bson:"traits_ids"`
 	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
-	UserID     string    `json:"user_id" bson:"user_id"`
 }
 
 func NewClass() *Class {
@@ -154,6 +154,47 @@ func (class *Class) OntologyOrCreate(db data.DB) (*Ontology, error) {
 	}
 }
 
+func (class *Class) SetOwner(user *User) error {
+	class.OwnerID = user.ID().String()
+	return nil
+}
+
+func (class *Class) Owner(db data.DB) (*User, error) {
+	if class.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(class.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (class *Class) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := class.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := class.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(class); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 func (class *Class) IncludeTrait(trait *Trait) {
 	class.TraitsIDs = append(class.TraitsIDs, trait.ID().String())
 }
@@ -186,47 +227,6 @@ func (class *Class) Traits(db data.DB) ([]*Trait, error) {
 	return traits, nil
 }
 
-func (class *Class) SetUser(user *User) error {
-	class.UserID = user.ID().String()
-	return nil
-}
-
-func (class *Class) User(db data.DB) (*User, error) {
-	if class.UserID == "" {
-		return nil, ErrEmptyLink
-	}
-
-	user := NewUser()
-	pid, _ := mongo.ParseObjectID(class.UserID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
-
-}
-
-func (class *Class) UserOrCreate(db data.DB) (*User, error) {
-	user, err := class.User(db)
-
-	if err == ErrEmptyLink {
-		user := NewUser()
-		user.SetID(db.NewID())
-		if err := class.SetUser(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(class); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else {
-		return user, err
-	}
-}
-
 // BSON {{{
 func (class *Class) GetBSON() (interface{}, error) {
 
@@ -247,9 +247,9 @@ func (class *Class) GetBSON() (interface{}, error) {
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
 
-		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
 	}{
 
 		CreatedAt: class.CreatedAt,
@@ -266,9 +266,9 @@ func (class *Class) GetBSON() (interface{}, error) {
 
 		OntologyID: class.OntologyID,
 
-		TraitsIDs: class.TraitsIDs,
+		OwnerID: class.OwnerID,
 
-		UserID: class.UserID,
+		TraitsIDs: class.TraitsIDs,
 	}, nil
 
 }
@@ -292,9 +292,9 @@ func (class *Class) SetBSON(raw bson.Raw) error {
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
 
-		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -318,9 +318,9 @@ func (class *Class) SetBSON(raw bson.Raw) error {
 
 	class.OntologyID = tmp.OntologyID
 
-	class.TraitsIDs = tmp.TraitsIDs
+	class.OwnerID = tmp.OwnerID
 
-	class.UserID = tmp.UserID
+	class.TraitsIDs = tmp.TraitsIDs
 
 	return nil
 

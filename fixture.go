@@ -26,10 +26,10 @@ type Fixture struct {
 	Id             string      `json:"id" bson:"_id,omitempty"`
 	Label          bool        `json:"label" bson:"label"`
 	Name           string      `json:"name" bson:"name"`
+	OwnerID        string      `json:"owner_id" bson:"owner_id"`
 	Rank           int         `json:"rank" bson:"rank"`
 	StartTime      time.Time   `json:"start_time" bson:"start_time"`
 	UpdatedAt      time.Time   `json:"updated_at" bson:"updated_at"`
-	UserID         string      `json:"user_id" bson:"user_id"`
 }
 
 func NewFixture() *Fixture {
@@ -161,30 +161,30 @@ func (fixture *Fixture) Events(db data.DB) ([]*Event, error) {
 	return events, nil
 }
 
-func (fixture *Fixture) SetUser(user *User) error {
-	fixture.UserID = user.ID().String()
+func (fixture *Fixture) SetOwner(user *User) error {
+	fixture.OwnerID = user.ID().String()
 	return nil
 }
 
-func (fixture *Fixture) User(db data.DB) (*User, error) {
-	if fixture.UserID == "" {
+func (fixture *Fixture) Owner(db data.DB) (*User, error) {
+	if fixture.OwnerID == "" {
 		return nil, ErrEmptyLink
 	}
 
 	user := NewUser()
-	pid, _ := mongo.ParseObjectID(fixture.UserID)
+	pid, _ := mongo.ParseObjectID(fixture.OwnerID)
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
 }
 
-func (fixture *Fixture) UserOrCreate(db data.DB) (*User, error) {
-	user, err := fixture.User(db)
+func (fixture *Fixture) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := fixture.Owner(db)
 
 	if err == ErrEmptyLink {
 		user := NewUser()
 		user.SetID(db.NewID())
-		if err := fixture.SetUser(user); err != nil {
+		if err := fixture.SetOwner(user); err != nil {
 			return nil, err
 		}
 
@@ -240,7 +240,7 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 
 		EventsIDs []string `json:"events_ids" bson:"events_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: fixture.CreatedAt,
@@ -275,7 +275,7 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 
 		EventsIDs: fixture.EventsIDs,
 
-		UserID: fixture.UserID,
+		OwnerID: fixture.OwnerID,
 	}, nil
 
 }
@@ -317,7 +317,7 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 		EventsIDs []string `json:"events_ids" bson:"events_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -359,7 +359,7 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 	fixture.EventsIDs = tmp.EventsIDs
 
-	fixture.UserID = tmp.UserID
+	fixture.OwnerID = tmp.OwnerID
 
 	return nil
 

@@ -19,10 +19,11 @@ type Routine struct {
 	EndTime           time.Time `json:"end_time" bson:"end_time"`
 	Id                string    `json:"id" bson:"_id,omitempty"`
 	Name              string    `json:"name" bson:"name"`
+	OwnerID           string    `json:"owner_id" bson:"owner_id"`
+	PersonID          string    `json:"person_id" bson:"person_id"`
 	StartTime         time.Time `json:"start_time" bson:"start_time"`
 	TasksIDs          []string  `json:"tasks_ids" bson:"tasks_ids"`
 	UpdatedAt         time.Time `json:"updated_at" bson:"updated_at"`
-	UserID            string    `json:"user_id" bson:"user_id"`
 }
 
 func NewRoutine() *Routine {
@@ -155,6 +156,88 @@ func (routine *Routine) CurrentActionOrCreate(db data.DB) (*Action, error) {
 	}
 }
 
+func (routine *Routine) SetOwner(user *User) error {
+	routine.OwnerID = user.ID().String()
+	return nil
+}
+
+func (routine *Routine) Owner(db data.DB) (*User, error) {
+	if routine.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(routine.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (routine *Routine) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := routine.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := routine.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(routine); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
+func (routine *Routine) SetPerson(person *Person) error {
+	routine.PersonID = person.ID().String()
+	return nil
+}
+
+func (routine *Routine) Person(db data.DB) (*Person, error) {
+	if routine.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(routine.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (routine *Routine) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := routine.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := routine.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(routine); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
+	}
+}
+
 func (routine *Routine) IncludeTask(task *Task) {
 	routine.TasksIDs = append(routine.TasksIDs, task.ID().String())
 }
@@ -187,47 +270,6 @@ func (routine *Routine) Tasks(db data.DB) ([]*Task, error) {
 	return tasks, nil
 }
 
-func (routine *Routine) SetUser(user *User) error {
-	routine.UserID = user.ID().String()
-	return nil
-}
-
-func (routine *Routine) User(db data.DB) (*User, error) {
-	if routine.UserID == "" {
-		return nil, ErrEmptyLink
-	}
-
-	user := NewUser()
-	pid, _ := mongo.ParseObjectID(routine.UserID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
-
-}
-
-func (routine *Routine) UserOrCreate(db data.DB) (*User, error) {
-	user, err := routine.User(db)
-
-	if err == ErrEmptyLink {
-		user := NewUser()
-		user.SetID(db.NewID())
-		if err := routine.SetUser(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(routine); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else {
-		return user, err
-	}
-}
-
 // BSON {{{
 func (routine *Routine) GetBSON() (interface{}, error) {
 
@@ -250,9 +292,11 @@ func (routine *Routine) GetBSON() (interface{}, error) {
 
 		CurrentActionID string `json:"current_action_id" bson:"current_action_id"`
 
-		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
 	}{
 
 		CreatedAt: routine.CreatedAt,
@@ -271,9 +315,11 @@ func (routine *Routine) GetBSON() (interface{}, error) {
 
 		CurrentActionID: routine.CurrentActionID,
 
-		TasksIDs: routine.TasksIDs,
+		OwnerID: routine.OwnerID,
 
-		UserID: routine.UserID,
+		PersonID: routine.PersonID,
+
+		TasksIDs: routine.TasksIDs,
 	}, nil
 
 }
@@ -299,9 +345,11 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 		CurrentActionID string `json:"current_action_id" bson:"current_action_id"`
 
-		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		PersonID string `json:"person_id" bson:"person_id"`
+
+		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -327,9 +375,11 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 	routine.CurrentActionID = tmp.CurrentActionID
 
-	routine.TasksIDs = tmp.TasksIDs
+	routine.OwnerID = tmp.OwnerID
 
-	routine.UserID = tmp.UserID
+	routine.PersonID = tmp.PersonID
+
+	routine.TasksIDs = tmp.TasksIDs
 
 	return nil
 

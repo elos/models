@@ -17,6 +17,7 @@ type Relation struct {
 	Ids       []string  `json:"ids" bson:"ids"`
 	LinkID    string    `json:"link_id" bson:"link_id"`
 	ObjectID  string    `json:"object_id" bson:"object_id"`
+	OwnerID   string    `json:"owner_id" bson:"owner_id"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -127,6 +128,47 @@ func (relation *Relation) ObjectOrCreate(db data.DB) (*Object, error) {
 	}
 }
 
+func (relation *Relation) SetOwner(user *User) error {
+	relation.OwnerID = user.ID().String()
+	return nil
+}
+
+func (relation *Relation) Owner(db data.DB) (*User, error) {
+	if relation.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(relation.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (relation *Relation) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := relation.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := relation.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(relation); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 // BSON {{{
 func (relation *Relation) GetBSON() (interface{}, error) {
 
@@ -142,6 +184,8 @@ func (relation *Relation) GetBSON() (interface{}, error) {
 		LinkID string `json:"link_id" bson:"link_id"`
 
 		ObjectID string `json:"object_id" bson:"object_id"`
+
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: relation.CreatedAt,
@@ -153,6 +197,8 @@ func (relation *Relation) GetBSON() (interface{}, error) {
 		LinkID: relation.LinkID,
 
 		ObjectID: relation.ObjectID,
+
+		OwnerID: relation.OwnerID,
 	}, nil
 
 }
@@ -171,6 +217,8 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 		LinkID string `json:"link_id" bson:"link_id"`
 
 		ObjectID string `json:"object_id" bson:"object_id"`
+
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -189,6 +237,8 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 	relation.LinkID = tmp.LinkID
 
 	relation.ObjectID = tmp.ObjectID
+
+	relation.OwnerID = tmp.OwnerID
 
 	return nil
 

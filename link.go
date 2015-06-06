@@ -19,6 +19,7 @@ type Link struct {
 	Inverse      string    `json:"inverse" bson:"inverse"`
 	Multiplicity string    `json:"multiplicity" bson:"multiplicity"`
 	Name         string    `json:"name" bson:"name"`
+	OwnerID      string    `json:"owner_id" bson:"owner_id"`
 	RelationsIDs []string  `json:"relations_ids" bson:"relations_ids"`
 	UpdatedAt    time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -89,6 +90,47 @@ func (link *Link) ClassOrCreate(db data.DB) (*Class, error) {
 	}
 }
 
+func (link *Link) SetOwner(user *User) error {
+	link.OwnerID = user.ID().String()
+	return nil
+}
+
+func (link *Link) Owner(db data.DB) (*User, error) {
+	if link.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(link.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (link *Link) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := link.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := link.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(link); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 func (link *Link) IncludeRelation(relation *Relation) {
 	link.RelationsIDs = append(link.RelationsIDs, relation.ID().String())
 }
@@ -141,6 +183,8 @@ func (link *Link) GetBSON() (interface{}, error) {
 
 		ClassID string `json:"class_id" bson:"class_id"`
 
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
 		RelationsIDs []string `json:"relations_ids" bson:"relations_ids"`
 	}{
 
@@ -157,6 +201,8 @@ func (link *Link) GetBSON() (interface{}, error) {
 		UpdatedAt: link.UpdatedAt,
 
 		ClassID: link.ClassID,
+
+		OwnerID: link.OwnerID,
 
 		RelationsIDs: link.RelationsIDs,
 	}, nil
@@ -182,6 +228,8 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 
 		ClassID string `json:"class_id" bson:"class_id"`
 
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
 		RelationsIDs []string `json:"relations_ids" bson:"relations_ids"`
 	}{}
 
@@ -205,6 +253,8 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 	link.UpdatedAt = tmp.UpdatedAt
 
 	link.ClassID = tmp.ClassID
+
+	link.OwnerID = tmp.OwnerID
 
 	link.RelationsIDs = tmp.RelationsIDs
 

@@ -16,8 +16,9 @@ type Ontology struct {
 	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
 	Id         string    `json:"id" bson:"_id,omitempty"`
 	ObjectsIDs []string  `json:"objects_ids" bson:"objects_ids"`
+	OwnerID    string    `json:"owner_id" bson:"owner_id"`
+	PersonID   string    `json:"person_id" bson:"person_id"`
 	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
-	UserID     string    `json:"user_id" bson:"user_id"`
 }
 
 func NewOntology() *Ontology {
@@ -109,30 +110,30 @@ func (ontology *Ontology) Objects(db data.DB) ([]*Object, error) {
 	return objects, nil
 }
 
-func (ontology *Ontology) SetUser(user *User) error {
-	ontology.UserID = user.ID().String()
+func (ontology *Ontology) SetOwner(user *User) error {
+	ontology.OwnerID = user.ID().String()
 	return nil
 }
 
-func (ontology *Ontology) User(db data.DB) (*User, error) {
-	if ontology.UserID == "" {
+func (ontology *Ontology) Owner(db data.DB) (*User, error) {
+	if ontology.OwnerID == "" {
 		return nil, ErrEmptyLink
 	}
 
 	user := NewUser()
-	pid, _ := mongo.ParseObjectID(ontology.UserID)
+	pid, _ := mongo.ParseObjectID(ontology.OwnerID)
 	user.SetID(data.ID(pid.Hex()))
 	return user, db.PopulateByID(user)
 
 }
 
-func (ontology *Ontology) UserOrCreate(db data.DB) (*User, error) {
-	user, err := ontology.User(db)
+func (ontology *Ontology) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := ontology.Owner(db)
 
 	if err == ErrEmptyLink {
 		user := NewUser()
 		user.SetID(db.NewID())
-		if err := ontology.SetUser(user); err != nil {
+		if err := ontology.SetOwner(user); err != nil {
 			return nil, err
 		}
 
@@ -150,6 +151,47 @@ func (ontology *Ontology) UserOrCreate(db data.DB) (*User, error) {
 	}
 }
 
+func (ontology *Ontology) SetPerson(person *Person) error {
+	ontology.PersonID = person.ID().String()
+	return nil
+}
+
+func (ontology *Ontology) Person(db data.DB) (*Person, error) {
+	if ontology.PersonID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	person := NewPerson()
+	pid, _ := mongo.ParseObjectID(ontology.PersonID)
+	person.SetID(data.ID(pid.Hex()))
+	return person, db.PopulateByID(person)
+
+}
+
+func (ontology *Ontology) PersonOrCreate(db data.DB) (*Person, error) {
+	person, err := ontology.Person(db)
+
+	if err == ErrEmptyLink {
+		person := NewPerson()
+		person.SetID(db.NewID())
+		if err := ontology.SetPerson(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(ontology); err != nil {
+			return nil, err
+		}
+
+		return person, nil
+	} else {
+		return person, err
+	}
+}
+
 // BSON {{{
 func (ontology *Ontology) GetBSON() (interface{}, error) {
 
@@ -164,7 +206,9 @@ func (ontology *Ontology) GetBSON() (interface{}, error) {
 
 		ObjectsIDs []string `json:"objects_ids" bson:"objects_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{
 
 		CreatedAt: ontology.CreatedAt,
@@ -175,7 +219,9 @@ func (ontology *Ontology) GetBSON() (interface{}, error) {
 
 		ObjectsIDs: ontology.ObjectsIDs,
 
-		UserID: ontology.UserID,
+		OwnerID: ontology.OwnerID,
+
+		PersonID: ontology.PersonID,
 	}, nil
 
 }
@@ -193,7 +239,9 @@ func (ontology *Ontology) SetBSON(raw bson.Raw) error {
 
 		ObjectsIDs []string `json:"objects_ids" bson:"objects_ids"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
+		PersonID string `json:"person_id" bson:"person_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -211,7 +259,9 @@ func (ontology *Ontology) SetBSON(raw bson.Raw) error {
 
 	ontology.ObjectsIDs = tmp.ObjectsIDs
 
-	ontology.UserID = tmp.UserID
+	ontology.OwnerID = tmp.OwnerID
+
+	ontology.PersonID = tmp.PersonID
 
 	return nil
 

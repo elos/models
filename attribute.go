@@ -15,9 +15,9 @@ type Attribute struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
 	ObjectID  string    `json:"object_id" bson:"object_id"`
+	OwnerID   string    `json:"owner_id" bson:"owner_id"`
 	TraitID   string    `json:"trait_id" bson:"trait_id"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
-	UserID    string    `json:"user_id" bson:"user_id"`
 	Value     string    `json:"value" bson:"value"`
 }
 
@@ -87,6 +87,47 @@ func (attribute *Attribute) ObjectOrCreate(db data.DB) (*Object, error) {
 	}
 }
 
+func (attribute *Attribute) SetOwner(user *User) error {
+	attribute.OwnerID = user.ID().String()
+	return nil
+}
+
+func (attribute *Attribute) Owner(db data.DB) (*User, error) {
+	if attribute.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(attribute.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (attribute *Attribute) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := attribute.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := attribute.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(attribute); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 func (attribute *Attribute) SetTrait(trait *Trait) error {
 	attribute.TraitID = trait.ID().String()
 	return nil
@@ -128,47 +169,6 @@ func (attribute *Attribute) TraitOrCreate(db data.DB) (*Trait, error) {
 	}
 }
 
-func (attribute *Attribute) SetUser(user *User) error {
-	attribute.UserID = user.ID().String()
-	return nil
-}
-
-func (attribute *Attribute) User(db data.DB) (*User, error) {
-	if attribute.UserID == "" {
-		return nil, ErrEmptyLink
-	}
-
-	user := NewUser()
-	pid, _ := mongo.ParseObjectID(attribute.UserID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
-
-}
-
-func (attribute *Attribute) UserOrCreate(db data.DB) (*User, error) {
-	user, err := attribute.User(db)
-
-	if err == ErrEmptyLink {
-		user := NewUser()
-		user.SetID(db.NewID())
-		if err := attribute.SetUser(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(user); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(attribute); err != nil {
-			return nil, err
-		}
-
-		return user, nil
-	} else {
-		return user, err
-	}
-}
-
 // BSON {{{
 func (attribute *Attribute) GetBSON() (interface{}, error) {
 
@@ -183,9 +183,9 @@ func (attribute *Attribute) GetBSON() (interface{}, error) {
 
 		ObjectID string `json:"object_id" bson:"object_id"`
 
-		TraitID string `json:"trait_id" bson:"trait_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		TraitID string `json:"trait_id" bson:"trait_id"`
 	}{
 
 		CreatedAt: attribute.CreatedAt,
@@ -196,9 +196,9 @@ func (attribute *Attribute) GetBSON() (interface{}, error) {
 
 		ObjectID: attribute.ObjectID,
 
-		TraitID: attribute.TraitID,
+		OwnerID: attribute.OwnerID,
 
-		UserID: attribute.UserID,
+		TraitID: attribute.TraitID,
 	}, nil
 
 }
@@ -216,9 +216,9 @@ func (attribute *Attribute) SetBSON(raw bson.Raw) error {
 
 		ObjectID string `json:"object_id" bson:"object_id"`
 
-		TraitID string `json:"trait_id" bson:"trait_id"`
+		OwnerID string `json:"owner_id" bson:"owner_id"`
 
-		UserID string `json:"user_id" bson:"user_id"`
+		TraitID string `json:"trait_id" bson:"trait_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -236,9 +236,9 @@ func (attribute *Attribute) SetBSON(raw bson.Raw) error {
 
 	attribute.ObjectID = tmp.ObjectID
 
-	attribute.TraitID = tmp.TraitID
+	attribute.OwnerID = tmp.OwnerID
 
-	attribute.UserID = tmp.UserID
+	attribute.TraitID = tmp.TraitID
 
 	return nil
 
