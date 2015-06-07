@@ -41,6 +41,7 @@ func (c *Credential) NewSession(db data.DB, expiresAfter time.Duration) (*Sessio
 	session.CreatedAt = now
 	session.UpdatedAt = now
 	session.ExpiresAfter = int(expiresAfter)
+	session.Token = RandomString(32)
 
 	user.IncludeSession(session)
 	c.IncludeSession(session)
