@@ -6,12 +6,8 @@ import (
 	"github.com/elos/data"
 )
 
-func (c *Credential) Challenge(public, private string) bool {
+func (c *Credential) Challenge(private string) bool {
 	// eventually need to use spec mechanism
-
-	if public != c.Public {
-		return false
-	}
 
 	// eventually need encryption here
 	if private != c.Private {

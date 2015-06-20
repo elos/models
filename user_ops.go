@@ -6,23 +6,20 @@ import (
 	"github.com/elos/data"
 )
 
-func (u *User) Authenticate(db data.DB, public, private string) (*Credential, error) {
-	if u.Id == "" {
-		return nil, errors.New("user must have id to authenticate")
-	}
-
-	credentials, err := u.Credentials(db)
+func Authenticate(db data.DB, public, private string) (*Credential, error) {
+	credentialsIter, err := db.NewQuery(CredentialKind).Select(data.AttrMap{"public": public}).Execute()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, credential := range credentials {
-		if credential.Challenge(public, private) {
-			return credential, nil
-		}
+	credential := NewCredential()
+	credentialsIter.Next(credential)
+
+	if credential.Challenge(private) {
+		return credential, nil
 	}
 
-	return nil, errors.New("no valid credential match")
+	return nil, errors.New("challenge failed")
 }
 
 type Property interface {
