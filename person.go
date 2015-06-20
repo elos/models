@@ -23,6 +23,7 @@ type Person struct {
 	Key                   string    `json:"key" bson:"key"`
 	Name                  string    `json:"name" bson:"name"`
 	OntologyID            string    `json:"ontology_id" bson:"ontology_id"`
+	OwnerID               string    `json:"owner_id" bson:"owner_id"`
 	PublicKeys            []string  `json:"public_keys" bson:"public_keys"`
 	RoutinesIDs           []string  `json:"routines_ids" bson:"routines_ids"`
 	TasksIDs              []string  `json:"tasks_ids" bson:"tasks_ids"`
@@ -270,6 +271,47 @@ func (person *Person) OntologyOrCreate(db data.DB) (*Ontology, error) {
 	}
 }
 
+func (person *Person) SetOwner(user *User) error {
+	person.OwnerID = user.ID().String()
+	return nil
+}
+
+func (person *Person) Owner(db data.DB) (*User, error) {
+	if person.OwnerID == "" {
+		return nil, ErrEmptyLink
+	}
+
+	user := NewUser()
+	pid, _ := mongo.ParseObjectID(person.OwnerID)
+	user.SetID(data.ID(pid.Hex()))
+	return user, db.PopulateByID(user)
+
+}
+
+func (person *Person) OwnerOrCreate(db data.DB) (*User, error) {
+	user, err := person.Owner(db)
+
+	if err == ErrEmptyLink {
+		user := NewUser()
+		user.SetID(db.NewID())
+		if err := person.SetOwner(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(user); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(person); err != nil {
+			return nil, err
+		}
+
+		return user, nil
+	} else {
+		return user, err
+	}
+}
+
 func (person *Person) IncludeRoutine(routine *Routine) {
 	person.RoutinesIDs = append(person.RoutinesIDs, routine.ID().String())
 }
@@ -364,6 +406,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
 
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
 		RoutinesIDs []string `json:"routines_ids" bson:"routines_ids"`
 
 		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
@@ -392,6 +436,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 		EventsIDs: person.EventsIDs,
 
 		OntologyID: person.OntologyID,
+
+		OwnerID: person.OwnerID,
 
 		RoutinesIDs: person.RoutinesIDs,
 
@@ -429,6 +475,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
 
+		OwnerID string `json:"owner_id" bson:"owner_id"`
+
 		RoutinesIDs []string `json:"routines_ids" bson:"routines_ids"`
 
 		TasksIDs []string `json:"tasks_ids" bson:"tasks_ids"`
@@ -464,6 +512,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 	person.EventsIDs = tmp.EventsIDs
 
 	person.OntologyID = tmp.OntologyID
+
+	person.OwnerID = tmp.OwnerID
 
 	person.RoutinesIDs = tmp.RoutinesIDs
 
