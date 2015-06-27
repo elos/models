@@ -7,12 +7,12 @@ import (
 	"github.com/elos/data"
 )
 
-func WeekdayKey(t time.Time) int {
-	return int(t.Weekday())
+func WeekdayKey(t time.Time) string {
+	return string(int(t.Weekday()))
 }
 
-func YeardayKey(t time.Time) int {
-	return int(t.Month())*100 + t.Day()
+func YeardayKey(t time.Time) string {
+	return string(int(t.Month())*100 + t.Day())
 }
 
 func (c *Calendar) WeekdaySchedule(t time.Time, db data.DB) (*Schedule, error) {
