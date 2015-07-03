@@ -18,6 +18,7 @@ type Person struct {
 	CurrentActionID       string    `json:"current_action_id" bson:"current_action_id"`
 	CurrentActionableID   string    `json:"current_actionable_id" bson:"current_actionable_id"`
 	CurrentActionableKind string    `json:"current_actionable_kind" bson:"current_actionable_kind"`
+	DataIDs               []string  `json:"data_ids" bson:"data_ids"`
 	EventsIDs             []string  `json:"events_ids" bson:"events_ids"`
 	Id                    string    `json:"id" bson:"_id,omitempty"`
 	Key                   string    `json:"key" bson:"key"`
@@ -196,6 +197,38 @@ func (person *Person) CurrentActionable(db data.DB) (Actionable, error) {
 	actionable.SetID(data.ID(pid.Hex()))
 	return actionable, db.PopulateByID(actionable)
 
+}
+
+func (person *Person) IncludeDatum(datum *Datum) {
+	person.DataIDs = append(person.DataIDs, datum.ID().String())
+}
+
+func (person *Person) ExcludeDatum(datum *Datum) {
+	tmp := make([]string, 0)
+	id := datum.ID().String()
+	for _, s := range person.DataIDs {
+		if s != id {
+			tmp = append(tmp, s)
+		}
+	}
+	person.DataIDs = tmp
+}
+
+func (person *Person) DataIter(db data.DB) (data.Iterator, error) {
+	// not yet completely general
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.DataIDs), db), nil
+}
+
+func (person *Person) Data(db data.DB) ([]*Datum, error) {
+
+	data := make([]*Datum, 0)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.DataIDs), db)
+	datum := NewDatum()
+	for iter.Next(datum) {
+		data = append(data, datum)
+		datum = NewDatum()
+	}
+	return data, nil
 }
 
 func (person *Person) IncludeEvent(event *Event) {
@@ -402,6 +435,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 
 		CurrentActionableKind string `json:"current_actionable_kind" bson:"current_actionable_kind"`
 
+		DataIDs []string `json:"data_ids" bson:"data_ids"`
+
 		EventsIDs []string `json:"events_ids" bson:"events_ids"`
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
@@ -432,6 +467,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 		CurrentActionableID: person.CurrentActionableID,
 
 		CurrentActionableKind: person.CurrentActionableKind,
+
+		DataIDs: person.DataIDs,
 
 		EventsIDs: person.EventsIDs,
 
@@ -471,6 +508,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 		CurrentActionableKind string `json:"current_actionable_kind" bson:"current_actionable_kind"`
 
+		DataIDs []string `json:"data_ids" bson:"data_ids"`
+
 		EventsIDs []string `json:"events_ids" bson:"events_ids"`
 
 		OntologyID string `json:"ontology_id" bson:"ontology_id"`
@@ -508,6 +547,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 	person.CurrentActionableID = tmp.CurrentActionableID
 
 	person.CurrentActionableKind = tmp.CurrentActionableKind
+
+	person.DataIDs = tmp.DataIDs
 
 	person.EventsIDs = tmp.EventsIDs
 

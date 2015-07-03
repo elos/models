@@ -13,6 +13,8 @@ const (
 
 	CredentialKind data.Kind = "credential"
 
+	DatumKind data.Kind = "datum"
+
 	EventKind data.Kind = "event"
 
 	FixtureKind data.Kind = "fixture"

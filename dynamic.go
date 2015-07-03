@@ -24,6 +24,9 @@ func ModelFor(k data.Kind) data.Record {
 	case CredentialKind:
 		return NewCredential()
 
+	case DatumKind:
+		return NewDatum()
+
 	case EventKind:
 		return NewEvent()
 

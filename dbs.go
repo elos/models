@@ -24,6 +24,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(CredentialKind, "credentials")
 
+	db.RegisterKind(DatumKind, "data")
+
 	db.RegisterKind(EventKind, "events")
 
 	db.RegisterKind(FixtureKind, "fixtures")
