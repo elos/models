@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 func includes(set []string, object string) bool {
 	for _, o := range set {
 		if o == object {
@@ -18,4 +20,8 @@ func (d *Datum) Match(tags []string) bool {
 	}
 
 	return true
+}
+
+func (d *Datum) Between(start time.Time, end time.Time) bool {
+	return d.CreatedAt.After(start) && d.CreatedAt.Before(end)
 }
