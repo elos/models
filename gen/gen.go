@@ -8,13 +8,17 @@ import (
 )
 
 func main() {
-	models, _ := metis.ParseGlob("./definitions/models/*json")
+	models, err := metis.ParseGlob("./definitions/models/*json")
+	if err != nil {
+		log.Fatal("Error parsing the models: %s", err)
+	}
+
 	s := metis.BuildSchema(models...)
 
 	if err := s.Valid(); err != nil {
-		panic(err)
+		log.Fatal("Schema Invalid: %s", err)
 	} else {
-		log.Print("ALL GOOD")
+		log.Print("Schema Good")
 	}
 
 	for _, m := range models {
@@ -25,6 +29,7 @@ func main() {
 	ego.WriteDynamicFile(s, "../dynamic.go")
 	ego.WriteDBsFile(s, "../dbs.go")
 
+	// Generate the documentation files
 	/*
 		for _, m := range models {
 			textpath := filepath.Join("models/docs", m.Kind+".md")
