@@ -8,15 +8,15 @@ import (
 )
 
 func main() {
-	models, err := metis.ParseGlob("./definitions/models/*json")
+	models, err := metis.ParseGlob("./definitions/models/*/*json")
 	if err != nil {
-		log.Fatal("Error parsing the models: %s", err)
+		log.Fatalf("Error parsing the models: %s", err.Error())
 	}
 
 	s := metis.BuildSchema(models...)
 
 	if err := s.Valid(); err != nil {
-		log.Fatal("Schema Invalid: %s", err)
+		log.Fatalf("Schema Invalid: %s", err)
 	} else {
 		log.Print("Schema Good")
 	}

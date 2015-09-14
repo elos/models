@@ -9,7 +9,7 @@ const (
 
 	CalendarKind data.Kind = "calendar"
 
-	ClassKind data.Kind = "class"
+	ContextKind data.Kind = "context"
 
 	CredentialKind data.Kind = "credential"
 
@@ -22,6 +22,8 @@ const (
 	GroupKind data.Kind = "group"
 
 	LinkKind data.Kind = "link"
+
+	ModelKind data.Kind = "model"
 
 	ObjectKind data.Kind = "object"
 

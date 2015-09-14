@@ -20,7 +20,7 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(CalendarKind, "calendars")
 
-	db.RegisterKind(ClassKind, "classes")
+	db.RegisterKind(ContextKind, "contexts")
 
 	db.RegisterKind(CredentialKind, "credentials")
 
@@ -33,6 +33,8 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(GroupKind, "groups")
 
 	db.RegisterKind(LinkKind, "links")
+
+	db.RegisterKind(ModelKind, "models")
 
 	db.RegisterKind(ObjectKind, "objects")
 

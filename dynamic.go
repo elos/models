@@ -18,8 +18,8 @@ func ModelFor(k data.Kind) data.Record {
 	case CalendarKind:
 		return NewCalendar()
 
-	case ClassKind:
-		return NewClass()
+	case ContextKind:
+		return NewContext()
 
 	case CredentialKind:
 		return NewCredential()
@@ -38,6 +38,9 @@ func ModelFor(k data.Kind) data.Record {
 
 	case LinkKind:
 		return NewLink()
+
+	case ModelKind:
+		return NewModel()
 
 	case ObjectKind:
 		return NewObject()

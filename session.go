@@ -14,6 +14,7 @@ import (
 type Session struct {
 	CreatedAt    time.Time `json:"created_at" bson:"created_at"`
 	CredentialID string    `json:"credential_id" bson:"credential_id"`
+	DeletedAt    time.Time `json:"deleted_at" bson:"deleted_at"`
 	ExpiresAfter int       `json:"expires_after" bson:"expires_after"`
 	Id           string    `json:"id" bson:"_id,omitempty"`
 	OwnerID      string    `json:"owner_id" bson:"owner_id"`
@@ -143,6 +144,8 @@ func (session *Session) GetBSON() (interface{}, error) {
 	return struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
 
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
+
 		ExpiresAfter int `json:"expires_after" bson:"expires_after"`
 
 		Id string `json:"id" bson:"_id,omitempty"`
@@ -157,6 +160,8 @@ func (session *Session) GetBSON() (interface{}, error) {
 	}{
 
 		CreatedAt: session.CreatedAt,
+
+		DeletedAt: session.DeletedAt,
 
 		ExpiresAfter: session.ExpiresAfter,
 
@@ -175,6 +180,8 @@ func (session *Session) SetBSON(raw bson.Raw) error {
 
 	tmp := struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
+
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
 		ExpiresAfter int `json:"expires_after" bson:"expires_after"`
 
@@ -195,6 +202,8 @@ func (session *Session) SetBSON(raw bson.Raw) error {
 	}
 
 	session.CreatedAt = tmp.CreatedAt
+
+	session.DeletedAt = tmp.DeletedAt
 
 	session.ExpiresAfter = tmp.ExpiresAfter
 

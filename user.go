@@ -15,6 +15,7 @@ type User struct {
 	AuthorizationsIDs []string  `json:"authorizations_ids" bson:"authorizations_ids"`
 	CreatedAt         time.Time `json:"created_at" bson:"created_at"`
 	CredentialsIDs    []string  `json:"credentials_ids" bson:"credentials_ids"`
+	DeletedAt         time.Time `json:"deleted_at" bson:"deleted_at"`
 	GroupsIDs         []string  `json:"groups_ids" bson:"groups_ids"`
 	Id                string    `json:"id" bson:"_id,omitempty"`
 	Password          string    `json:"password" bson:"password"`
@@ -190,6 +191,8 @@ func (user *User) GetBSON() (interface{}, error) {
 	return struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
 
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
+
 		Id string `json:"id" bson:"_id,omitempty"`
 
 		Password string `json:"password" bson:"password"`
@@ -206,6 +209,8 @@ func (user *User) GetBSON() (interface{}, error) {
 	}{
 
 		CreatedAt: user.CreatedAt,
+
+		DeletedAt: user.DeletedAt,
 
 		Password: user.Password,
 
@@ -226,6 +231,8 @@ func (user *User) SetBSON(raw bson.Raw) error {
 
 	tmp := struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
+
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
 		Id bson.ObjectId `json:"id" bson:"_id,omitempty"`
 
@@ -248,6 +255,8 @@ func (user *User) SetBSON(raw bson.Raw) error {
 	}
 
 	user.CreatedAt = tmp.CreatedAt
+
+	user.DeletedAt = tmp.DeletedAt
 
 	user.Id = tmp.Id.Hex()
 
