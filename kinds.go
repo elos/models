@@ -23,13 +23,21 @@ const (
 
 	LinkKind data.Kind = "link"
 
+	LocationKind data.Kind = "location"
+
+	MediaKind data.Kind = "media"
+
 	ModelKind data.Kind = "model"
+
+	NoteKind data.Kind = "note"
 
 	ObjectKind data.Kind = "object"
 
 	OntologyKind data.Kind = "ontology"
 
 	PersonKind data.Kind = "person"
+
+	QuantityKind data.Kind = "quantity"
 
 	RelationKind data.Kind = "relation"
 
@@ -38,6 +46,8 @@ const (
 	ScheduleKind data.Kind = "schedule"
 
 	SessionKind data.Kind = "session"
+
+	TagKind data.Kind = "tag"
 
 	TaskKind data.Kind = "task"
 

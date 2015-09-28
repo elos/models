@@ -34,13 +34,21 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(LinkKind, "links")
 
+	db.RegisterKind(LocationKind, "locations")
+
+	db.RegisterKind(MediaKind, "medias")
+
 	db.RegisterKind(ModelKind, "models")
+
+	db.RegisterKind(NoteKind, "notes")
 
 	db.RegisterKind(ObjectKind, "objects")
 
 	db.RegisterKind(OntologyKind, "ontologies")
 
 	db.RegisterKind(PersonKind, "persons")
+
+	db.RegisterKind(QuantityKind, "quantities")
 
 	db.RegisterKind(RelationKind, "relations")
 
@@ -49,6 +57,8 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(ScheduleKind, "schedules")
 
 	db.RegisterKind(SessionKind, "sessions")
+
+	db.RegisterKind(TagKind, "tags")
 
 	db.RegisterKind(TaskKind, "tasks")
 

@@ -39,8 +39,17 @@ func ModelFor(k data.Kind) data.Record {
 	case LinkKind:
 		return NewLink()
 
+	case LocationKind:
+		return NewLocation()
+
+	case MediaKind:
+		return NewMedia()
+
 	case ModelKind:
 		return NewModel()
+
+	case NoteKind:
+		return NewNote()
 
 	case ObjectKind:
 		return NewObject()
@@ -50,6 +59,9 @@ func ModelFor(k data.Kind) data.Record {
 
 	case PersonKind:
 		return NewPerson()
+
+	case QuantityKind:
+		return NewQuantity()
 
 	case RelationKind:
 		return NewRelation()
@@ -62,6 +74,9 @@ func ModelFor(k data.Kind) data.Record {
 
 	case SessionKind:
 		return NewSession()
+
+	case TagKind:
+		return NewTag()
 
 	case TaskKind:
 		return NewTask()
