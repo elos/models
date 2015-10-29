@@ -56,8 +56,8 @@ func (session *Session) ID() data.ID {
 	return data.ID(session.Id)
 }
 
-func (session *Session) SetCredential(credential *Credential) error {
-	session.CredentialID = credential.ID().String()
+func (session *Session) SetCredential(credentialArgument *Credential) error {
+	session.CredentialID = credentialArgument.ID().String()
 	return nil
 }
 
@@ -66,10 +66,10 @@ func (session *Session) Credential(db data.DB) (*Credential, error) {
 		return nil, ErrEmptyLink
 	}
 
-	credential := NewCredential()
+	credentialArgument := NewCredential()
 	pid, _ := mongo.ParseObjectID(session.CredentialID)
-	credential.SetID(data.ID(pid.Hex()))
-	return credential, db.PopulateByID(credential)
+	credentialArgument.SetID(data.ID(pid.Hex()))
+	return credentialArgument, db.PopulateByID(credentialArgument)
 
 }
 
@@ -97,8 +97,8 @@ func (session *Session) CredentialOrCreate(db data.DB) (*Credential, error) {
 	}
 }
 
-func (session *Session) SetOwner(user *User) error {
-	session.OwnerID = user.ID().String()
+func (session *Session) SetOwner(userArgument *User) error {
+	session.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -107,10 +107,10 @@ func (session *Session) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(session.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

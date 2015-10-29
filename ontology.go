@@ -119,8 +119,8 @@ func (ontology *Ontology) Objects(db data.DB) ([]*Object, error) {
 	return objects, nil
 }
 
-func (ontology *Ontology) SetOwner(user *User) error {
-	ontology.OwnerID = user.ID().String()
+func (ontology *Ontology) SetOwner(userArgument *User) error {
+	ontology.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -129,10 +129,10 @@ func (ontology *Ontology) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(ontology.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

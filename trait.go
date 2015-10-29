@@ -89,8 +89,8 @@ func (trait *Trait) Attributes(db data.DB) ([]*Attribute, error) {
 	return attributes, nil
 }
 
-func (trait *Trait) SetModel(model *Model) error {
-	trait.ModelID = model.ID().String()
+func (trait *Trait) SetModel(modelArgument *Model) error {
+	trait.ModelID = modelArgument.ID().String()
 	return nil
 }
 
@@ -99,10 +99,10 @@ func (trait *Trait) Model(db data.DB) (*Model, error) {
 		return nil, ErrEmptyLink
 	}
 
-	model := NewModel()
+	modelArgument := NewModel()
 	pid, _ := mongo.ParseObjectID(trait.ModelID)
-	model.SetID(data.ID(pid.Hex()))
-	return model, db.PopulateByID(model)
+	modelArgument.SetID(data.ID(pid.Hex()))
+	return modelArgument, db.PopulateByID(modelArgument)
 
 }
 
@@ -130,8 +130,8 @@ func (trait *Trait) ModelOrCreate(db data.DB) (*Model, error) {
 	}
 }
 
-func (trait *Trait) SetOwner(user *User) error {
-	trait.OwnerID = user.ID().String()
+func (trait *Trait) SetOwner(userArgument *User) error {
+	trait.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -140,10 +140,10 @@ func (trait *Trait) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(trait.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

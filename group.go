@@ -121,8 +121,8 @@ func (group *Group) Grantees(db data.DB) ([]*User, error) {
 	return grantees, nil
 }
 
-func (group *Group) SetOwner(user *User) error {
-	group.OwnerID = user.ID().String()
+func (group *Group) SetOwner(userArgument *User) error {
+	group.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -131,10 +131,10 @@ func (group *Group) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(group.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

@@ -56,8 +56,8 @@ func (link *Link) ID() data.ID {
 	return data.ID(link.Id)
 }
 
-func (link *Link) SetObject(object *Object) error {
-	link.ObjectID = object.ID().String()
+func (link *Link) SetObject(objectArgument *Object) error {
+	link.ObjectID = objectArgument.ID().String()
 	return nil
 }
 
@@ -66,10 +66,10 @@ func (link *Link) Object(db data.DB) (*Object, error) {
 		return nil, ErrEmptyLink
 	}
 
-	object := NewObject()
+	objectArgument := NewObject()
 	pid, _ := mongo.ParseObjectID(link.ObjectID)
-	object.SetID(data.ID(pid.Hex()))
-	return object, db.PopulateByID(object)
+	objectArgument.SetID(data.ID(pid.Hex()))
+	return objectArgument, db.PopulateByID(objectArgument)
 
 }
 
@@ -97,8 +97,8 @@ func (link *Link) ObjectOrCreate(db data.DB) (*Object, error) {
 	}
 }
 
-func (link *Link) SetOwner(user *User) error {
-	link.OwnerID = user.ID().String()
+func (link *Link) SetOwner(userArgument *User) error {
+	link.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -107,10 +107,10 @@ func (link *Link) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(link.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -138,8 +138,8 @@ func (link *Link) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (link *Link) SetRelation(relation *Relation) error {
-	link.RelationID = relation.ID().String()
+func (link *Link) SetRelation(relationArgument *Relation) error {
+	link.RelationID = relationArgument.ID().String()
 	return nil
 }
 
@@ -148,10 +148,10 @@ func (link *Link) Relation(db data.DB) (*Relation, error) {
 		return nil, ErrEmptyLink
 	}
 
-	relation := NewRelation()
+	relationArgument := NewRelation()
 	pid, _ := mongo.ParseObjectID(link.RelationID)
-	relation.SetID(data.ID(pid.Hex()))
-	return relation, db.PopulateByID(relation)
+	relationArgument.SetID(data.ID(pid.Hex()))
+	return relationArgument, db.PopulateByID(relationArgument)
 
 }
 

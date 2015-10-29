@@ -121,8 +121,8 @@ func (object *Object) Links(db data.DB) ([]*Link, error) {
 	return links, nil
 }
 
-func (object *Object) SetModel(model *Model) error {
-	object.ModelID = model.ID().String()
+func (object *Object) SetModel(modelArgument *Model) error {
+	object.ModelID = modelArgument.ID().String()
 	return nil
 }
 
@@ -131,10 +131,10 @@ func (object *Object) Model(db data.DB) (*Model, error) {
 		return nil, ErrEmptyLink
 	}
 
-	model := NewModel()
+	modelArgument := NewModel()
 	pid, _ := mongo.ParseObjectID(object.ModelID)
-	model.SetID(data.ID(pid.Hex()))
-	return model, db.PopulateByID(model)
+	modelArgument.SetID(data.ID(pid.Hex()))
+	return modelArgument, db.PopulateByID(modelArgument)
 
 }
 
@@ -162,8 +162,8 @@ func (object *Object) ModelOrCreate(db data.DB) (*Model, error) {
 	}
 }
 
-func (object *Object) SetOntology(ontology *Ontology) error {
-	object.OntologyID = ontology.ID().String()
+func (object *Object) SetOntology(ontologyArgument *Ontology) error {
+	object.OntologyID = ontologyArgument.ID().String()
 	return nil
 }
 
@@ -172,10 +172,10 @@ func (object *Object) Ontology(db data.DB) (*Ontology, error) {
 		return nil, ErrEmptyLink
 	}
 
-	ontology := NewOntology()
+	ontologyArgument := NewOntology()
 	pid, _ := mongo.ParseObjectID(object.OntologyID)
-	ontology.SetID(data.ID(pid.Hex()))
-	return ontology, db.PopulateByID(ontology)
+	ontologyArgument.SetID(data.ID(pid.Hex()))
+	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
 }
 
@@ -203,8 +203,8 @@ func (object *Object) OntologyOrCreate(db data.DB) (*Ontology, error) {
 	}
 }
 
-func (object *Object) SetOwner(user *User) error {
-	object.OwnerID = user.ID().String()
+func (object *Object) SetOwner(userArgument *User) error {
+	object.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -213,10 +213,10 @@ func (object *Object) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(object.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

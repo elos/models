@@ -55,8 +55,8 @@ func (media *Media) ID() data.ID {
 	return data.ID(media.Id)
 }
 
-func (media *Media) SetOwner(user *User) error {
-	media.OwnerID = user.ID().String()
+func (media *Media) SetOwner(userArgument *User) error {
+	media.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -65,10 +65,10 @@ func (media *Media) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(media.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

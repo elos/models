@@ -54,8 +54,8 @@ func (note *Note) ID() data.ID {
 	return data.ID(note.Id)
 }
 
-func (note *Note) SetOwner(user *User) error {
-	note.OwnerID = user.ID().String()
+func (note *Note) SetOwner(userArgument *User) error {
+	note.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -64,10 +64,10 @@ func (note *Note) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(note.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

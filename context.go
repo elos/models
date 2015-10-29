@@ -55,8 +55,8 @@ func (context *Context) ID() data.ID {
 	return data.ID(context.Id)
 }
 
-func (context *Context) SetOwner(user *User) error {
-	context.OwnerID = user.ID().String()
+func (context *Context) SetOwner(userArgument *User) error {
+	context.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -65,10 +65,10 @@ func (context *Context) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(context.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

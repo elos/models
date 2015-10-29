@@ -55,3 +55,58 @@ const (
 
 	UserKind data.Kind = "user"
 )
+
+var Kinds = map[data.Kind]bool{
+
+	ActionKind: true,
+
+	AttributeKind: true,
+
+	CalendarKind: true,
+
+	ContextKind: true,
+
+	CredentialKind: true,
+
+	DatumKind: true,
+
+	EventKind: true,
+
+	FixtureKind: true,
+
+	GroupKind: true,
+
+	LinkKind: true,
+
+	LocationKind: true,
+
+	MediaKind: true,
+
+	ModelKind: true,
+
+	NoteKind: true,
+
+	ObjectKind: true,
+
+	OntologyKind: true,
+
+	PersonKind: true,
+
+	QuantityKind: true,
+
+	RelationKind: true,
+
+	RoutineKind: true,
+
+	ScheduleKind: true,
+
+	SessionKind: true,
+
+	TagKind: true,
+
+	TaskKind: true,
+
+	TraitKind: true,
+
+	UserKind: true,
+}

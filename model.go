@@ -90,8 +90,8 @@ func (model *Model) Objects(db data.DB) ([]*Object, error) {
 	return objects, nil
 }
 
-func (model *Model) SetOntology(ontology *Ontology) error {
-	model.OntologyID = ontology.ID().String()
+func (model *Model) SetOntology(ontologyArgument *Ontology) error {
+	model.OntologyID = ontologyArgument.ID().String()
 	return nil
 }
 
@@ -100,10 +100,10 @@ func (model *Model) Ontology(db data.DB) (*Ontology, error) {
 		return nil, ErrEmptyLink
 	}
 
-	ontology := NewOntology()
+	ontologyArgument := NewOntology()
 	pid, _ := mongo.ParseObjectID(model.OntologyID)
-	ontology.SetID(data.ID(pid.Hex()))
-	return ontology, db.PopulateByID(ontology)
+	ontologyArgument.SetID(data.ID(pid.Hex()))
+	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
 }
 
@@ -131,8 +131,8 @@ func (model *Model) OntologyOrCreate(db data.DB) (*Ontology, error) {
 	}
 }
 
-func (model *Model) SetOwner(user *User) error {
-	model.OwnerID = user.ID().String()
+func (model *Model) SetOwner(userArgument *User) error {
+	model.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -141,10 +141,10 @@ func (model *Model) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(model.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

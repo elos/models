@@ -60,8 +60,8 @@ func (action *Action) ID() data.ID {
 	return data.ID(action.Id)
 }
 
-func (action *Action) SetActionable(actionable Actionable) error {
-	action.ActionableID = actionable.ID().String()
+func (action *Action) SetActionable(actionableArgument Actionable) error {
+	action.ActionableID = actionableArgument.ID().String()
 	return nil
 }
 
@@ -80,8 +80,8 @@ func (action *Action) Actionable(db data.DB) (Actionable, error) {
 
 }
 
-func (action *Action) SetOwner(user *User) error {
-	action.OwnerID = user.ID().String()
+func (action *Action) SetOwner(userArgument *User) error {
+	action.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -90,10 +90,10 @@ func (action *Action) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(action.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -121,8 +121,8 @@ func (action *Action) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (action *Action) SetPerson(person *Person) error {
-	action.PersonID = person.ID().String()
+func (action *Action) SetPerson(personArgument *Person) error {
+	action.PersonID = personArgument.ID().String()
 	return nil
 }
 
@@ -131,10 +131,10 @@ func (action *Action) Person(db data.DB) (*Person, error) {
 		return nil, ErrEmptyLink
 	}
 
-	person := NewPerson()
+	personArgument := NewPerson()
 	pid, _ := mongo.ParseObjectID(action.PersonID)
-	person.SetID(data.ID(pid.Hex()))
-	return person, db.PopulateByID(person)
+	personArgument.SetID(data.ID(pid.Hex()))
+	return personArgument, db.PopulateByID(personArgument)
 
 }
 
@@ -162,8 +162,8 @@ func (action *Action) PersonOrCreate(db data.DB) (*Person, error) {
 	}
 }
 
-func (action *Action) SetTask(task *Task) error {
-	action.TaskID = task.ID().String()
+func (action *Action) SetTask(taskArgument *Task) error {
+	action.TaskID = taskArgument.ID().String()
 	return nil
 }
 
@@ -172,10 +172,10 @@ func (action *Action) Task(db data.DB) (*Task, error) {
 		return nil, ErrEmptyLink
 	}
 
-	task := NewTask()
+	taskArgument := NewTask()
 	pid, _ := mongo.ParseObjectID(action.TaskID)
-	task.SetID(data.ID(pid.Hex()))
-	return task, db.PopulateByID(task)
+	taskArgument.SetID(data.ID(pid.Hex()))
+	return taskArgument, db.PopulateByID(taskArgument)
 
 }
 

@@ -1,29 +1,20 @@
 package models
 
-import (
-	"strings"
+import "github.com/elos/data"
 
-	"github.com/elos/data"
-)
+func (g *Group) Contains(db data.DB, record data.Record) (bool, error) {
+	contexts, err := g.Contexts(db)
 
-func (g *Group) HasAccess(db data.DB, property Property) (bool, AccessLevel, error) {
-	if strings.ToLower(string(property.Kind())) != strings.ToLower(g.Domain) {
-		return false, None, nil
+	if err != nil {
+		goto Denied
 	}
 
-	if !includes(g.Ids, property.ID().String()) {
-		return false, None, nil
-	}
-
-	return true, AccessLevels[g.Access], nil
-}
-
-func includes(ss []string, s string) bool {
-	for i := range ss {
-		if ss[i] == s {
-			return true
+	for _, c := range contexts {
+		if c.Contains(record) {
+			return true, nil
 		}
 	}
 
-	return false
+Denied:
+	return false, nil
 }

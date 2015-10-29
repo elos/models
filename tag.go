@@ -87,8 +87,8 @@ func (tag *Tag) Events(db data.DB) ([]*Event, error) {
 	return events, nil
 }
 
-func (tag *Tag) SetOwner(user *User) error {
-	tag.OwnerID = user.ID().String()
+func (tag *Tag) SetOwner(userArgument *User) error {
+	tag.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -97,10 +97,10 @@ func (tag *Tag) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(tag.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

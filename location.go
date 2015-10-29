@@ -56,8 +56,8 @@ func (location *Location) ID() data.ID {
 	return data.ID(location.Id)
 }
 
-func (location *Location) SetOwner(user *User) error {
-	location.OwnerID = user.ID().String()
+func (location *Location) SetOwner(userArgument *User) error {
+	location.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -66,10 +66,10 @@ func (location *Location) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(location.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

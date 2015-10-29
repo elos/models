@@ -48,11 +48,11 @@ func RelevantFixtures(t time.Time, fixtures []*Fixture) []*Fixture {
 
 Filtering:
 	for _, fixture := range fixtures {
-		if now.After(fixture.Expires) {
+		if now.After(fixture.ExpiresAt) {
 			continue Filtering
 		}
 
-		for _, exception := range fixture.DateExceptions {
+		for _, exception := range fixture.Exceptions {
 			if DayEquivalent(now, exception) {
 				continue Filtering
 			}

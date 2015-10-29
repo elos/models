@@ -58,8 +58,8 @@ func (credential *Credential) ID() data.ID {
 	return data.ID(credential.Id)
 }
 
-func (credential *Credential) SetOwner(user *User) error {
-	credential.OwnerID = user.ID().String()
+func (credential *Credential) SetOwner(userArgument *User) error {
+	credential.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -68,10 +68,10 @@ func (credential *Credential) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(credential.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

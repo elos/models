@@ -91,8 +91,8 @@ func (relation *Relation) Links(db data.DB) ([]*Link, error) {
 	return links, nil
 }
 
-func (relation *Relation) SetModel(model *Model) error {
-	relation.ModelID = model.ID().String()
+func (relation *Relation) SetModel(modelArgument *Model) error {
+	relation.ModelID = modelArgument.ID().String()
 	return nil
 }
 
@@ -101,10 +101,10 @@ func (relation *Relation) Model(db data.DB) (*Model, error) {
 		return nil, ErrEmptyLink
 	}
 
-	model := NewModel()
+	modelArgument := NewModel()
 	pid, _ := mongo.ParseObjectID(relation.ModelID)
-	model.SetID(data.ID(pid.Hex()))
-	return model, db.PopulateByID(model)
+	modelArgument.SetID(data.ID(pid.Hex()))
+	return modelArgument, db.PopulateByID(modelArgument)
 
 }
 
@@ -132,8 +132,8 @@ func (relation *Relation) ModelOrCreate(db data.DB) (*Model, error) {
 	}
 }
 
-func (relation *Relation) SetOwner(user *User) error {
-	relation.OwnerID = user.ID().String()
+func (relation *Relation) SetOwner(userArgument *User) error {
+	relation.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -142,10 +142,10 @@ func (relation *Relation) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(relation.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

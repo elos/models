@@ -55,8 +55,8 @@ func (quantity *Quantity) ID() data.ID {
 	return data.ID(quantity.Id)
 }
 
-func (quantity *Quantity) SetOwner(user *User) error {
-	quantity.OwnerID = user.ID().String()
+func (quantity *Quantity) SetOwner(userArgument *User) error {
+	quantity.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -65,10 +65,10 @@ func (quantity *Quantity) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(quantity.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 

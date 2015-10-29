@@ -57,8 +57,8 @@ func (task *Task) ID() data.ID {
 	return data.ID(task.Id)
 }
 
-func (task *Task) SetOwner(user *User) error {
-	task.OwnerID = user.ID().String()
+func (task *Task) SetOwner(userArgument *User) error {
+	task.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -67,10 +67,10 @@ func (task *Task) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(task.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -98,8 +98,8 @@ func (task *Task) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (task *Task) SetPerson(person *Person) error {
-	task.PersonID = person.ID().String()
+func (task *Task) SetPerson(personArgument *Person) error {
+	task.PersonID = personArgument.ID().String()
 	return nil
 }
 
@@ -108,10 +108,10 @@ func (task *Task) Person(db data.DB) (*Person, error) {
 		return nil, ErrEmptyLink
 	}
 
-	person := NewPerson()
+	personArgument := NewPerson()
 	pid, _ := mongo.ParseObjectID(task.PersonID)
-	person.SetID(data.ID(pid.Hex()))
-	return person, db.PopulateByID(person)
+	personArgument.SetID(data.ID(pid.Hex()))
+	return personArgument, db.PopulateByID(personArgument)
 
 }
 

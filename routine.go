@@ -124,8 +124,8 @@ func (routine *Routine) CompletedTasks(db data.DB) ([]*Task, error) {
 	return completed_tasks, nil
 }
 
-func (routine *Routine) SetCurrentAction(action *Action) error {
-	routine.CurrentActionID = action.ID().String()
+func (routine *Routine) SetCurrentAction(actionArgument *Action) error {
+	routine.CurrentActionID = actionArgument.ID().String()
 	return nil
 }
 
@@ -134,10 +134,10 @@ func (routine *Routine) CurrentAction(db data.DB) (*Action, error) {
 		return nil, ErrEmptyLink
 	}
 
-	action := NewAction()
+	actionArgument := NewAction()
 	pid, _ := mongo.ParseObjectID(routine.CurrentActionID)
-	action.SetID(data.ID(pid.Hex()))
-	return action, db.PopulateByID(action)
+	actionArgument.SetID(data.ID(pid.Hex()))
+	return actionArgument, db.PopulateByID(actionArgument)
 
 }
 
@@ -165,8 +165,8 @@ func (routine *Routine) CurrentActionOrCreate(db data.DB) (*Action, error) {
 	}
 }
 
-func (routine *Routine) SetOwner(user *User) error {
-	routine.OwnerID = user.ID().String()
+func (routine *Routine) SetOwner(userArgument *User) error {
+	routine.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -175,10 +175,10 @@ func (routine *Routine) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(routine.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -206,8 +206,8 @@ func (routine *Routine) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (routine *Routine) SetPerson(person *Person) error {
-	routine.PersonID = person.ID().String()
+func (routine *Routine) SetPerson(personArgument *Person) error {
+	routine.PersonID = personArgument.ID().String()
 	return nil
 }
 
@@ -216,10 +216,10 @@ func (routine *Routine) Person(db data.DB) (*Person, error) {
 		return nil, ErrEmptyLink
 	}
 
-	person := NewPerson()
+	personArgument := NewPerson()
 	pid, _ := mongo.ParseObjectID(routine.PersonID)
-	person.SetID(data.ID(pid.Hex()))
-	return person, db.PopulateByID(person)
+	personArgument.SetID(data.ID(pid.Hex()))
+	return personArgument, db.PopulateByID(personArgument)
 
 }
 

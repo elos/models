@@ -16,13 +16,13 @@ type Fixture struct {
 	ActionableKind string      `json:"actionable_kind" bson:"actionable_kind"`
 	ActionsIDs     []string    `json:"actions_ids" bson:"actions_ids"`
 	CreatedAt      time.Time   `json:"created_at" bson:"created_at"`
-	DateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
-	Description    string      `json:"description" bson:"description"`
+	DeletedAt      time.Time   `json:"deleted_at" bson:"deleted_at"`
 	EndTime        time.Time   `json:"end_time" bson:"end_time"`
 	EventableID    string      `json:"eventable_id" bson:"eventable_id"`
 	EventableKind  string      `json:"eventable_kind" bson:"eventable_kind"`
 	EventsIDs      []string    `json:"events_ids" bson:"events_ids"`
-	Expires        time.Time   `json:"expires" bson:"expires"`
+	Exceptions     []time.Time `json:"exceptions" bson:"exceptions"`
+	ExpiresAt      time.Time   `json:"expires_at" bson:"expires_at"`
 	Id             string      `json:"id" bson:"_id,omitempty"`
 	Label          bool        `json:"label" bson:"label"`
 	Name           string      `json:"name" bson:"name"`
@@ -66,8 +66,8 @@ func (fixture *Fixture) ID() data.ID {
 	return data.ID(fixture.Id)
 }
 
-func (fixture *Fixture) SetActionable(actionable Actionable) error {
-	fixture.ActionableID = actionable.ID().String()
+func (fixture *Fixture) SetActionable(actionableArgument Actionable) error {
+	fixture.ActionableID = actionableArgument.ID().String()
 	return nil
 }
 
@@ -118,8 +118,8 @@ func (fixture *Fixture) Actions(db data.DB) ([]*Action, error) {
 	return actions, nil
 }
 
-func (fixture *Fixture) SetEventable(eventable Eventable) error {
-	fixture.EventableID = eventable.ID().String()
+func (fixture *Fixture) SetEventable(eventableArgument Eventable) error {
+	fixture.EventableID = eventableArgument.ID().String()
 	return nil
 }
 
@@ -170,8 +170,8 @@ func (fixture *Fixture) Events(db data.DB) ([]*Event, error) {
 	return events, nil
 }
 
-func (fixture *Fixture) SetOwner(user *User) error {
-	fixture.OwnerID = user.ID().String()
+func (fixture *Fixture) SetOwner(userArgument *User) error {
+	fixture.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -180,10 +180,10 @@ func (fixture *Fixture) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(fixture.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -217,13 +217,13 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 	return struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
 
-		DateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
-
-		Description string `json:"description" bson:"description"`
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
 		EndTime time.Time `json:"end_time" bson:"end_time"`
 
-		Expires time.Time `json:"expires" bson:"expires"`
+		Exceptions []time.Time `json:"exceptions" bson:"exceptions"`
+
+		ExpiresAt time.Time `json:"expires_at" bson:"expires_at"`
 
 		Id string `json:"id" bson:"_id,omitempty"`
 
@@ -254,13 +254,13 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 
 		CreatedAt: fixture.CreatedAt,
 
-		DateExceptions: fixture.DateExceptions,
-
-		Description: fixture.Description,
+		DeletedAt: fixture.DeletedAt,
 
 		EndTime: fixture.EndTime,
 
-		Expires: fixture.Expires,
+		Exceptions: fixture.Exceptions,
+
+		ExpiresAt: fixture.ExpiresAt,
 
 		Label: fixture.Label,
 
@@ -294,13 +294,13 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 	tmp := struct {
 		CreatedAt time.Time `json:"created_at" bson:"created_at"`
 
-		DateExceptions []time.Time `json:"date_exceptions" bson:"date_exceptions"`
-
-		Description string `json:"description" bson:"description"`
+		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
 		EndTime time.Time `json:"end_time" bson:"end_time"`
 
-		Expires time.Time `json:"expires" bson:"expires"`
+		Exceptions []time.Time `json:"exceptions" bson:"exceptions"`
+
+		ExpiresAt time.Time `json:"expires_at" bson:"expires_at"`
 
 		Id bson.ObjectId `json:"id" bson:"_id,omitempty"`
 
@@ -336,13 +336,13 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 	fixture.CreatedAt = tmp.CreatedAt
 
-	fixture.DateExceptions = tmp.DateExceptions
-
-	fixture.Description = tmp.Description
+	fixture.DeletedAt = tmp.DeletedAt
 
 	fixture.EndTime = tmp.EndTime
 
-	fixture.Expires = tmp.Expires
+	fixture.Exceptions = tmp.Exceptions
+
+	fixture.ExpiresAt = tmp.ExpiresAt
 
 	fixture.Id = tmp.Id.Hex()
 

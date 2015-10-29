@@ -56,8 +56,8 @@ func (attribute *Attribute) ID() data.ID {
 	return data.ID(attribute.Id)
 }
 
-func (attribute *Attribute) SetObject(object *Object) error {
-	attribute.ObjectID = object.ID().String()
+func (attribute *Attribute) SetObject(objectArgument *Object) error {
+	attribute.ObjectID = objectArgument.ID().String()
 	return nil
 }
 
@@ -66,10 +66,10 @@ func (attribute *Attribute) Object(db data.DB) (*Object, error) {
 		return nil, ErrEmptyLink
 	}
 
-	object := NewObject()
+	objectArgument := NewObject()
 	pid, _ := mongo.ParseObjectID(attribute.ObjectID)
-	object.SetID(data.ID(pid.Hex()))
-	return object, db.PopulateByID(object)
+	objectArgument.SetID(data.ID(pid.Hex()))
+	return objectArgument, db.PopulateByID(objectArgument)
 
 }
 
@@ -97,8 +97,8 @@ func (attribute *Attribute) ObjectOrCreate(db data.DB) (*Object, error) {
 	}
 }
 
-func (attribute *Attribute) SetOwner(user *User) error {
-	attribute.OwnerID = user.ID().String()
+func (attribute *Attribute) SetOwner(userArgument *User) error {
+	attribute.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -107,10 +107,10 @@ func (attribute *Attribute) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(attribute.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -138,8 +138,8 @@ func (attribute *Attribute) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (attribute *Attribute) SetTrait(trait *Trait) error {
-	attribute.TraitID = trait.ID().String()
+func (attribute *Attribute) SetTrait(traitArgument *Trait) error {
+	attribute.TraitID = traitArgument.ID().String()
 	return nil
 }
 
@@ -148,10 +148,10 @@ func (attribute *Attribute) Trait(db data.DB) (*Trait, error) {
 		return nil, ErrEmptyLink
 	}
 
-	trait := NewTrait()
+	traitArgument := NewTrait()
 	pid, _ := mongo.ParseObjectID(attribute.TraitID)
-	trait.SetID(data.ID(pid.Hex()))
-	return trait, db.PopulateByID(trait)
+	traitArgument.SetID(data.ID(pid.Hex()))
+	return traitArgument, db.PopulateByID(traitArgument)
 
 }
 

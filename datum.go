@@ -57,8 +57,8 @@ func (datum *Datum) ID() data.ID {
 	return data.ID(datum.Id)
 }
 
-func (datum *Datum) SetEvent(event *Event) error {
-	datum.EventID = event.ID().String()
+func (datum *Datum) SetEvent(eventArgument *Event) error {
+	datum.EventID = eventArgument.ID().String()
 	return nil
 }
 
@@ -67,10 +67,10 @@ func (datum *Datum) Event(db data.DB) (*Event, error) {
 		return nil, ErrEmptyLink
 	}
 
-	event := NewEvent()
+	eventArgument := NewEvent()
 	pid, _ := mongo.ParseObjectID(datum.EventID)
-	event.SetID(data.ID(pid.Hex()))
-	return event, db.PopulateByID(event)
+	eventArgument.SetID(data.ID(pid.Hex()))
+	return eventArgument, db.PopulateByID(eventArgument)
 
 }
 
@@ -98,8 +98,8 @@ func (datum *Datum) EventOrCreate(db data.DB) (*Event, error) {
 	}
 }
 
-func (datum *Datum) SetOwner(user *User) error {
-	datum.OwnerID = user.ID().String()
+func (datum *Datum) SetOwner(userArgument *User) error {
+	datum.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -108,10 +108,10 @@ func (datum *Datum) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(datum.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -139,8 +139,8 @@ func (datum *Datum) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (datum *Datum) SetPerson(person *Person) error {
-	datum.PersonID = person.ID().String()
+func (datum *Datum) SetPerson(personArgument *Person) error {
+	datum.PersonID = personArgument.ID().String()
 	return nil
 }
 
@@ -149,10 +149,10 @@ func (datum *Datum) Person(db data.DB) (*Person, error) {
 		return nil, ErrEmptyLink
 	}
 
-	person := NewPerson()
+	personArgument := NewPerson()
 	pid, _ := mongo.ParseObjectID(datum.PersonID)
-	person.SetID(data.ID(pid.Hex()))
-	return person, db.PopulateByID(person)
+	personArgument.SetID(data.ID(pid.Hex()))
+	return personArgument, db.PopulateByID(personArgument)
 
 }
 

@@ -61,8 +61,8 @@ func (event *Event) ID() data.ID {
 	return data.ID(event.Id)
 }
 
-func (event *Event) SetLocation(location *Location) error {
-	event.LocationID = location.ID().String()
+func (event *Event) SetLocation(locationArgument *Location) error {
+	event.LocationID = locationArgument.ID().String()
 	return nil
 }
 
@@ -71,10 +71,10 @@ func (event *Event) Location(db data.DB) (*Location, error) {
 		return nil, ErrEmptyLink
 	}
 
-	location := NewLocation()
+	locationArgument := NewLocation()
 	pid, _ := mongo.ParseObjectID(event.LocationID)
-	location.SetID(data.ID(pid.Hex()))
-	return location, db.PopulateByID(location)
+	locationArgument.SetID(data.ID(pid.Hex()))
+	return locationArgument, db.PopulateByID(locationArgument)
 
 }
 
@@ -102,8 +102,8 @@ func (event *Event) LocationOrCreate(db data.DB) (*Location, error) {
 	}
 }
 
-func (event *Event) SetMedia(media *Media) error {
-	event.MediaID = media.ID().String()
+func (event *Event) SetMedia(mediaArgument *Media) error {
+	event.MediaID = mediaArgument.ID().String()
 	return nil
 }
 
@@ -112,10 +112,10 @@ func (event *Event) Media(db data.DB) (*Media, error) {
 		return nil, ErrEmptyLink
 	}
 
-	media := NewMedia()
+	mediaArgument := NewMedia()
 	pid, _ := mongo.ParseObjectID(event.MediaID)
-	media.SetID(data.ID(pid.Hex()))
-	return media, db.PopulateByID(media)
+	mediaArgument.SetID(data.ID(pid.Hex()))
+	return mediaArgument, db.PopulateByID(mediaArgument)
 
 }
 
@@ -143,8 +143,8 @@ func (event *Event) MediaOrCreate(db data.DB) (*Media, error) {
 	}
 }
 
-func (event *Event) SetNote(note *Note) error {
-	event.NoteID = note.ID().String()
+func (event *Event) SetNote(noteArgument *Note) error {
+	event.NoteID = noteArgument.ID().String()
 	return nil
 }
 
@@ -153,10 +153,10 @@ func (event *Event) Note(db data.DB) (*Note, error) {
 		return nil, ErrEmptyLink
 	}
 
-	note := NewNote()
+	noteArgument := NewNote()
 	pid, _ := mongo.ParseObjectID(event.NoteID)
-	note.SetID(data.ID(pid.Hex()))
-	return note, db.PopulateByID(note)
+	noteArgument.SetID(data.ID(pid.Hex()))
+	return noteArgument, db.PopulateByID(noteArgument)
 
 }
 
@@ -184,8 +184,8 @@ func (event *Event) NoteOrCreate(db data.DB) (*Note, error) {
 	}
 }
 
-func (event *Event) SetOwner(user *User) error {
-	event.OwnerID = user.ID().String()
+func (event *Event) SetOwner(userArgument *User) error {
+	event.OwnerID = userArgument.ID().String()
 	return nil
 }
 
@@ -194,10 +194,10 @@ func (event *Event) Owner(db data.DB) (*User, error) {
 		return nil, ErrEmptyLink
 	}
 
-	user := NewUser()
+	userArgument := NewUser()
 	pid, _ := mongo.ParseObjectID(event.OwnerID)
-	user.SetID(data.ID(pid.Hex()))
-	return user, db.PopulateByID(user)
+	userArgument.SetID(data.ID(pid.Hex()))
+	return userArgument, db.PopulateByID(userArgument)
 
 }
 
@@ -225,8 +225,8 @@ func (event *Event) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (event *Event) SetPrior(event *Event) error {
-	event.PriorID = event.ID().String()
+func (event *Event) SetPrior(eventArgument *Event) error {
+	event.PriorID = eventArgument.ID().String()
 	return nil
 }
 
@@ -235,10 +235,10 @@ func (event *Event) Prior(db data.DB) (*Event, error) {
 		return nil, ErrEmptyLink
 	}
 
-	event := NewEvent()
+	eventArgument := NewEvent()
 	pid, _ := mongo.ParseObjectID(event.PriorID)
-	event.SetID(data.ID(pid.Hex()))
-	return event, db.PopulateByID(event)
+	eventArgument.SetID(data.ID(pid.Hex()))
+	return eventArgument, db.PopulateByID(eventArgument)
 
 }
 
@@ -266,8 +266,8 @@ func (event *Event) PriorOrCreate(db data.DB) (*Event, error) {
 	}
 }
 
-func (event *Event) SetQuantity(quantity *Quantity) error {
-	event.QuantityID = quantity.ID().String()
+func (event *Event) SetQuantity(quantityArgument *Quantity) error {
+	event.QuantityID = quantityArgument.ID().String()
 	return nil
 }
 
@@ -276,10 +276,10 @@ func (event *Event) Quantity(db data.DB) (*Quantity, error) {
 		return nil, ErrEmptyLink
 	}
 
-	quantity := NewQuantity()
+	quantityArgument := NewQuantity()
 	pid, _ := mongo.ParseObjectID(event.QuantityID)
-	quantity.SetID(data.ID(pid.Hex()))
-	return quantity, db.PopulateByID(quantity)
+	quantityArgument.SetID(data.ID(pid.Hex()))
+	return quantityArgument, db.PopulateByID(quantityArgument)
 
 }
 
