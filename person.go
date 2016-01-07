@@ -24,6 +24,7 @@ type Person struct {
 	Name                  string    `json:"name" bson:"name"`
 	OntologyID            string    `json:"ontology_id" bson:"ontology_id"`
 	OwnerID               string    `json:"owner_id" bson:"owner_id"`
+	Phone                 string    `json:"phone" bson:"phone"`
 	PublicKeys            []string  `json:"public_keys" bson:"public_keys"`
 	RoutinesIDs           []string  `json:"routines_ids" bson:"routines_ids"`
 	TasksIDs              []string  `json:"tasks_ids" bson:"tasks_ids"`
@@ -379,6 +380,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 
 		Name string `json:"name" bson:"name"`
 
+		Phone string `json:"phone" bson:"phone"`
+
 		PublicKeys []string `json:"public_keys" bson:"public_keys"`
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
@@ -409,6 +412,8 @@ func (person *Person) GetBSON() (interface{}, error) {
 		Key: person.Key,
 
 		Name: person.Name,
+
+		Phone: person.Phone,
 
 		PublicKeys: person.PublicKeys,
 
@@ -448,6 +453,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 		Name string `json:"name" bson:"name"`
 
+		Phone string `json:"phone" bson:"phone"`
+
 		PublicKeys []string `json:"public_keys" bson:"public_keys"`
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
@@ -485,6 +492,8 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 	person.Key = tmp.Key
 
 	person.Name = tmp.Name
+
+	person.Phone = tmp.Phone
 
 	person.PublicKeys = tmp.PublicKeys
 
