@@ -285,14 +285,6 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		calendar.Name = val.(string)
-	}
-
-	if val, ok := structure["weekday_schedules"]; ok {
-		calendar.WeekdaySchedules = val.(map[string]string)
-	}
-
 	if val, ok := structure["yearday_schedules"]; ok {
 		calendar.YeardaySchedules = val.(map[string]string)
 	}
@@ -311,6 +303,14 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["deleted_at"]; ok {
 		calendar.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		calendar.Name = val.(string)
+	}
+
+	if val, ok := structure["weekday_schedules"]; ok {
+		calendar.WeekdaySchedules = val.(map[string]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

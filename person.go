@@ -528,14 +528,6 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 func (person *Person) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		person.Name = val.(string)
-	}
-
-	if val, ok := structure["phone"]; ok {
-		person.Phone = val.(string)
-	}
-
 	if val, ok := structure["key"]; ok {
 		person.Key = val.(string)
 	}
@@ -556,20 +548,32 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["routines_ids"]; ok {
-		person.RoutinesIds = val.([]string)
+	if val, ok := structure["name"]; ok {
+		person.Name = val.(string)
+	}
+
+	if val, ok := structure["phone"]; ok {
+		person.Phone = val.(string)
 	}
 
 	if val, ok := structure["ontology_id"]; ok {
 		person.OntologyId = val.(string)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		person.EventsIds = val.([]string)
+	if val, ok := structure["data_ids"]; ok {
+		person.DataIds = val.([]string)
+	}
+
+	if val, ok := structure["actions_ids"]; ok {
+		person.ActionsIds = val.([]string)
 	}
 
 	if val, ok := structure["tasks_ids"]; ok {
 		person.TasksIds = val.([]string)
+	}
+
+	if val, ok := structure["routines_ids"]; ok {
+		person.RoutinesIds = val.([]string)
 	}
 
 	if val, ok := structure["current_action_id"]; ok {
@@ -588,19 +592,13 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["data_ids"]; ok {
-		person.DataIds = val.([]string)
-	}
-
-	if val, ok := structure["actions_ids"]; ok {
-		person.ActionsIds = val.([]string)
+	if val, ok := structure["events_ids"]; ok {
+		person.EventsIds = val.([]string)
 	}
 
 }
 
 var PersonStructure = map[string]metis.Primitive{
-
-	"phone": 3,
 
 	"key": 3,
 
@@ -614,11 +612,7 @@ var PersonStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
-	"events_ids": 10,
-
-	"tasks_ids": 10,
-
-	"current_action_id": 9,
+	"phone": 3,
 
 	"current_actionable_id": 9,
 
@@ -626,11 +620,17 @@ var PersonStructure = map[string]metis.Primitive{
 
 	"owner_id": 9,
 
+	"events_ids": 10,
+
+	"tasks_ids": 10,
+
+	"routines_ids": 10,
+
+	"current_action_id": 9,
+
 	"data_ids": 10,
 
 	"actions_ids": 10,
-
-	"routines_ids": 10,
 
 	"ontology_id": 9,
 }

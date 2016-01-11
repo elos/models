@@ -375,12 +375,6 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 
 var ActionStructure = map[string]metis.Primitive{
 
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
 	"name": 3,
 
 	"start_time": 4,
@@ -388,6 +382,12 @@ var ActionStructure = map[string]metis.Primitive{
 	"end_time": 4,
 
 	"completed": 0,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"owner_id": 9,
 

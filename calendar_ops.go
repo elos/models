@@ -1,7 +1,7 @@
 package models
 
 import (
-	"log"
+	"fmt"
 	"time"
 
 	"github.com/elos/data"
@@ -26,6 +26,35 @@ func (c *Calendar) WeekdaySchedule(t time.Time, db data.DB) (*Schedule, error) {
 	return schedule, db.PopulateByID(schedule)
 }
 
+func (c *Calendar) WeekdayScheduleOrCreate(t time.Time, db data.DB) (*Schedule, error) {
+	s, err := c.WeekdaySchedule(t, db)
+	if err != nil {
+		if err == ErrEmptyLink {
+			schedule := NewSchedule()
+			schedule.SetID(data.ID(db.NewID()))
+			schedule.CreatedAt = time.Now()
+			schedule.OwnerId = c.OwnerId
+			schedule.Name = fmt.Sprintf("%s Schedule", t.Weekday())
+			schedule.UpdatedAt = time.Now()
+
+			err = db.Save(schedule)
+			if err != nil {
+				return nil, err
+			}
+
+			c.WeekdaySchedules[WeekdayKey(t)] = schedule.ID().String()
+
+			err = db.Save(c)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, err
+	}
+
+	return s, nil
+}
+
 func (c *Calendar) YeardaySchedule(t time.Time, db data.DB) (*Schedule, error) {
 	id, ok := c.YeardaySchedules[YeardayKey(t)]
 	if !ok {
@@ -37,11 +66,39 @@ func (c *Calendar) YeardaySchedule(t time.Time, db data.DB) (*Schedule, error) {
 	return schedule, db.PopulateByID(schedule)
 }
 
+func (c *Calendar) YeardayScheduleOrCreate(t time.Time, db data.DB) (*Schedule, error) {
+	s, err := c.YeardaySchedule(t, db)
+	if err != nil {
+		if err == ErrEmptyLink {
+			schedule := NewSchedule()
+			schedule.SetID(data.ID(db.NewID()))
+			schedule.CreatedAt = time.Now()
+			schedule.OwnerId = c.OwnerId
+			schedule.Name = fmt.Sprintf("%d/%d Schedule", t.Year(), t.Day())
+			schedule.UpdatedAt = time.Now()
+
+			err = db.Save(schedule)
+			if err != nil {
+				return nil, err
+			}
+
+			c.YeardaySchedules[YeardayKey(t)] = schedule.ID().String()
+
+			err = db.Save(c)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, err
+	}
+
+	return s, nil
+}
+
 func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
 	schedules := make([]*Schedule, 0)
 
 	if base, err := c.BaseScheduleOrCreate(db); err == nil {
-		log.Printf("Base, base: %+v, err: %s", base, err)
 		schedules = append(schedules, base)
 	}
 
@@ -52,8 +109,6 @@ func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
 	if yearday, err := c.YeardaySchedule(t, db); err == nil {
 		schedules = append(schedules, yearday)
 	}
-
-	log.Print(schedules)
 
 	return schedules
 }
