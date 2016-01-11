@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,9 +17,9 @@ type Link struct {
 	DeletedAt  time.Time      `json:"deleted_at" bson:"deleted_at"`
 	Id         string         `json:"id" bson:"_id,omitempty"`
 	Ids        map[int]string `json:"ids" bson:"ids"`
-	ObjectID   string         `json:"object_id" bson:"object_id"`
-	OwnerID    string         `json:"owner_id" bson:"owner_id"`
-	RelationID string         `json:"relation_id" bson:"relation_id"`
+	ObjectId   string         `json:"object_id" bson:"object_id"`
+	OwnerId    string         `json:"owner_id" bson:"owner_id"`
+	RelationId string         `json:"relation_id" bson:"relation_id"`
 	UpdatedAt  time.Time      `json:"updated_at" bson:"updated_at"`
 }
 
@@ -57,17 +58,17 @@ func (link *Link) ID() data.ID {
 }
 
 func (link *Link) SetObject(objectArgument *Object) error {
-	link.ObjectID = objectArgument.ID().String()
+	link.ObjectId = objectArgument.ID().String()
 	return nil
 }
 
 func (link *Link) Object(db data.DB) (*Object, error) {
-	if link.ObjectID == "" {
+	if link.ObjectId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	objectArgument := NewObject()
-	pid, _ := mongo.ParseObjectID(link.ObjectID)
+	pid, _ := mongo.ParseObjectID(link.ObjectId)
 	objectArgument.SetID(data.ID(pid.Hex()))
 	return objectArgument, db.PopulateByID(objectArgument)
 
@@ -98,17 +99,17 @@ func (link *Link) ObjectOrCreate(db data.DB) (*Object, error) {
 }
 
 func (link *Link) SetOwner(userArgument *User) error {
-	link.OwnerID = userArgument.ID().String()
+	link.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (link *Link) Owner(db data.DB) (*User, error) {
-	if link.OwnerID == "" {
+	if link.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(link.OwnerID)
+	pid, _ := mongo.ParseObjectID(link.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -139,17 +140,17 @@ func (link *Link) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (link *Link) SetRelation(relationArgument *Relation) error {
-	link.RelationID = relationArgument.ID().String()
+	link.RelationId = relationArgument.ID().String()
 	return nil
 }
 
 func (link *Link) Relation(db data.DB) (*Relation, error) {
-	if link.RelationID == "" {
+	if link.RelationId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	relationArgument := NewRelation()
-	pid, _ := mongo.ParseObjectID(link.RelationID)
+	pid, _ := mongo.ParseObjectID(link.RelationId)
 	relationArgument.SetID(data.ID(pid.Hex()))
 	return relationArgument, db.PopulateByID(relationArgument)
 
@@ -193,11 +194,11 @@ func (link *Link) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		ObjectID string `json:"object_id" bson:"object_id"`
+		ObjectId string `json:"object_id" bson:"object_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		RelationID string `json:"relation_id" bson:"relation_id"`
+		RelationId string `json:"relation_id" bson:"relation_id"`
 	}{
 
 		CreatedAt: link.CreatedAt,
@@ -208,11 +209,11 @@ func (link *Link) GetBSON() (interface{}, error) {
 
 		UpdatedAt: link.UpdatedAt,
 
-		ObjectID: link.ObjectID,
+		ObjectId: link.ObjectId,
 
-		OwnerID: link.OwnerID,
+		OwnerId: link.OwnerId,
 
-		RelationID: link.RelationID,
+		RelationId: link.RelationId,
 	}, nil
 
 }
@@ -230,11 +231,11 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		ObjectID string `json:"object_id" bson:"object_id"`
+		ObjectId string `json:"object_id" bson:"object_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		RelationID string `json:"relation_id" bson:"relation_id"`
+		RelationId string `json:"relation_id" bson:"relation_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -252,14 +253,69 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 
 	link.UpdatedAt = tmp.UpdatedAt
 
-	link.ObjectID = tmp.ObjectID
+	link.ObjectId = tmp.ObjectId
 
-	link.OwnerID = tmp.OwnerID
+	link.OwnerId = tmp.OwnerId
 
-	link.RelationID = tmp.RelationID
+	link.RelationId = tmp.RelationId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (link *Link) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["deleted_at"]; ok {
+		link.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["ids"]; ok {
+		link.Ids = val.(map[int]string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		link.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		link.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		link.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		link.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["object_id"]; ok {
+		link.ObjectId = val.(string)
+	}
+
+	if val, ok := structure["relation_id"]; ok {
+		link.RelationId = val.(string)
+	}
+
+}
+
+var LinkStructure = map[string]metis.Primitive{
+
+	"ids": 12,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"owner_id": 9,
+
+	"object_id": 9,
+
+	"relation_id": 9,
+}

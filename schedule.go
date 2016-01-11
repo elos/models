@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,10 +16,10 @@ type Schedule struct {
 	CreatedAt   time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt   time.Time `json:"deleted_at" bson:"deleted_at"`
 	EndTime     time.Time `json:"end_time" bson:"end_time"`
-	FixturesIDs []string  `json:"fixtures_ids" bson:"fixtures_ids"`
+	FixturesIds []string  `json:"fixtures_ids" bson:"fixtures_ids"`
 	Id          string    `json:"id" bson:"_id,omitempty"`
 	Name        string    `json:"name" bson:"name"`
-	OwnerID     string    `json:"owner_id" bson:"owner_id"`
+	OwnerId     string    `json:"owner_id" bson:"owner_id"`
 	StartTime   time.Time `json:"start_time" bson:"start_time"`
 	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -58,29 +59,29 @@ func (schedule *Schedule) ID() data.ID {
 }
 
 func (schedule *Schedule) IncludeFixture(fixture *Fixture) {
-	schedule.FixturesIDs = append(schedule.FixturesIDs, fixture.ID().String())
+	schedule.FixturesIds = append(schedule.FixturesIds, fixture.ID().String())
 }
 
 func (schedule *Schedule) ExcludeFixture(fixture *Fixture) {
 	tmp := make([]string, 0)
 	id := fixture.ID().String()
-	for _, s := range schedule.FixturesIDs {
+	for _, s := range schedule.FixturesIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	schedule.FixturesIDs = tmp
+	schedule.FixturesIds = tmp
 }
 
 func (schedule *Schedule) FixturesIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIds), db), nil
 }
 
 func (schedule *Schedule) Fixtures(db data.DB) ([]*Fixture, error) {
 
 	fixtures := make([]*Fixture, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIds), db)
 	fixture := NewFixture()
 	for iter.Next(fixture) {
 		fixtures = append(fixtures, fixture)
@@ -90,17 +91,17 @@ func (schedule *Schedule) Fixtures(db data.DB) ([]*Fixture, error) {
 }
 
 func (schedule *Schedule) SetOwner(userArgument *User) error {
-	schedule.OwnerID = userArgument.ID().String()
+	schedule.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (schedule *Schedule) Owner(db data.DB) (*User, error) {
-	if schedule.OwnerID == "" {
+	if schedule.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(schedule.OwnerID)
+	pid, _ := mongo.ParseObjectID(schedule.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -148,9 +149,9 @@ func (schedule *Schedule) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		FixturesIDs []string `json:"fixtures_ids" bson:"fixtures_ids"`
+		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: schedule.CreatedAt,
@@ -165,9 +166,9 @@ func (schedule *Schedule) GetBSON() (interface{}, error) {
 
 		UpdatedAt: schedule.UpdatedAt,
 
-		FixturesIDs: schedule.FixturesIDs,
+		FixturesIds: schedule.FixturesIds,
 
-		OwnerID: schedule.OwnerID,
+		OwnerId: schedule.OwnerId,
 	}, nil
 
 }
@@ -189,9 +190,9 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		FixturesIDs []string `json:"fixtures_ids" bson:"fixtures_ids"`
+		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -213,12 +214,73 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 	schedule.UpdatedAt = tmp.UpdatedAt
 
-	schedule.FixturesIDs = tmp.FixturesIDs
+	schedule.FixturesIds = tmp.FixturesIds
 
-	schedule.OwnerID = tmp.OwnerID
+	schedule.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["end_time"]; ok {
+		schedule.EndTime = val.(time.Time)
+	}
+
+	if val, ok := structure["id"]; ok {
+		schedule.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		schedule.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		schedule.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		schedule.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		schedule.Name = val.(string)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		schedule.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		schedule.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["fixtures_ids"]; ok {
+		schedule.FixturesIds = val.([]string)
+	}
+
+}
+
+var ScheduleStructure = map[string]metis.Primitive{
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"name": 3,
+
+	"start_time": 4,
+
+	"end_time": 4,
+
+	"owner_id": 9,
+
+	"fixtures_ids": 10,
+}

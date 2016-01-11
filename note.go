@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,7 +16,7 @@ type Note struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
 	Text      string    `json:"text" bson:"text"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -55,17 +56,17 @@ func (note *Note) ID() data.ID {
 }
 
 func (note *Note) SetOwner(userArgument *User) error {
-	note.OwnerID = userArgument.ID().String()
+	note.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (note *Note) Owner(db data.DB) (*User, error) {
-	if note.OwnerID == "" {
+	if note.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(note.OwnerID)
+	pid, _ := mongo.ParseObjectID(note.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -109,7 +110,7 @@ func (note *Note) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: note.CreatedAt,
@@ -120,7 +121,7 @@ func (note *Note) GetBSON() (interface{}, error) {
 
 		UpdatedAt: note.UpdatedAt,
 
-		OwnerID: note.OwnerID,
+		OwnerId: note.OwnerId,
 	}, nil
 
 }
@@ -138,7 +139,7 @@ func (note *Note) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -156,10 +157,53 @@ func (note *Note) SetBSON(raw bson.Raw) error {
 
 	note.UpdatedAt = tmp.UpdatedAt
 
-	note.OwnerID = tmp.OwnerID
+	note.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (note *Note) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["id"]; ok {
+		note.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		note.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		note.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		note.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["text"]; ok {
+		note.Text = val.(string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		note.OwnerId = val.(string)
+	}
+
+}
+
+var NoteStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"text": 3,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"owner_id": 9,
+}

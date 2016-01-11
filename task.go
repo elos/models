@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,10 +17,10 @@ type Task struct {
 	EndTime             time.Time `json:"end_time" bson:"end_time"`
 	Id                  string    `json:"id" bson:"_id,omitempty"`
 	Name                string    `json:"name" bson:"name"`
-	OwnerID             string    `json:"owner_id" bson:"owner_id"`
-	PersonID            string    `json:"person_id" bson:"person_id"`
+	OwnerId             string    `json:"owner_id" bson:"owner_id"`
+	PersonId            string    `json:"person_id" bson:"person_id"`
 	StartTime           time.Time `json:"start_time" bson:"start_time"`
-	TaskDependenciesIDs []string  `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
+	TaskDependenciesIds []string  `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	UpdatedAt           time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -58,17 +59,17 @@ func (task *Task) ID() data.ID {
 }
 
 func (task *Task) SetOwner(userArgument *User) error {
-	task.OwnerID = userArgument.ID().String()
+	task.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (task *Task) Owner(db data.DB) (*User, error) {
-	if task.OwnerID == "" {
+	if task.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(task.OwnerID)
+	pid, _ := mongo.ParseObjectID(task.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -99,17 +100,17 @@ func (task *Task) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (task *Task) SetPerson(personArgument *Person) error {
-	task.PersonID = personArgument.ID().String()
+	task.PersonId = personArgument.ID().String()
 	return nil
 }
 
 func (task *Task) Person(db data.DB) (*Person, error) {
-	if task.PersonID == "" {
+	if task.PersonId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(task.PersonID)
+	pid, _ := mongo.ParseObjectID(task.PersonId)
 	personArgument.SetID(data.ID(pid.Hex()))
 	return personArgument, db.PopulateByID(personArgument)
 
@@ -140,29 +141,29 @@ func (task *Task) PersonOrCreate(db data.DB) (*Person, error) {
 }
 
 func (task *Task) IncludeTaskDependency(taskDependency *Task) {
-	task.TaskDependenciesIDs = append(task.TaskDependenciesIDs, taskDependency.ID().String())
+	task.TaskDependenciesIds = append(task.TaskDependenciesIds, taskDependency.ID().String())
 }
 
 func (task *Task) ExcludeTaskDependency(taskDependency *Task) {
 	tmp := make([]string, 0)
 	id := taskDependency.ID().String()
-	for _, s := range task.TaskDependenciesIDs {
+	for _, s := range task.TaskDependenciesIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	task.TaskDependenciesIDs = tmp
+	task.TaskDependenciesIds = tmp
 }
 
 func (task *Task) TaskDependenciesIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(task.TaskDependenciesIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(task.TaskDependenciesIds), db), nil
 }
 
 func (task *Task) TaskDependencies(db data.DB) ([]*Task, error) {
 
 	task_dependencies := make([]*Task, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(task.TaskDependenciesIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(task.TaskDependenciesIds), db)
 	task_dependency := NewTask()
 	for iter.Next(task_dependency) {
 		task_dependencies = append(task_dependencies, task_dependency)
@@ -187,11 +188,11 @@ func (task *Task) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonID string `json:"person_id" bson:"person_id"`
+		PersonId string `json:"person_id" bson:"person_id"`
 
-		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
+		TaskDependenciesIds []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	}{
 
 		CreatedAt: task.CreatedAt,
@@ -204,11 +205,11 @@ func (task *Task) GetBSON() (interface{}, error) {
 
 		UpdatedAt: task.UpdatedAt,
 
-		OwnerID: task.OwnerID,
+		OwnerId: task.OwnerId,
 
-		PersonID: task.PersonID,
+		PersonId: task.PersonId,
 
-		TaskDependenciesIDs: task.TaskDependenciesIDs,
+		TaskDependenciesIds: task.TaskDependenciesIds,
 	}, nil
 
 }
@@ -228,11 +229,11 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonID string `json:"person_id" bson:"person_id"`
+		PersonId string `json:"person_id" bson:"person_id"`
 
-		TaskDependenciesIDs []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
+		TaskDependenciesIds []string `json:"task_dependencies_ids" bson:"task_dependencies_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -252,14 +253,75 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 	task.UpdatedAt = tmp.UpdatedAt
 
-	task.OwnerID = tmp.OwnerID
+	task.OwnerId = tmp.OwnerId
 
-	task.PersonID = tmp.PersonID
+	task.PersonId = tmp.PersonId
 
-	task.TaskDependenciesIDs = tmp.TaskDependenciesIDs
+	task.TaskDependenciesIds = tmp.TaskDependenciesIds
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (task *Task) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["updated_at"]; ok {
+		task.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		task.Name = val.(string)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		task.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["end_time"]; ok {
+		task.EndTime = val.(time.Time)
+	}
+
+	if val, ok := structure["id"]; ok {
+		task.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		task.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		task.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["person_id"]; ok {
+		task.PersonId = val.(string)
+	}
+
+	if val, ok := structure["task_dependencies_ids"]; ok {
+		task.TaskDependenciesIds = val.([]string)
+	}
+
+}
+
+var TaskStructure = map[string]metis.Primitive{
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"name": 3,
+
+	"start_time": 4,
+
+	"end_time": 4,
+
+	"id": 9,
+
+	"owner_id": 9,
+
+	"person_id": 9,
+
+	"task_dependencies_ids": 10,
+}

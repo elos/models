@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -17,7 +18,7 @@ type Media struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -56,17 +57,17 @@ func (media *Media) ID() data.ID {
 }
 
 func (media *Media) SetOwner(userArgument *User) error {
-	media.OwnerID = userArgument.ID().String()
+	media.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (media *Media) Owner(db data.DB) (*User, error) {
-	if media.OwnerID == "" {
+	if media.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(media.OwnerID)
+	pid, _ := mongo.ParseObjectID(media.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -112,7 +113,7 @@ func (media *Media) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		Codec: media.Codec,
@@ -125,7 +126,7 @@ func (media *Media) GetBSON() (interface{}, error) {
 
 		UpdatedAt: media.UpdatedAt,
 
-		OwnerID: media.OwnerID,
+		OwnerId: media.OwnerId,
 	}, nil
 
 }
@@ -145,7 +146,7 @@ func (media *Media) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -165,10 +166,59 @@ func (media *Media) SetBSON(raw bson.Raw) error {
 
 	media.UpdatedAt = tmp.UpdatedAt
 
-	media.OwnerID = tmp.OwnerID
+	media.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (media *Media) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["content"]; ok {
+		media.Content = val.(string)
+	}
+
+	if val, ok := structure["codec"]; ok {
+		media.Codec = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		media.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		media.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		media.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		media.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		media.OwnerId = val.(string)
+	}
+
+}
+
+var MediaStructure = map[string]metis.Primitive{
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"content": 3,
+
+	"codec": 3,
+
+	"owner_id": 9,
+}

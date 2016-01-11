@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,7 +16,7 @@ type Quantity struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
 	Unit      string    `json:"unit" bson:"unit"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 	Value     float64   `json:"value" bson:"value"`
@@ -56,17 +57,17 @@ func (quantity *Quantity) ID() data.ID {
 }
 
 func (quantity *Quantity) SetOwner(userArgument *User) error {
-	quantity.OwnerID = userArgument.ID().String()
+	quantity.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (quantity *Quantity) Owner(db data.DB) (*User, error) {
-	if quantity.OwnerID == "" {
+	if quantity.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(quantity.OwnerID)
+	pid, _ := mongo.ParseObjectID(quantity.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -112,7 +113,7 @@ func (quantity *Quantity) GetBSON() (interface{}, error) {
 
 		Value float64 `json:"value" bson:"value"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		CreatedAt: quantity.CreatedAt,
@@ -125,7 +126,7 @@ func (quantity *Quantity) GetBSON() (interface{}, error) {
 
 		Value: quantity.Value,
 
-		OwnerID: quantity.OwnerID,
+		OwnerId: quantity.OwnerId,
 	}, nil
 
 }
@@ -145,7 +146,7 @@ func (quantity *Quantity) SetBSON(raw bson.Raw) error {
 
 		Value float64 `json:"value" bson:"value"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -165,10 +166,59 @@ func (quantity *Quantity) SetBSON(raw bson.Raw) error {
 
 	quantity.Value = tmp.Value
 
-	quantity.OwnerID = tmp.OwnerID
+	quantity.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (quantity *Quantity) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["unit"]; ok {
+		quantity.Unit = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		quantity.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		quantity.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		quantity.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		quantity.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["value"]; ok {
+		quantity.Value = val.(float64)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		quantity.OwnerId = val.(string)
+	}
+
+}
+
+var QuantityStructure = map[string]metis.Primitive{
+
+	"value": 2,
+
+	"unit": 3,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"owner_id": 9,
+}

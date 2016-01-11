@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,10 +17,10 @@ type Credential struct {
 	DeletedAt   time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id          string    `json:"id" bson:"_id,omitempty"`
 	Name        string    `json:"name" bson:"name"`
-	OwnerID     string    `json:"owner_id" bson:"owner_id"`
+	OwnerId     string    `json:"owner_id" bson:"owner_id"`
 	Private     string    `json:"private" bson:"private"`
 	Public      string    `json:"public" bson:"public"`
-	SessionsIDs []string  `json:"sessions_ids" bson:"sessions_ids"`
+	SessionsIds []string  `json:"sessions_ids" bson:"sessions_ids"`
 	Spec        string    `json:"spec" bson:"spec"`
 	UpdatedAt   time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -59,17 +60,17 @@ func (credential *Credential) ID() data.ID {
 }
 
 func (credential *Credential) SetOwner(userArgument *User) error {
-	credential.OwnerID = userArgument.ID().String()
+	credential.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (credential *Credential) Owner(db data.DB) (*User, error) {
-	if credential.OwnerID == "" {
+	if credential.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(credential.OwnerID)
+	pid, _ := mongo.ParseObjectID(credential.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -100,29 +101,29 @@ func (credential *Credential) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (credential *Credential) IncludeSession(session *Session) {
-	credential.SessionsIDs = append(credential.SessionsIDs, session.ID().String())
+	credential.SessionsIds = append(credential.SessionsIds, session.ID().String())
 }
 
 func (credential *Credential) ExcludeSession(session *Session) {
 	tmp := make([]string, 0)
 	id := session.ID().String()
-	for _, s := range credential.SessionsIDs {
+	for _, s := range credential.SessionsIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	credential.SessionsIDs = tmp
+	credential.SessionsIds = tmp
 }
 
 func (credential *Credential) SessionsIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIds), db), nil
 }
 
 func (credential *Credential) Sessions(db data.DB) ([]*Session, error) {
 
 	sessions := make([]*Session, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIds), db)
 	session := NewSession()
 	for iter.Next(session) {
 		sessions = append(sessions, session)
@@ -151,9 +152,9 @@ func (credential *Credential) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		SessionsIDs []string `json:"sessions_ids" bson:"sessions_ids"`
+		SessionsIds []string `json:"sessions_ids" bson:"sessions_ids"`
 	}{
 
 		CreatedAt: credential.CreatedAt,
@@ -170,9 +171,9 @@ func (credential *Credential) GetBSON() (interface{}, error) {
 
 		UpdatedAt: credential.UpdatedAt,
 
-		OwnerID: credential.OwnerID,
+		OwnerId: credential.OwnerId,
 
-		SessionsIDs: credential.SessionsIDs,
+		SessionsIds: credential.SessionsIds,
 	}, nil
 
 }
@@ -196,9 +197,9 @@ func (credential *Credential) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		SessionsIDs []string `json:"sessions_ids" bson:"sessions_ids"`
+		SessionsIds []string `json:"sessions_ids" bson:"sessions_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -222,12 +223,79 @@ func (credential *Credential) SetBSON(raw bson.Raw) error {
 
 	credential.UpdatedAt = tmp.UpdatedAt
 
-	credential.OwnerID = tmp.OwnerID
+	credential.OwnerId = tmp.OwnerId
 
-	credential.SessionsIDs = tmp.SessionsIDs
+	credential.SessionsIds = tmp.SessionsIds
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (credential *Credential) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["id"]; ok {
+		credential.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		credential.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		credential.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		credential.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["public"]; ok {
+		credential.Public = val.(string)
+	}
+
+	if val, ok := structure["private"]; ok {
+		credential.Private = val.(string)
+	}
+
+	if val, ok := structure["spec"]; ok {
+		credential.Spec = val.(string)
+	}
+
+	if val, ok := structure["name"]; ok {
+		credential.Name = val.(string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		credential.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["sessions_ids"]; ok {
+		credential.SessionsIds = val.([]string)
+	}
+
+}
+
+var CredentialStructure = map[string]metis.Primitive{
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"public": 3,
+
+	"private": 3,
+
+	"spec": 3,
+
+	"name": 3,
+
+	"id": 9,
+
+	"owner_id": 9,
+
+	"sessions_ids": 10,
+}

@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -14,10 +15,10 @@ import (
 type Datum struct {
 	Context   string    `json:"context" bson:"context"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
-	EventID   string    `json:"event_id" bson:"event_id"`
+	EventId   string    `json:"event_id" bson:"event_id"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
-	PersonID  string    `json:"person_id" bson:"person_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
+	PersonId  string    `json:"person_id" bson:"person_id"`
 	Tags      []string  `json:"tags" bson:"tags"`
 	Unit      string    `json:"unit" bson:"unit"`
 	Value     float64   `json:"value" bson:"value"`
@@ -58,17 +59,17 @@ func (datum *Datum) ID() data.ID {
 }
 
 func (datum *Datum) SetEvent(eventArgument *Event) error {
-	datum.EventID = eventArgument.ID().String()
+	datum.EventId = eventArgument.ID().String()
 	return nil
 }
 
 func (datum *Datum) Event(db data.DB) (*Event, error) {
-	if datum.EventID == "" {
+	if datum.EventId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	eventArgument := NewEvent()
-	pid, _ := mongo.ParseObjectID(datum.EventID)
+	pid, _ := mongo.ParseObjectID(datum.EventId)
 	eventArgument.SetID(data.ID(pid.Hex()))
 	return eventArgument, db.PopulateByID(eventArgument)
 
@@ -99,17 +100,17 @@ func (datum *Datum) EventOrCreate(db data.DB) (*Event, error) {
 }
 
 func (datum *Datum) SetOwner(userArgument *User) error {
-	datum.OwnerID = userArgument.ID().String()
+	datum.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (datum *Datum) Owner(db data.DB) (*User, error) {
-	if datum.OwnerID == "" {
+	if datum.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(datum.OwnerID)
+	pid, _ := mongo.ParseObjectID(datum.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -140,17 +141,17 @@ func (datum *Datum) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (datum *Datum) SetPerson(personArgument *Person) error {
-	datum.PersonID = personArgument.ID().String()
+	datum.PersonId = personArgument.ID().String()
 	return nil
 }
 
 func (datum *Datum) Person(db data.DB) (*Person, error) {
-	if datum.PersonID == "" {
+	if datum.PersonId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(datum.PersonID)
+	pid, _ := mongo.ParseObjectID(datum.PersonId)
 	personArgument.SetID(data.ID(pid.Hex()))
 	return personArgument, db.PopulateByID(personArgument)
 
@@ -196,11 +197,11 @@ func (datum *Datum) GetBSON() (interface{}, error) {
 
 		Value float64 `json:"value" bson:"value"`
 
-		EventID string `json:"event_id" bson:"event_id"`
+		EventId string `json:"event_id" bson:"event_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonID string `json:"person_id" bson:"person_id"`
+		PersonId string `json:"person_id" bson:"person_id"`
 	}{
 
 		Context: datum.Context,
@@ -213,11 +214,11 @@ func (datum *Datum) GetBSON() (interface{}, error) {
 
 		Value: datum.Value,
 
-		EventID: datum.EventID,
+		EventId: datum.EventId,
 
-		OwnerID: datum.OwnerID,
+		OwnerId: datum.OwnerId,
 
-		PersonID: datum.PersonID,
+		PersonId: datum.PersonId,
 	}, nil
 
 }
@@ -237,11 +238,11 @@ func (datum *Datum) SetBSON(raw bson.Raw) error {
 
 		Value float64 `json:"value" bson:"value"`
 
-		EventID string `json:"event_id" bson:"event_id"`
+		EventId string `json:"event_id" bson:"event_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonID string `json:"person_id" bson:"person_id"`
+		PersonId string `json:"person_id" bson:"person_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -261,14 +262,75 @@ func (datum *Datum) SetBSON(raw bson.Raw) error {
 
 	datum.Value = tmp.Value
 
-	datum.EventID = tmp.EventID
+	datum.EventId = tmp.EventId
 
-	datum.OwnerID = tmp.OwnerID
+	datum.OwnerId = tmp.OwnerId
 
-	datum.PersonID = tmp.PersonID
+	datum.PersonId = tmp.PersonId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (datum *Datum) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["context"]; ok {
+		datum.Context = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		datum.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		datum.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["value"]; ok {
+		datum.Value = val.(float64)
+	}
+
+	if val, ok := structure["unit"]; ok {
+		datum.Unit = val.(string)
+	}
+
+	if val, ok := structure["tags"]; ok {
+		datum.Tags = val.([]string)
+	}
+
+	if val, ok := structure["event_id"]; ok {
+		datum.EventId = val.(string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		datum.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["person_id"]; ok {
+		datum.PersonId = val.(string)
+	}
+
+}
+
+var DatumStructure = map[string]metis.Primitive{
+
+	"tags": 7,
+
+	"context": 3,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"value": 2,
+
+	"unit": 3,
+
+	"owner_id": 9,
+
+	"person_id": 9,
+
+	"event_id": 9,
+}

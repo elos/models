@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -16,11 +17,11 @@ type Model struct {
 	DeletedAt    time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id           string    `json:"id" bson:"_id,omitempty"`
 	Name         string    `json:"name" bson:"name"`
-	ObjectsIDs   []string  `json:"objects_ids" bson:"objects_ids"`
-	OntologyID   string    `json:"ontology_id" bson:"ontology_id"`
-	OwnerID      string    `json:"owner_id" bson:"owner_id"`
-	RelationsIDs []string  `json:"relations_ids" bson:"relations_ids"`
-	TraitsIDs    []string  `json:"traits_ids" bson:"traits_ids"`
+	ObjectsIds   []string  `json:"objects_ids" bson:"objects_ids"`
+	OntologyId   string    `json:"ontology_id" bson:"ontology_id"`
+	OwnerId      string    `json:"owner_id" bson:"owner_id"`
+	RelationsIds []string  `json:"relations_ids" bson:"relations_ids"`
+	TraitsIds    []string  `json:"traits_ids" bson:"traits_ids"`
 	UpdatedAt    time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -59,29 +60,29 @@ func (model *Model) ID() data.ID {
 }
 
 func (model *Model) IncludeObject(object *Object) {
-	model.ObjectsIDs = append(model.ObjectsIDs, object.ID().String())
+	model.ObjectsIds = append(model.ObjectsIds, object.ID().String())
 }
 
 func (model *Model) ExcludeObject(object *Object) {
 	tmp := make([]string, 0)
 	id := object.ID().String()
-	for _, s := range model.ObjectsIDs {
+	for _, s := range model.ObjectsIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	model.ObjectsIDs = tmp
+	model.ObjectsIds = tmp
 }
 
 func (model *Model) ObjectsIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIds), db), nil
 }
 
 func (model *Model) Objects(db data.DB) ([]*Object, error) {
 
 	objects := make([]*Object, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIds), db)
 	object := NewObject()
 	for iter.Next(object) {
 		objects = append(objects, object)
@@ -91,17 +92,17 @@ func (model *Model) Objects(db data.DB) ([]*Object, error) {
 }
 
 func (model *Model) SetOntology(ontologyArgument *Ontology) error {
-	model.OntologyID = ontologyArgument.ID().String()
+	model.OntologyId = ontologyArgument.ID().String()
 	return nil
 }
 
 func (model *Model) Ontology(db data.DB) (*Ontology, error) {
-	if model.OntologyID == "" {
+	if model.OntologyId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	ontologyArgument := NewOntology()
-	pid, _ := mongo.ParseObjectID(model.OntologyID)
+	pid, _ := mongo.ParseObjectID(model.OntologyId)
 	ontologyArgument.SetID(data.ID(pid.Hex()))
 	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
@@ -132,17 +133,17 @@ func (model *Model) OntologyOrCreate(db data.DB) (*Ontology, error) {
 }
 
 func (model *Model) SetOwner(userArgument *User) error {
-	model.OwnerID = userArgument.ID().String()
+	model.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (model *Model) Owner(db data.DB) (*User, error) {
-	if model.OwnerID == "" {
+	if model.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(model.OwnerID)
+	pid, _ := mongo.ParseObjectID(model.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -173,29 +174,29 @@ func (model *Model) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (model *Model) IncludeRelation(relation *Relation) {
-	model.RelationsIDs = append(model.RelationsIDs, relation.ID().String())
+	model.RelationsIds = append(model.RelationsIds, relation.ID().String())
 }
 
 func (model *Model) ExcludeRelation(relation *Relation) {
 	tmp := make([]string, 0)
 	id := relation.ID().String()
-	for _, s := range model.RelationsIDs {
+	for _, s := range model.RelationsIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	model.RelationsIDs = tmp
+	model.RelationsIds = tmp
 }
 
 func (model *Model) RelationsIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIds), db), nil
 }
 
 func (model *Model) Relations(db data.DB) ([]*Relation, error) {
 
 	relations := make([]*Relation, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIds), db)
 	relation := NewRelation()
 	for iter.Next(relation) {
 		relations = append(relations, relation)
@@ -205,29 +206,29 @@ func (model *Model) Relations(db data.DB) ([]*Relation, error) {
 }
 
 func (model *Model) IncludeTrait(trait *Trait) {
-	model.TraitsIDs = append(model.TraitsIDs, trait.ID().String())
+	model.TraitsIds = append(model.TraitsIds, trait.ID().String())
 }
 
 func (model *Model) ExcludeTrait(trait *Trait) {
 	tmp := make([]string, 0)
 	id := trait.ID().String()
-	for _, s := range model.TraitsIDs {
+	for _, s := range model.TraitsIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	model.TraitsIDs = tmp
+	model.TraitsIds = tmp
 }
 
 func (model *Model) TraitsIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIds), db), nil
 }
 
 func (model *Model) Traits(db data.DB) ([]*Trait, error) {
 
 	traits := make([]*Trait, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIds), db)
 	trait := NewTrait()
 	for iter.Next(trait) {
 		traits = append(traits, trait)
@@ -250,15 +251,15 @@ func (model *Model) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		ObjectsIDs []string `json:"objects_ids" bson:"objects_ids"`
+		ObjectsIds []string `json:"objects_ids" bson:"objects_ids"`
 
-		OntologyID string `json:"ontology_id" bson:"ontology_id"`
+		OntologyId string `json:"ontology_id" bson:"ontology_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		RelationsIDs []string `json:"relations_ids" bson:"relations_ids"`
+		RelationsIds []string `json:"relations_ids" bson:"relations_ids"`
 
-		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
+		TraitsIds []string `json:"traits_ids" bson:"traits_ids"`
 	}{
 
 		CreatedAt: model.CreatedAt,
@@ -269,15 +270,15 @@ func (model *Model) GetBSON() (interface{}, error) {
 
 		UpdatedAt: model.UpdatedAt,
 
-		ObjectsIDs: model.ObjectsIDs,
+		ObjectsIds: model.ObjectsIds,
 
-		OntologyID: model.OntologyID,
+		OntologyId: model.OntologyId,
 
-		OwnerID: model.OwnerID,
+		OwnerId: model.OwnerId,
 
-		RelationsIDs: model.RelationsIDs,
+		RelationsIds: model.RelationsIds,
 
-		TraitsIDs: model.TraitsIDs,
+		TraitsIds: model.TraitsIds,
 	}, nil
 
 }
@@ -295,15 +296,15 @@ func (model *Model) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		ObjectsIDs []string `json:"objects_ids" bson:"objects_ids"`
+		ObjectsIds []string `json:"objects_ids" bson:"objects_ids"`
 
-		OntologyID string `json:"ontology_id" bson:"ontology_id"`
+		OntologyId string `json:"ontology_id" bson:"ontology_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		RelationsIDs []string `json:"relations_ids" bson:"relations_ids"`
+		RelationsIds []string `json:"relations_ids" bson:"relations_ids"`
 
-		TraitsIDs []string `json:"traits_ids" bson:"traits_ids"`
+		TraitsIds []string `json:"traits_ids" bson:"traits_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -321,18 +322,85 @@ func (model *Model) SetBSON(raw bson.Raw) error {
 
 	model.UpdatedAt = tmp.UpdatedAt
 
-	model.ObjectsIDs = tmp.ObjectsIDs
+	model.ObjectsIds = tmp.ObjectsIds
 
-	model.OntologyID = tmp.OntologyID
+	model.OntologyId = tmp.OntologyId
 
-	model.OwnerID = tmp.OwnerID
+	model.OwnerId = tmp.OwnerId
 
-	model.RelationsIDs = tmp.RelationsIDs
+	model.RelationsIds = tmp.RelationsIds
 
-	model.TraitsIDs = tmp.TraitsIDs
+	model.TraitsIds = tmp.TraitsIds
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (model *Model) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["updated_at"]; ok {
+		model.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		model.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		model.Name = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		model.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		model.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["ontology_id"]; ok {
+		model.OntologyId = val.(string)
+	}
+
+	if val, ok := structure["objects_ids"]; ok {
+		model.ObjectsIds = val.([]string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		model.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["traits_ids"]; ok {
+		model.TraitsIds = val.([]string)
+	}
+
+	if val, ok := structure["relations_ids"]; ok {
+		model.RelationsIds = val.([]string)
+	}
+
+}
+
+var ModelStructure = map[string]metis.Primitive{
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"name": 3,
+
+	"id": 9,
+
+	"owner_id": 9,
+
+	"traits_ids": 10,
+
+	"relations_ids": 10,
+
+	"ontology_id": 9,
+
+	"objects_ids": 10,
+}

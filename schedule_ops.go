@@ -24,7 +24,7 @@ func MergedFixtures(db data.DB, schedules ...*Schedule) ([]*Fixture, error) {
 	fixtures := make([]*Fixture, 0)
 
 	for _, s := range schedules {
-		for _, id := range s.FixturesIDs {
+		for _, id := range s.FixturesIds {
 			fixture := NewFixture()
 			fixture.SetID(data.ID(id))
 			if err := db.PopulateByID(fixture); err != nil {

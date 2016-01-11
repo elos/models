@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,14 +16,14 @@ type Event struct {
 	CreatedAt  time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt  time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id         string    `json:"id" bson:"_id,omitempty"`
-	LocationID string    `json:"location_id" bson:"location_id"`
-	MediaID    string    `json:"media_id" bson:"media_id"`
+	LocationId string    `json:"location_id" bson:"location_id"`
+	MediaId    string    `json:"media_id" bson:"media_id"`
 	Name       string    `json:"name" bson:"name"`
-	NoteID     string    `json:"note_id" bson:"note_id"`
-	OwnerID    string    `json:"owner_id" bson:"owner_id"`
-	PriorID    string    `json:"prior_id" bson:"prior_id"`
-	QuantityID string    `json:"quantity_id" bson:"quantity_id"`
-	TagsIDs    []string  `json:"tags_ids" bson:"tags_ids"`
+	NoteId     string    `json:"note_id" bson:"note_id"`
+	OwnerId    string    `json:"owner_id" bson:"owner_id"`
+	PriorId    string    `json:"prior_id" bson:"prior_id"`
+	QuantityId string    `json:"quantity_id" bson:"quantity_id"`
+	TagsIds    []string  `json:"tags_ids" bson:"tags_ids"`
 	Time       time.Time `json:"time" bson:"time"`
 	UpdatedAt  time.Time `json:"updated_at" bson:"updated_at"`
 }
@@ -62,17 +63,17 @@ func (event *Event) ID() data.ID {
 }
 
 func (event *Event) SetLocation(locationArgument *Location) error {
-	event.LocationID = locationArgument.ID().String()
+	event.LocationId = locationArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Location(db data.DB) (*Location, error) {
-	if event.LocationID == "" {
+	if event.LocationId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	locationArgument := NewLocation()
-	pid, _ := mongo.ParseObjectID(event.LocationID)
+	pid, _ := mongo.ParseObjectID(event.LocationId)
 	locationArgument.SetID(data.ID(pid.Hex()))
 	return locationArgument, db.PopulateByID(locationArgument)
 
@@ -103,17 +104,17 @@ func (event *Event) LocationOrCreate(db data.DB) (*Location, error) {
 }
 
 func (event *Event) SetMedia(mediaArgument *Media) error {
-	event.MediaID = mediaArgument.ID().String()
+	event.MediaId = mediaArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Media(db data.DB) (*Media, error) {
-	if event.MediaID == "" {
+	if event.MediaId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	mediaArgument := NewMedia()
-	pid, _ := mongo.ParseObjectID(event.MediaID)
+	pid, _ := mongo.ParseObjectID(event.MediaId)
 	mediaArgument.SetID(data.ID(pid.Hex()))
 	return mediaArgument, db.PopulateByID(mediaArgument)
 
@@ -144,17 +145,17 @@ func (event *Event) MediaOrCreate(db data.DB) (*Media, error) {
 }
 
 func (event *Event) SetNote(noteArgument *Note) error {
-	event.NoteID = noteArgument.ID().String()
+	event.NoteId = noteArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Note(db data.DB) (*Note, error) {
-	if event.NoteID == "" {
+	if event.NoteId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	noteArgument := NewNote()
-	pid, _ := mongo.ParseObjectID(event.NoteID)
+	pid, _ := mongo.ParseObjectID(event.NoteId)
 	noteArgument.SetID(data.ID(pid.Hex()))
 	return noteArgument, db.PopulateByID(noteArgument)
 
@@ -185,17 +186,17 @@ func (event *Event) NoteOrCreate(db data.DB) (*Note, error) {
 }
 
 func (event *Event) SetOwner(userArgument *User) error {
-	event.OwnerID = userArgument.ID().String()
+	event.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Owner(db data.DB) (*User, error) {
-	if event.OwnerID == "" {
+	if event.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(event.OwnerID)
+	pid, _ := mongo.ParseObjectID(event.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -226,17 +227,17 @@ func (event *Event) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (event *Event) SetPrior(eventArgument *Event) error {
-	event.PriorID = eventArgument.ID().String()
+	event.PriorId = eventArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Prior(db data.DB) (*Event, error) {
-	if event.PriorID == "" {
+	if event.PriorId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	eventArgument := NewEvent()
-	pid, _ := mongo.ParseObjectID(event.PriorID)
+	pid, _ := mongo.ParseObjectID(event.PriorId)
 	eventArgument.SetID(data.ID(pid.Hex()))
 	return eventArgument, db.PopulateByID(eventArgument)
 
@@ -267,17 +268,17 @@ func (event *Event) PriorOrCreate(db data.DB) (*Event, error) {
 }
 
 func (event *Event) SetQuantity(quantityArgument *Quantity) error {
-	event.QuantityID = quantityArgument.ID().String()
+	event.QuantityId = quantityArgument.ID().String()
 	return nil
 }
 
 func (event *Event) Quantity(db data.DB) (*Quantity, error) {
-	if event.QuantityID == "" {
+	if event.QuantityId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	quantityArgument := NewQuantity()
-	pid, _ := mongo.ParseObjectID(event.QuantityID)
+	pid, _ := mongo.ParseObjectID(event.QuantityId)
 	quantityArgument.SetID(data.ID(pid.Hex()))
 	return quantityArgument, db.PopulateByID(quantityArgument)
 
@@ -308,29 +309,29 @@ func (event *Event) QuantityOrCreate(db data.DB) (*Quantity, error) {
 }
 
 func (event *Event) IncludeTag(tag *Tag) {
-	event.TagsIDs = append(event.TagsIDs, tag.ID().String())
+	event.TagsIds = append(event.TagsIds, tag.ID().String())
 }
 
 func (event *Event) ExcludeTag(tag *Tag) {
 	tmp := make([]string, 0)
 	id := tag.ID().String()
-	for _, s := range event.TagsIDs {
+	for _, s := range event.TagsIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	event.TagsIDs = tmp
+	event.TagsIds = tmp
 }
 
 func (event *Event) TagsIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIds), db), nil
 }
 
 func (event *Event) Tags(db data.DB) ([]*Tag, error) {
 
 	tags := make([]*Tag, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIds), db)
 	tag := NewTag()
 	for iter.Next(tag) {
 		tags = append(tags, tag)
@@ -355,19 +356,19 @@ func (event *Event) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		LocationID string `json:"location_id" bson:"location_id"`
+		LocationId string `json:"location_id" bson:"location_id"`
 
-		MediaID string `json:"media_id" bson:"media_id"`
+		MediaId string `json:"media_id" bson:"media_id"`
 
-		NoteID string `json:"note_id" bson:"note_id"`
+		NoteId string `json:"note_id" bson:"note_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PriorID string `json:"prior_id" bson:"prior_id"`
+		PriorId string `json:"prior_id" bson:"prior_id"`
 
-		QuantityID string `json:"quantity_id" bson:"quantity_id"`
+		QuantityId string `json:"quantity_id" bson:"quantity_id"`
 
-		TagsIDs []string `json:"tags_ids" bson:"tags_ids"`
+		TagsIds []string `json:"tags_ids" bson:"tags_ids"`
 	}{
 
 		CreatedAt: event.CreatedAt,
@@ -380,19 +381,19 @@ func (event *Event) GetBSON() (interface{}, error) {
 
 		UpdatedAt: event.UpdatedAt,
 
-		LocationID: event.LocationID,
+		LocationId: event.LocationId,
 
-		MediaID: event.MediaID,
+		MediaId: event.MediaId,
 
-		NoteID: event.NoteID,
+		NoteId: event.NoteId,
 
-		OwnerID: event.OwnerID,
+		OwnerId: event.OwnerId,
 
-		PriorID: event.PriorID,
+		PriorId: event.PriorId,
 
-		QuantityID: event.QuantityID,
+		QuantityId: event.QuantityId,
 
-		TagsIDs: event.TagsIDs,
+		TagsIds: event.TagsIds,
 	}, nil
 
 }
@@ -412,19 +413,19 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		LocationID string `json:"location_id" bson:"location_id"`
+		LocationId string `json:"location_id" bson:"location_id"`
 
-		MediaID string `json:"media_id" bson:"media_id"`
+		MediaId string `json:"media_id" bson:"media_id"`
 
-		NoteID string `json:"note_id" bson:"note_id"`
+		NoteId string `json:"note_id" bson:"note_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PriorID string `json:"prior_id" bson:"prior_id"`
+		PriorId string `json:"prior_id" bson:"prior_id"`
 
-		QuantityID string `json:"quantity_id" bson:"quantity_id"`
+		QuantityId string `json:"quantity_id" bson:"quantity_id"`
 
-		TagsIDs []string `json:"tags_ids" bson:"tags_ids"`
+		TagsIds []string `json:"tags_ids" bson:"tags_ids"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -444,22 +445,107 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 	event.UpdatedAt = tmp.UpdatedAt
 
-	event.LocationID = tmp.LocationID
+	event.LocationId = tmp.LocationId
 
-	event.MediaID = tmp.MediaID
+	event.MediaId = tmp.MediaId
 
-	event.NoteID = tmp.NoteID
+	event.NoteId = tmp.NoteId
 
-	event.OwnerID = tmp.OwnerID
+	event.OwnerId = tmp.OwnerId
 
-	event.PriorID = tmp.PriorID
+	event.PriorId = tmp.PriorId
 
-	event.QuantityID = tmp.QuantityID
+	event.QuantityId = tmp.QuantityId
 
-	event.TagsIDs = tmp.TagsIDs
+	event.TagsIds = tmp.TagsIds
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (event *Event) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["id"]; ok {
+		event.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		event.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		event.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		event.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		event.Name = val.(string)
+	}
+
+	if val, ok := structure["time"]; ok {
+		event.Time = val.(time.Time)
+	}
+
+	if val, ok := structure["media_id"]; ok {
+		event.MediaId = val.(string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		event.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["prior_id"]; ok {
+		event.PriorId = val.(string)
+	}
+
+	if val, ok := structure["quantity_id"]; ok {
+		event.QuantityId = val.(string)
+	}
+
+	if val, ok := structure["note_id"]; ok {
+		event.NoteId = val.(string)
+	}
+
+	if val, ok := structure["location_id"]; ok {
+		event.LocationId = val.(string)
+	}
+
+	if val, ok := structure["tags_ids"]; ok {
+		event.TagsIds = val.([]string)
+	}
+
+}
+
+var EventStructure = map[string]metis.Primitive{
+
+	"name": 3,
+
+	"time": 4,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"owner_id": 9,
+
+	"prior_id": 9,
+
+	"quantity_id": 9,
+
+	"note_id": 9,
+
+	"location_id": 9,
+
+	"tags_ids": 10,
+
+	"media_id": 9,
+}

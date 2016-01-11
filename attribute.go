@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -15,9 +16,9 @@ type Attribute struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
-	ObjectID  string    `json:"object_id" bson:"object_id"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
-	TraitID   string    `json:"trait_id" bson:"trait_id"`
+	ObjectId  string    `json:"object_id" bson:"object_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
+	TraitId   string    `json:"trait_id" bson:"trait_id"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 	Value     string    `json:"value" bson:"value"`
 }
@@ -57,17 +58,17 @@ func (attribute *Attribute) ID() data.ID {
 }
 
 func (attribute *Attribute) SetObject(objectArgument *Object) error {
-	attribute.ObjectID = objectArgument.ID().String()
+	attribute.ObjectId = objectArgument.ID().String()
 	return nil
 }
 
 func (attribute *Attribute) Object(db data.DB) (*Object, error) {
-	if attribute.ObjectID == "" {
+	if attribute.ObjectId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	objectArgument := NewObject()
-	pid, _ := mongo.ParseObjectID(attribute.ObjectID)
+	pid, _ := mongo.ParseObjectID(attribute.ObjectId)
 	objectArgument.SetID(data.ID(pid.Hex()))
 	return objectArgument, db.PopulateByID(objectArgument)
 
@@ -98,17 +99,17 @@ func (attribute *Attribute) ObjectOrCreate(db data.DB) (*Object, error) {
 }
 
 func (attribute *Attribute) SetOwner(userArgument *User) error {
-	attribute.OwnerID = userArgument.ID().String()
+	attribute.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (attribute *Attribute) Owner(db data.DB) (*User, error) {
-	if attribute.OwnerID == "" {
+	if attribute.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(attribute.OwnerID)
+	pid, _ := mongo.ParseObjectID(attribute.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -139,17 +140,17 @@ func (attribute *Attribute) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (attribute *Attribute) SetTrait(traitArgument *Trait) error {
-	attribute.TraitID = traitArgument.ID().String()
+	attribute.TraitId = traitArgument.ID().String()
 	return nil
 }
 
 func (attribute *Attribute) Trait(db data.DB) (*Trait, error) {
-	if attribute.TraitID == "" {
+	if attribute.TraitId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	traitArgument := NewTrait()
-	pid, _ := mongo.ParseObjectID(attribute.TraitID)
+	pid, _ := mongo.ParseObjectID(attribute.TraitId)
 	traitArgument.SetID(data.ID(pid.Hex()))
 	return traitArgument, db.PopulateByID(traitArgument)
 
@@ -193,11 +194,11 @@ func (attribute *Attribute) GetBSON() (interface{}, error) {
 
 		Value string `json:"value" bson:"value"`
 
-		ObjectID string `json:"object_id" bson:"object_id"`
+		ObjectId string `json:"object_id" bson:"object_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		TraitID string `json:"trait_id" bson:"trait_id"`
+		TraitId string `json:"trait_id" bson:"trait_id"`
 	}{
 
 		CreatedAt: attribute.CreatedAt,
@@ -208,11 +209,11 @@ func (attribute *Attribute) GetBSON() (interface{}, error) {
 
 		Value: attribute.Value,
 
-		ObjectID: attribute.ObjectID,
+		ObjectId: attribute.ObjectId,
 
-		OwnerID: attribute.OwnerID,
+		OwnerId: attribute.OwnerId,
 
-		TraitID: attribute.TraitID,
+		TraitId: attribute.TraitId,
 	}, nil
 
 }
@@ -230,11 +231,11 @@ func (attribute *Attribute) SetBSON(raw bson.Raw) error {
 
 		Value string `json:"value" bson:"value"`
 
-		ObjectID string `json:"object_id" bson:"object_id"`
+		ObjectId string `json:"object_id" bson:"object_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		TraitID string `json:"trait_id" bson:"trait_id"`
+		TraitId string `json:"trait_id" bson:"trait_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -252,14 +253,69 @@ func (attribute *Attribute) SetBSON(raw bson.Raw) error {
 
 	attribute.Value = tmp.Value
 
-	attribute.ObjectID = tmp.ObjectID
+	attribute.ObjectId = tmp.ObjectId
 
-	attribute.OwnerID = tmp.OwnerID
+	attribute.OwnerId = tmp.OwnerId
 
-	attribute.TraitID = tmp.TraitID
+	attribute.TraitId = tmp.TraitId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["deleted_at"]; ok {
+		attribute.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["value"]; ok {
+		attribute.Value = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		attribute.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		attribute.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		attribute.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["object_id"]; ok {
+		attribute.ObjectId = val.(string)
+	}
+
+	if val, ok := structure["trait_id"]; ok {
+		attribute.TraitId = val.(string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		attribute.OwnerId = val.(string)
+	}
+
+}
+
+var AttributeStructure = map[string]metis.Primitive{
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"value": 3,
+
+	"owner_id": 9,
+
+	"object_id": 9,
+
+	"trait_id": 9,
+}

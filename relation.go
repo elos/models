@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -17,11 +18,11 @@ type Relation struct {
 	DeletedAt    time.Time `json:"deleted_at" bson:"deleted_at"`
 	Id           string    `json:"id" bson:"_id,omitempty"`
 	Inverse      string    `json:"inverse" bson:"inverse"`
-	LinksIDs     []string  `json:"links_ids" bson:"links_ids"`
-	ModelID      string    `json:"model_id" bson:"model_id"`
+	LinksIds     []string  `json:"links_ids" bson:"links_ids"`
+	ModelId      string    `json:"model_id" bson:"model_id"`
 	Multiplicity string    `json:"multiplicity" bson:"multiplicity"`
 	Name         string    `json:"name" bson:"name"`
-	OwnerID      string    `json:"owner_id" bson:"owner_id"`
+	OwnerId      string    `json:"owner_id" bson:"owner_id"`
 	UpdatedAt    time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -60,29 +61,29 @@ func (relation *Relation) ID() data.ID {
 }
 
 func (relation *Relation) IncludeLink(link *Link) {
-	relation.LinksIDs = append(relation.LinksIDs, link.ID().String())
+	relation.LinksIds = append(relation.LinksIds, link.ID().String())
 }
 
 func (relation *Relation) ExcludeLink(link *Link) {
 	tmp := make([]string, 0)
 	id := link.ID().String()
-	for _, s := range relation.LinksIDs {
+	for _, s := range relation.LinksIds {
 		if s != id {
 			tmp = append(tmp, s)
 		}
 	}
-	relation.LinksIDs = tmp
+	relation.LinksIds = tmp
 }
 
 func (relation *Relation) LinksIter(db data.DB) (data.Iterator, error) {
 	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIDs), db), nil
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIds), db), nil
 }
 
 func (relation *Relation) Links(db data.DB) ([]*Link, error) {
 
 	links := make([]*Link, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIDs), db)
+	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIds), db)
 	link := NewLink()
 	for iter.Next(link) {
 		links = append(links, link)
@@ -92,17 +93,17 @@ func (relation *Relation) Links(db data.DB) ([]*Link, error) {
 }
 
 func (relation *Relation) SetModel(modelArgument *Model) error {
-	relation.ModelID = modelArgument.ID().String()
+	relation.ModelId = modelArgument.ID().String()
 	return nil
 }
 
 func (relation *Relation) Model(db data.DB) (*Model, error) {
-	if relation.ModelID == "" {
+	if relation.ModelId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	modelArgument := NewModel()
-	pid, _ := mongo.ParseObjectID(relation.ModelID)
+	pid, _ := mongo.ParseObjectID(relation.ModelId)
 	modelArgument.SetID(data.ID(pid.Hex()))
 	return modelArgument, db.PopulateByID(modelArgument)
 
@@ -133,17 +134,17 @@ func (relation *Relation) ModelOrCreate(db data.DB) (*Model, error) {
 }
 
 func (relation *Relation) SetOwner(userArgument *User) error {
-	relation.OwnerID = userArgument.ID().String()
+	relation.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (relation *Relation) Owner(db data.DB) (*User, error) {
-	if relation.OwnerID == "" {
+	if relation.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(relation.OwnerID)
+	pid, _ := mongo.ParseObjectID(relation.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -193,11 +194,11 @@ func (relation *Relation) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		LinksIDs []string `json:"links_ids" bson:"links_ids"`
+		LinksIds []string `json:"links_ids" bson:"links_ids"`
 
-		ModelID string `json:"model_id" bson:"model_id"`
+		ModelId string `json:"model_id" bson:"model_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		Codomain: relation.Codomain,
@@ -214,11 +215,11 @@ func (relation *Relation) GetBSON() (interface{}, error) {
 
 		UpdatedAt: relation.UpdatedAt,
 
-		LinksIDs: relation.LinksIDs,
+		LinksIds: relation.LinksIds,
 
-		ModelID: relation.ModelID,
+		ModelId: relation.ModelId,
 
-		OwnerID: relation.OwnerID,
+		OwnerId: relation.OwnerId,
 	}, nil
 
 }
@@ -242,11 +243,11 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		LinksIDs []string `json:"links_ids" bson:"links_ids"`
+		LinksIds []string `json:"links_ids" bson:"links_ids"`
 
-		ModelID string `json:"model_id" bson:"model_id"`
+		ModelId string `json:"model_id" bson:"model_id"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -270,14 +271,87 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 	relation.UpdatedAt = tmp.UpdatedAt
 
-	relation.LinksIDs = tmp.LinksIDs
+	relation.LinksIds = tmp.LinksIds
 
-	relation.ModelID = tmp.ModelID
+	relation.ModelId = tmp.ModelId
 
-	relation.OwnerID = tmp.OwnerID
+	relation.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (relation *Relation) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["created_at"]; ok {
+		relation.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		relation.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		relation.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		relation.Name = val.(string)
+	}
+
+	if val, ok := structure["multiplicity"]; ok {
+		relation.Multiplicity = val.(string)
+	}
+
+	if val, ok := structure["codomain"]; ok {
+		relation.Codomain = val.(string)
+	}
+
+	if val, ok := structure["inverse"]; ok {
+		relation.Inverse = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		relation.Id = val.(string)
+	}
+
+	if val, ok := structure["links_ids"]; ok {
+		relation.LinksIds = val.([]string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		relation.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["model_id"]; ok {
+		relation.ModelId = val.(string)
+	}
+
+}
+
+var RelationStructure = map[string]metis.Primitive{
+
+	"name": 3,
+
+	"multiplicity": 3,
+
+	"codomain": 3,
+
+	"inverse": 3,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"owner_id": 9,
+
+	"model_id": 9,
+
+	"links_ids": 10,
+}

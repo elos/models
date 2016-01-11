@@ -5,6 +5,7 @@ import (
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -18,7 +19,7 @@ type Location struct {
 	Id        string    `json:"id" bson:"_id,omitempty"`
 	Latitude  float64   `json:"latitude" bson:"latitude"`
 	Longitude float64   `json:"longitude" bson:"longitude"`
-	OwnerID   string    `json:"owner_id" bson:"owner_id"`
+	OwnerId   string    `json:"owner_id" bson:"owner_id"`
 	UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 }
 
@@ -57,17 +58,17 @@ func (location *Location) ID() data.ID {
 }
 
 func (location *Location) SetOwner(userArgument *User) error {
-	location.OwnerID = userArgument.ID().String()
+	location.OwnerId = userArgument.ID().String()
 	return nil
 }
 
 func (location *Location) Owner(db data.DB) (*User, error) {
-	if location.OwnerID == "" {
+	if location.OwnerId == "" {
 		return nil, ErrEmptyLink
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(location.OwnerID)
+	pid, _ := mongo.ParseObjectID(location.OwnerId)
 	userArgument.SetID(data.ID(pid.Hex()))
 	return userArgument, db.PopulateByID(userArgument)
 
@@ -115,7 +116,7 @@ func (location *Location) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
 		Altitude: location.Altitude,
@@ -130,7 +131,7 @@ func (location *Location) GetBSON() (interface{}, error) {
 
 		UpdatedAt: location.UpdatedAt,
 
-		OwnerID: location.OwnerID,
+		OwnerId: location.OwnerId,
 	}, nil
 
 }
@@ -152,7 +153,7 @@ func (location *Location) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		OwnerID string `json:"owner_id" bson:"owner_id"`
+		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -174,10 +175,65 @@ func (location *Location) SetBSON(raw bson.Raw) error {
 
 	location.UpdatedAt = tmp.UpdatedAt
 
-	location.OwnerID = tmp.OwnerID
+	location.OwnerId = tmp.OwnerId
 
 	return nil
 
 }
 
 // BSON }}}
+
+func (location *Location) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["longitude"]; ok {
+		location.Longitude = val.(float64)
+	}
+
+	if val, ok := structure["altitude"]; ok {
+		location.Altitude = val.(float64)
+	}
+
+	if val, ok := structure["id"]; ok {
+		location.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		location.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		location.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		location.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["latitude"]; ok {
+		location.Latitude = val.(float64)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		location.OwnerId = val.(string)
+	}
+
+}
+
+var LocationStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"latitude": 2,
+
+	"longitude": 2,
+
+	"altitude": 2,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"owner_id": 9,
+}

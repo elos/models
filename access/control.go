@@ -1,6 +1,8 @@
 package access
 
 import (
+	"log"
+
 	"github.com/elos/data"
 	"github.com/elos/models"
 )
@@ -14,10 +16,24 @@ func CanCreate(u User, k data.Kind) bool {
 }
 
 func CanRead(db data.DB, u User, record data.Record) (bool, error) {
-	property, ok := record.(Property)
+	_, ok := record.(ModelProperty)
 
 	if !ok {
 		return data.Equivalent(u, record), nil
+	} else {
+		log.Print("User and Property not equivalent")
+	}
+
+	property := WrapProperty(record.(ModelProperty))
+
+	if owner, err := property.Owner(db); err != nil {
+		return false, err
+	} else {
+		if data.Equivalent(u, owner) {
+			return true, nil
+		} else {
+			log.Print("User doesn't own Property")
+		}
 	}
 
 	groups, err := u.Groups(db)
