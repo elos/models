@@ -303,6 +303,8 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 
 var AttributeStructure = map[string]metis.Primitive{
 
+	"created_at": 4,
+
 	"updated_at": 4,
 
 	"deleted_at": 4,
@@ -310,8 +312,6 @@ var AttributeStructure = map[string]metis.Primitive{
 	"value": 3,
 
 	"id": 9,
-
-	"created_at": 4,
 
 	"owner_id": 9,
 

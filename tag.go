@@ -250,17 +250,17 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 
 var TagStructure = map[string]metis.Primitive{
 
+	"deleted_at": 4,
+
+	"name": 3,
+
 	"id": 9,
 
 	"created_at": 4,
 
 	"updated_at": 4,
 
-	"deleted_at": 4,
-
-	"name": 3,
+	"events_ids": 10,
 
 	"owner_id": 9,
-
-	"events_ids": 10,
 }

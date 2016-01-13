@@ -329,6 +329,8 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
 var CalendarStructure = map[string]metis.Primitive{
 
+	"deleted_at": 4,
+
 	"name": 3,
 
 	"weekday_schedules": 11,
@@ -340,8 +342,6 @@ var CalendarStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"owner_id": 9,
 

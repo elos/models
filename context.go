@@ -208,6 +208,8 @@ func (context *Context) FromStructure(structure map[string]interface{}) {
 
 var ContextStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
@@ -217,8 +219,6 @@ var ContextStructure = map[string]metis.Primitive{
 	"domain": 3,
 
 	"ids": 10,
-
-	"id": 9,
 
 	"owner_id": 9,
 }

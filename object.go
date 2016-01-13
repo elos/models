@@ -400,21 +400,21 @@ func (object *Object) FromStructure(structure map[string]interface{}) {
 
 var ObjectStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
-	"id": 9,
+	"model_id": 9,
+
+	"ontology_id": 9,
 
 	"owner_id": 9,
 
 	"attributes_ids": 10,
 
 	"links_ids": 10,
-
-	"model_id": 9,
-
-	"ontology_id": 9,
 }

@@ -295,6 +295,10 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 func (task *Task) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["created_at"]; ok {
+		task.CreatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["updated_at"]; ok {
 		task.UpdatedAt = val.(time.Time)
 	}
@@ -323,10 +327,6 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 		task.Id = val.(string)
 	}
 
-	if val, ok := structure["created_at"]; ok {
-		task.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		task.OwnerId = val.(string)
 	}
@@ -343,8 +343,6 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 
 var TaskStructure = map[string]metis.Primitive{
 
-	"created_at": 4,
-
 	"updated_at": 4,
 
 	"deleted_at": 4,
@@ -359,9 +357,11 @@ var TaskStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"prerequisites_ids": 10,
+	"created_at": 4,
 
 	"owner_id": 9,
 
 	"person_id": 9,
+
+	"prerequisites_ids": 10,
 }
