@@ -176,14 +176,6 @@ func (media *Media) SetBSON(raw bson.Raw) error {
 
 func (media *Media) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		media.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		media.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		media.UpdatedAt = val.(time.Time)
 	}
@@ -198,6 +190,14 @@ func (media *Media) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["codec"]; ok {
 		media.Codec = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		media.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		media.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

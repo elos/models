@@ -276,14 +276,6 @@ func (datum *Datum) SetBSON(raw bson.Raw) error {
 
 func (datum *Datum) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["tags"]; ok {
-		datum.Tags = val.([]string)
-	}
-
-	if val, ok := structure["context"]; ok {
-		datum.Context = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		datum.Id = val.(string)
 	}
@@ -300,8 +292,12 @@ func (datum *Datum) FromStructure(structure map[string]interface{}) {
 		datum.Unit = val.(string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		datum.OwnerId = val.(string)
+	if val, ok := structure["tags"]; ok {
+		datum.Tags = val.([]string)
+	}
+
+	if val, ok := structure["context"]; ok {
+		datum.Context = val.(string)
 	}
 
 	if val, ok := structure["person_id"]; ok {
@@ -312,13 +308,13 @@ func (datum *Datum) FromStructure(structure map[string]interface{}) {
 		datum.EventId = val.(string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		datum.OwnerId = val.(string)
+	}
+
 }
 
 var DatumStructure = map[string]metis.Primitive{
-
-	"id": 9,
-
-	"created_at": 4,
 
 	"value": 2,
 
@@ -328,9 +324,13 @@ var DatumStructure = map[string]metis.Primitive{
 
 	"context": 3,
 
+	"id": 9,
+
+	"created_at": 4,
+
+	"owner_id": 9,
+
 	"person_id": 9,
 
 	"event_id": 9,
-
-	"owner_id": 9,
 }

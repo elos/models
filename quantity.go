@@ -208,6 +208,8 @@ func (quantity *Quantity) FromStructure(structure map[string]interface{}) {
 
 var QuantityStructure = map[string]metis.Primitive{
 
+	"deleted_at": 4,
+
 	"value": 2,
 
 	"unit": 3,
@@ -217,8 +219,6 @@ var QuantityStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"owner_id": 9,
 }

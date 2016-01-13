@@ -302,10 +302,6 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 		group.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		group.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["grantees_ids"]; ok {
 		group.GranteesIds = val.([]string)
 	}
@@ -314,9 +310,17 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 		group.ContextsIds = val.([]string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		group.OwnerId = val.(string)
+	}
+
 }
 
 var GroupStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"name": 3,
 
@@ -325,10 +329,6 @@ var GroupStructure = map[string]metis.Primitive{
 	"id": 9,
 
 	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"owner_id": 9,
 

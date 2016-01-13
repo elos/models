@@ -407,26 +407,6 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.Rank = val.(int)
 	}
 
-	if val, ok := structure["label"]; ok {
-		fixture.Label = val.(bool)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		fixture.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["name"]; ok {
-		fixture.Name = val.(string)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		fixture.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["start_time"]; ok {
-		fixture.StartTime = val.(time.Time)
-	}
-
 	if val, ok := structure["expires_at"]; ok {
 		fixture.ExpiresAt = val.(time.Time)
 	}
@@ -439,8 +419,40 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.Id = val.(string)
 	}
 
+	if val, ok := structure["updated_at"]; ok {
+		fixture.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		fixture.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["label"]; ok {
+		fixture.Label = val.(bool)
+	}
+
 	if val, ok := structure["created_at"]; ok {
 		fixture.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		fixture.Name = val.(string)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		fixture.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		fixture.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["actionable_id"]; ok {
+		fixture.ActionableId = val.(string)
+	}
+
+	if val, ok := structure["actionable_kind"]; ok {
+		fixture.ActionableKind = val.(string)
 	}
 
 	if val, ok := structure["eventable_id"]; ok {
@@ -459,25 +471,17 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.EventsIds = val.([]string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		fixture.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["actionable_id"]; ok {
-		fixture.ActionableId = val.(string)
-	}
-
-	if val, ok := structure["actionable_kind"]; ok {
-		fixture.ActionableKind = val.(string)
-	}
-
 }
 
 var FixtureStructure = map[string]metis.Primitive{
 
 	"updated_at": 4,
 
-	"start_time": 4,
+	"deleted_at": 4,
+
+	"end_time": 4,
+
+	"rank": 1,
 
 	"expires_at": 4,
 
@@ -485,17 +489,13 @@ var FixtureStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"created_at": 4,
+	"name": 3,
 
-	"end_time": 4,
-
-	"rank": 1,
+	"start_time": 4,
 
 	"label": 0,
 
-	"deleted_at": 4,
-
-	"name": 3,
+	"created_at": 4,
 
 	"owner_id": 9,
 

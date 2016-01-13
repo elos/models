@@ -226,14 +226,6 @@ func (session *Session) SetBSON(raw bson.Raw) error {
 
 func (session *Session) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["deleted_at"]; ok {
-		session.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["token"]; ok {
-		session.Token = val.(string)
-	}
-
 	if val, ok := structure["expires_after"]; ok {
 		session.ExpiresAfter = val.(int)
 	}
@@ -250,12 +242,20 @@ func (session *Session) FromStructure(structure map[string]interface{}) {
 		session.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["credential_id"]; ok {
-		session.CredentialId = val.(string)
+	if val, ok := structure["deleted_at"]; ok {
+		session.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["token"]; ok {
+		session.Token = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
 		session.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["credential_id"]; ok {
+		session.CredentialId = val.(string)
 	}
 
 }

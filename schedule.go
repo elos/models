@@ -264,19 +264,17 @@ func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 		schedule.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		schedule.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["fixtures_ids"]; ok {
 		schedule.FixturesIds = val.([]string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		schedule.OwnerId = val.(string)
 	}
 
 }
 
 var ScheduleStructure = map[string]metis.Primitive{
-
-	"name": 3,
 
 	"start_time": 4,
 
@@ -289,6 +287,8 @@ var ScheduleStructure = map[string]metis.Primitive{
 	"updated_at": 4,
 
 	"deleted_at": 4,
+
+	"name": 3,
 
 	"owner_id": 9,
 
