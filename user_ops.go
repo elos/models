@@ -7,7 +7,7 @@ import (
 )
 
 func Authenticate(db data.DB, public, private string) (*Credential, error) {
-	credentialsIter, err := db.NewQuery(CredentialKind).Select(data.AttrMap{"public": public}).Execute()
+	credentialsIter, err := db.Query(CredentialKind).Select(data.AttrMap{"public": public}).Execute()
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func Authenticate(db data.DB, public, private string) (*Credential, error) {
 }
 
 func (u *User) Tasks(db data.DB, completedOnly bool) ([]*Task, error) {
-	taskQuery := db.NewQuery(TaskKind)
+	taskQuery := db.Query(TaskKind)
 
 	// only retrieve _incomplete_ tasks
 	taskQuery.Select(data.AttrMap{
