@@ -60,7 +60,13 @@ func (model *Model) ID() data.ID {
 }
 
 func (model *Model) IncludeObject(object *Object) {
-	model.ObjectsIds = append(model.ObjectsIds, object.ID().String())
+	otherID := object.ID().String()
+	for i := range model.ObjectsIds {
+		if model.ObjectsIds[i] == otherID {
+			return
+		}
+	}
+	model.ObjectsIds = append(model.ObjectsIds, otherID)
 }
 
 func (model *Model) ExcludeObject(object *Object) {
@@ -79,16 +85,20 @@ func (model *Model) ObjectsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIds), db), nil
 }
 
-func (model *Model) Objects(db data.DB) ([]*Object, error) {
-
-	objects := make([]*Object, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.ObjectsIds), db)
+func (model *Model) Objects(db data.DB) (objects []*Object, err error) {
+	objects = make([]*Object, len(model.ObjectsIds))
 	object := NewObject()
-	for iter.Next(object) {
-		objects = append(objects, object)
+	for i, id := range model.ObjectsIds {
+		object.Id = id
+		if err = db.PopulateByID(object); err != nil {
+			return
+		}
+
+		objects[i] = object
 		object = NewObject()
 	}
-	return objects, nil
+
+	return
 }
 
 func (model *Model) SetOntology(ontologyArgument *Ontology) error {
@@ -174,7 +184,13 @@ func (model *Model) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (model *Model) IncludeRelation(relation *Relation) {
-	model.RelationsIds = append(model.RelationsIds, relation.ID().String())
+	otherID := relation.ID().String()
+	for i := range model.RelationsIds {
+		if model.RelationsIds[i] == otherID {
+			return
+		}
+	}
+	model.RelationsIds = append(model.RelationsIds, otherID)
 }
 
 func (model *Model) ExcludeRelation(relation *Relation) {
@@ -193,20 +209,30 @@ func (model *Model) RelationsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIds), db), nil
 }
 
-func (model *Model) Relations(db data.DB) ([]*Relation, error) {
-
-	relations := make([]*Relation, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.RelationsIds), db)
+func (model *Model) Relations(db data.DB) (relations []*Relation, err error) {
+	relations = make([]*Relation, len(model.RelationsIds))
 	relation := NewRelation()
-	for iter.Next(relation) {
-		relations = append(relations, relation)
+	for i, id := range model.RelationsIds {
+		relation.Id = id
+		if err = db.PopulateByID(relation); err != nil {
+			return
+		}
+
+		relations[i] = relation
 		relation = NewRelation()
 	}
-	return relations, nil
+
+	return
 }
 
 func (model *Model) IncludeTrait(trait *Trait) {
-	model.TraitsIds = append(model.TraitsIds, trait.ID().String())
+	otherID := trait.ID().String()
+	for i := range model.TraitsIds {
+		if model.TraitsIds[i] == otherID {
+			return
+		}
+	}
+	model.TraitsIds = append(model.TraitsIds, otherID)
 }
 
 func (model *Model) ExcludeTrait(trait *Trait) {
@@ -225,16 +251,20 @@ func (model *Model) TraitsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIds), db), nil
 }
 
-func (model *Model) Traits(db data.DB) ([]*Trait, error) {
-
-	traits := make([]*Trait, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(model.TraitsIds), db)
+func (model *Model) Traits(db data.DB) (traits []*Trait, err error) {
+	traits = make([]*Trait, len(model.TraitsIds))
 	trait := NewTrait()
-	for iter.Next(trait) {
-		traits = append(traits, trait)
+	for i, id := range model.TraitsIds {
+		trait.Id = id
+		if err = db.PopulateByID(trait); err != nil {
+			return
+		}
+
+		traits[i] = trait
 		trait = NewTrait()
 	}
-	return traits, nil
+
+	return
 }
 
 // BSON {{{
@@ -360,10 +390,6 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 		model.Name = val.(string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		model.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["traits_ids"]; ok {
 		model.TraitsIds = val.([]string)
 	}
@@ -380,6 +406,10 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 		model.ObjectsIds = val.([]string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		model.OwnerId = val.(string)
+	}
+
 }
 
 var ModelStructure = map[string]metis.Primitive{
@@ -394,13 +424,13 @@ var ModelStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
-	"owner_id": 9,
-
-	"traits_ids": 10,
-
 	"relations_ids": 10,
 
 	"ontology_id": 9,
 
 	"objects_ids": 10,
+
+	"owner_id": 9,
+
+	"traits_ids": 10,
 }

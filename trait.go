@@ -59,7 +59,13 @@ func (trait *Trait) ID() data.ID {
 }
 
 func (trait *Trait) IncludeAttribute(attribute *Attribute) {
-	trait.AttributesIds = append(trait.AttributesIds, attribute.ID().String())
+	otherID := attribute.ID().String()
+	for i := range trait.AttributesIds {
+		if trait.AttributesIds[i] == otherID {
+			return
+		}
+	}
+	trait.AttributesIds = append(trait.AttributesIds, otherID)
 }
 
 func (trait *Trait) ExcludeAttribute(attribute *Attribute) {
@@ -78,16 +84,20 @@ func (trait *Trait) AttributesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(trait.AttributesIds), db), nil
 }
 
-func (trait *Trait) Attributes(db data.DB) ([]*Attribute, error) {
-
-	attributes := make([]*Attribute, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(trait.AttributesIds), db)
+func (trait *Trait) Attributes(db data.DB) (attributes []*Attribute, err error) {
+	attributes = make([]*Attribute, len(trait.AttributesIds))
 	attribute := NewAttribute()
-	for iter.Next(attribute) {
-		attributes = append(attributes, attribute)
+	for i, id := range trait.AttributesIds {
+		attribute.Id = id
+		if err = db.PopulateByID(attribute); err != nil {
+			return
+		}
+
+		attributes[i] = attribute
 		attribute = NewAttribute()
 	}
-	return attributes, nil
+
+	return
 }
 
 func (trait *Trait) SetModel(modelArgument *Model) error {
@@ -267,10 +277,6 @@ func (trait *Trait) SetBSON(raw bson.Raw) error {
 
 func (trait *Trait) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		trait.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		trait.CreatedAt = val.(time.Time)
 	}
@@ -291,6 +297,14 @@ func (trait *Trait) FromStructure(structure map[string]interface{}) {
 		trait.Primitive = val.(string)
 	}
 
+	if val, ok := structure["id"]; ok {
+		trait.Id = val.(string)
+	}
+
+	if val, ok := structure["attributes_ids"]; ok {
+		trait.AttributesIds = val.([]string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		trait.OwnerId = val.(string)
 	}
@@ -299,19 +313,9 @@ func (trait *Trait) FromStructure(structure map[string]interface{}) {
 		trait.ModelId = val.(string)
 	}
 
-	if val, ok := structure["attributes_ids"]; ok {
-		trait.AttributesIds = val.([]string)
-	}
-
 }
 
 var TraitStructure = map[string]metis.Primitive{
-
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
 
 	"deleted_at": 4,
 
@@ -319,9 +323,15 @@ var TraitStructure = map[string]metis.Primitive{
 
 	"primitive": 3,
 
-	"owner_id": 9,
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"model_id": 9,
 
 	"attributes_ids": 10,
+
+	"owner_id": 9,
 }

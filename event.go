@@ -309,7 +309,13 @@ func (event *Event) QuantityOrCreate(db data.DB) (*Quantity, error) {
 }
 
 func (event *Event) IncludeTag(tag *Tag) {
-	event.TagsIds = append(event.TagsIds, tag.ID().String())
+	otherID := tag.ID().String()
+	for i := range event.TagsIds {
+		if event.TagsIds[i] == otherID {
+			return
+		}
+	}
+	event.TagsIds = append(event.TagsIds, otherID)
 }
 
 func (event *Event) ExcludeTag(tag *Tag) {
@@ -328,16 +334,20 @@ func (event *Event) TagsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIds), db), nil
 }
 
-func (event *Event) Tags(db data.DB) ([]*Tag, error) {
-
-	tags := make([]*Tag, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(event.TagsIds), db)
+func (event *Event) Tags(db data.DB) (tags []*Tag, err error) {
+	tags = make([]*Tag, len(event.TagsIds))
 	tag := NewTag()
-	for iter.Next(tag) {
-		tags = append(tags, tag)
+	for i, id := range event.TagsIds {
+		tag.Id = id
+		if err = db.PopulateByID(tag); err != nil {
+			return
+		}
+
+		tags[i] = tag
 		tag = NewTag()
 	}
-	return tags, nil
+
+	return
 }
 
 // BSON {{{
@@ -467,6 +477,14 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 func (event *Event) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["id"]; ok {
+		event.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		event.CreatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["updated_at"]; ok {
 		event.UpdatedAt = val.(time.Time)
 	}
@@ -481,26 +499,6 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["time"]; ok {
 		event.Time = val.(time.Time)
-	}
-
-	if val, ok := structure["id"]; ok {
-		event.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		event.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["note_id"]; ok {
-		event.NoteId = val.(string)
-	}
-
-	if val, ok := structure["location_id"]; ok {
-		event.LocationId = val.(string)
-	}
-
-	if val, ok := structure["tags_ids"]; ok {
-		event.TagsIds = val.([]string)
 	}
 
 	if val, ok := structure["media_id"]; ok {
@@ -519,9 +517,27 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 		event.QuantityId = val.(string)
 	}
 
+	if val, ok := structure["note_id"]; ok {
+		event.NoteId = val.(string)
+	}
+
+	if val, ok := structure["location_id"]; ok {
+		event.LocationId = val.(string)
+	}
+
+	if val, ok := structure["tags_ids"]; ok {
+		event.TagsIds = val.([]string)
+	}
+
 }
 
 var EventStructure = map[string]metis.Primitive{
+
+	"name": 3,
+
+	"time": 4,
+
+	"id": 9,
 
 	"created_at": 4,
 
@@ -529,11 +545,9 @@ var EventStructure = map[string]metis.Primitive{
 
 	"deleted_at": 4,
 
-	"name": 3,
+	"owner_id": 9,
 
-	"time": 4,
-
-	"id": 9,
+	"prior_id": 9,
 
 	"quantity_id": 9,
 
@@ -544,8 +558,4 @@ var EventStructure = map[string]metis.Primitive{
 	"tags_ids": 10,
 
 	"media_id": 9,
-
-	"owner_id": 9,
-
-	"prior_id": 9,
 }

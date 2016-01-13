@@ -59,7 +59,13 @@ func (schedule *Schedule) ID() data.ID {
 }
 
 func (schedule *Schedule) IncludeFixture(fixture *Fixture) {
-	schedule.FixturesIds = append(schedule.FixturesIds, fixture.ID().String())
+	otherID := fixture.ID().String()
+	for i := range schedule.FixturesIds {
+		if schedule.FixturesIds[i] == otherID {
+			return
+		}
+	}
+	schedule.FixturesIds = append(schedule.FixturesIds, otherID)
 }
 
 func (schedule *Schedule) ExcludeFixture(fixture *Fixture) {
@@ -78,16 +84,20 @@ func (schedule *Schedule) FixturesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIds), db), nil
 }
 
-func (schedule *Schedule) Fixtures(db data.DB) ([]*Fixture, error) {
-
-	fixtures := make([]*Fixture, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(schedule.FixturesIds), db)
+func (schedule *Schedule) Fixtures(db data.DB) (fixtures []*Fixture, err error) {
+	fixtures = make([]*Fixture, len(schedule.FixturesIds))
 	fixture := NewFixture()
-	for iter.Next(fixture) {
-		fixtures = append(fixtures, fixture)
+	for i, id := range schedule.FixturesIds {
+		fixture.Id = id
+		if err = db.PopulateByID(fixture); err != nil {
+			return
+		}
+
+		fixtures[i] = fixture
 		fixture = NewFixture()
 	}
-	return fixtures, nil
+
+	return
 }
 
 func (schedule *Schedule) SetOwner(userArgument *User) error {
@@ -226,10 +236,6 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["updated_at"]; ok {
-		schedule.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		schedule.DeletedAt = val.(time.Time)
 	}
@@ -254,17 +260,23 @@ func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 		schedule.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		schedule.OwnerId = val.(string)
+	if val, ok := structure["updated_at"]; ok {
+		schedule.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["fixtures_ids"]; ok {
 		schedule.FixturesIds = val.([]string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		schedule.OwnerId = val.(string)
+	}
+
 }
 
 var ScheduleStructure = map[string]metis.Primitive{
+
+	"start_time": 4,
 
 	"end_time": 4,
 
@@ -277,8 +289,6 @@ var ScheduleStructure = map[string]metis.Primitive{
 	"deleted_at": 4,
 
 	"name": 3,
-
-	"start_time": 4,
 
 	"owner_id": 9,
 

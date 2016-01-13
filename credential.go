@@ -101,7 +101,13 @@ func (credential *Credential) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (credential *Credential) IncludeSession(session *Session) {
-	credential.SessionsIds = append(credential.SessionsIds, session.ID().String())
+	otherID := session.ID().String()
+	for i := range credential.SessionsIds {
+		if credential.SessionsIds[i] == otherID {
+			return
+		}
+	}
+	credential.SessionsIds = append(credential.SessionsIds, otherID)
 }
 
 func (credential *Credential) ExcludeSession(session *Session) {
@@ -120,16 +126,20 @@ func (credential *Credential) SessionsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIds), db), nil
 }
 
-func (credential *Credential) Sessions(db data.DB) ([]*Session, error) {
-
-	sessions := make([]*Session, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(credential.SessionsIds), db)
+func (credential *Credential) Sessions(db data.DB) (sessions []*Session, err error) {
+	sessions = make([]*Session, len(credential.SessionsIds))
 	session := NewSession()
-	for iter.Next(session) {
-		sessions = append(sessions, session)
+	for i, id := range credential.SessionsIds {
+		session.Id = id
+		if err = db.PopulateByID(session); err != nil {
+			return
+		}
+
+		sessions[i] = session
 		session = NewSession()
 	}
-	return sessions, nil
+
+	return
 }
 
 // BSON {{{
@@ -235,6 +245,18 @@ func (credential *Credential) SetBSON(raw bson.Raw) error {
 
 func (credential *Credential) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["created_at"]; ok {
+		credential.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		credential.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		credential.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["public"]; ok {
 		credential.Public = val.(string)
 	}
@@ -255,18 +277,6 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 		credential.Id = val.(string)
 	}
 
-	if val, ok := structure["created_at"]; ok {
-		credential.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		credential.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		credential.DeletedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		credential.OwnerId = val.(string)
 	}
@@ -279,14 +289,6 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 
 var CredentialStructure = map[string]metis.Primitive{
 
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
-
-	"public": 3,
-
 	"private": 3,
 
 	"spec": 3,
@@ -294,6 +296,14 @@ var CredentialStructure = map[string]metis.Primitive{
 	"name": 3,
 
 	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"public": 3,
 
 	"owner_id": 9,
 

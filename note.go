@@ -195,8 +195,6 @@ func (note *Note) FromStructure(structure map[string]interface{}) {
 
 var NoteStructure = map[string]metis.Primitive{
 
-	"deleted_at": 4,
-
 	"text": 3,
 
 	"id": 9,
@@ -204,6 +202,8 @@ var NoteStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 }

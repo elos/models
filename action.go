@@ -323,6 +323,14 @@ func (action *Action) SetBSON(raw bson.Raw) error {
 
 func (action *Action) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["end_time"]; ok {
+		action.EndTime = val.(time.Time)
+	}
+
+	if val, ok := structure["completed"]; ok {
+		action.Completed = val.(bool)
+	}
+
 	if val, ok := structure["id"]; ok {
 		action.Id = val.(string)
 	}
@@ -341,14 +349,6 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["start_time"]; ok {
 		action.StartTime = val.(time.Time)
-	}
-
-	if val, ok := structure["end_time"]; ok {
-		action.EndTime = val.(time.Time)
-	}
-
-	if val, ok := structure["completed"]; ok {
-		action.Completed = val.(bool)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -375,10 +375,6 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 
 var ActionStructure = map[string]metis.Primitive{
 
-	"name": 3,
-
-	"start_time": 4,
-
 	"end_time": 4,
 
 	"completed": 0,
@@ -388,6 +384,10 @@ var ActionStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"name": 3,
+
+	"start_time": 4,
 
 	"owner_id": 9,
 

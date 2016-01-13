@@ -61,7 +61,13 @@ func (relation *Relation) ID() data.ID {
 }
 
 func (relation *Relation) IncludeLink(link *Link) {
-	relation.LinksIds = append(relation.LinksIds, link.ID().String())
+	otherID := link.ID().String()
+	for i := range relation.LinksIds {
+		if relation.LinksIds[i] == otherID {
+			return
+		}
+	}
+	relation.LinksIds = append(relation.LinksIds, otherID)
 }
 
 func (relation *Relation) ExcludeLink(link *Link) {
@@ -80,16 +86,20 @@ func (relation *Relation) LinksIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIds), db), nil
 }
 
-func (relation *Relation) Links(db data.DB) ([]*Link, error) {
-
-	links := make([]*Link, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(relation.LinksIds), db)
+func (relation *Relation) Links(db data.DB) (links []*Link, err error) {
+	links = make([]*Link, len(relation.LinksIds))
 	link := NewLink()
-	for iter.Next(link) {
-		links = append(links, link)
+	for i, id := range relation.LinksIds {
+		link.Id = id
+		if err = db.PopulateByID(link); err != nil {
+			return
+		}
+
+		links[i] = link
 		link = NewLink()
 	}
-	return links, nil
+
+	return
 }
 
 func (relation *Relation) SetModel(modelArgument *Model) error {
@@ -285,6 +295,18 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["created_at"]; ok {
+		relation.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		relation.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		relation.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["name"]; ok {
 		relation.Name = val.(string)
 	}
@@ -305,18 +327,6 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 		relation.Id = val.(string)
 	}
 
-	if val, ok := structure["created_at"]; ok {
-		relation.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		relation.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		relation.DeletedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		relation.OwnerId = val.(string)
 	}
@@ -333,6 +343,10 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
 var RelationStructure = map[string]metis.Primitive{
 
+	"multiplicity": 3,
+
+	"codomain": 3,
+
 	"inverse": 3,
 
 	"id": 9,
@@ -345,13 +359,9 @@ var RelationStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
-	"multiplicity": 3,
-
-	"codomain": 3,
+	"owner_id": 9,
 
 	"model_id": 9,
 
 	"links_ids": 10,
-
-	"owner_id": 9,
 }

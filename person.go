@@ -67,7 +67,13 @@ func (person *Person) ID() data.ID {
 }
 
 func (person *Person) IncludeAction(action *Action) {
-	person.ActionsIds = append(person.ActionsIds, action.ID().String())
+	otherID := action.ID().String()
+	for i := range person.ActionsIds {
+		if person.ActionsIds[i] == otherID {
+			return
+		}
+	}
+	person.ActionsIds = append(person.ActionsIds, otherID)
 }
 
 func (person *Person) ExcludeAction(action *Action) {
@@ -86,16 +92,20 @@ func (person *Person) ActionsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.ActionsIds), db), nil
 }
 
-func (person *Person) Actions(db data.DB) ([]*Action, error) {
-
-	actions := make([]*Action, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.ActionsIds), db)
+func (person *Person) Actions(db data.DB) (actions []*Action, err error) {
+	actions = make([]*Action, len(person.ActionsIds))
 	action := NewAction()
-	for iter.Next(action) {
-		actions = append(actions, action)
+	for i, id := range person.ActionsIds {
+		action.Id = id
+		if err = db.PopulateByID(action); err != nil {
+			return
+		}
+
+		actions[i] = action
 		action = NewAction()
 	}
-	return actions, nil
+
+	return
 }
 
 func (person *Person) SetCurrentAction(actionArgument *Action) error {
@@ -160,7 +170,13 @@ func (person *Person) CurrentActionable(db data.DB) (Actionable, error) {
 }
 
 func (person *Person) IncludeDatum(datum *Datum) {
-	person.DataIds = append(person.DataIds, datum.ID().String())
+	otherID := datum.ID().String()
+	for i := range person.DataIds {
+		if person.DataIds[i] == otherID {
+			return
+		}
+	}
+	person.DataIds = append(person.DataIds, otherID)
 }
 
 func (person *Person) ExcludeDatum(datum *Datum) {
@@ -179,20 +195,30 @@ func (person *Person) DataIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.DataIds), db), nil
 }
 
-func (person *Person) Data(db data.DB) ([]*Datum, error) {
-
-	data := make([]*Datum, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.DataIds), db)
+func (person *Person) Data(db data.DB) (data []*Datum, err error) {
+	data = make([]*Datum, len(person.DataIds))
 	datum := NewDatum()
-	for iter.Next(datum) {
-		data = append(data, datum)
+	for i, id := range person.DataIds {
+		datum.Id = id
+		if err = db.PopulateByID(datum); err != nil {
+			return
+		}
+
+		data[i] = datum
 		datum = NewDatum()
 	}
-	return data, nil
+
+	return
 }
 
 func (person *Person) IncludeEvent(event *Event) {
-	person.EventsIds = append(person.EventsIds, event.ID().String())
+	otherID := event.ID().String()
+	for i := range person.EventsIds {
+		if person.EventsIds[i] == otherID {
+			return
+		}
+	}
+	person.EventsIds = append(person.EventsIds, otherID)
 }
 
 func (person *Person) ExcludeEvent(event *Event) {
@@ -211,16 +237,20 @@ func (person *Person) EventsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.EventsIds), db), nil
 }
 
-func (person *Person) Events(db data.DB) ([]*Event, error) {
-
-	events := make([]*Event, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.EventsIds), db)
+func (person *Person) Events(db data.DB) (events []*Event, err error) {
+	events = make([]*Event, len(person.EventsIds))
 	event := NewEvent()
-	for iter.Next(event) {
-		events = append(events, event)
+	for i, id := range person.EventsIds {
+		event.Id = id
+		if err = db.PopulateByID(event); err != nil {
+			return
+		}
+
+		events[i] = event
 		event = NewEvent()
 	}
-	return events, nil
+
+	return
 }
 
 func (person *Person) SetOntology(ontologyArgument *Ontology) error {
@@ -306,7 +336,13 @@ func (person *Person) OwnerOrCreate(db data.DB) (*User, error) {
 }
 
 func (person *Person) IncludeRoutine(routine *Routine) {
-	person.RoutinesIds = append(person.RoutinesIds, routine.ID().String())
+	otherID := routine.ID().String()
+	for i := range person.RoutinesIds {
+		if person.RoutinesIds[i] == otherID {
+			return
+		}
+	}
+	person.RoutinesIds = append(person.RoutinesIds, otherID)
 }
 
 func (person *Person) ExcludeRoutine(routine *Routine) {
@@ -325,20 +361,30 @@ func (person *Person) RoutinesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.RoutinesIds), db), nil
 }
 
-func (person *Person) Routines(db data.DB) ([]*Routine, error) {
-
-	routines := make([]*Routine, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.RoutinesIds), db)
+func (person *Person) Routines(db data.DB) (routines []*Routine, err error) {
+	routines = make([]*Routine, len(person.RoutinesIds))
 	routine := NewRoutine()
-	for iter.Next(routine) {
-		routines = append(routines, routine)
+	for i, id := range person.RoutinesIds {
+		routine.Id = id
+		if err = db.PopulateByID(routine); err != nil {
+			return
+		}
+
+		routines[i] = routine
 		routine = NewRoutine()
 	}
-	return routines, nil
+
+	return
 }
 
 func (person *Person) IncludeTask(task *Task) {
-	person.TasksIds = append(person.TasksIds, task.ID().String())
+	otherID := task.ID().String()
+	for i := range person.TasksIds {
+		if person.TasksIds[i] == otherID {
+			return
+		}
+	}
+	person.TasksIds = append(person.TasksIds, otherID)
 }
 
 func (person *Person) ExcludeTask(task *Task) {
@@ -357,16 +403,20 @@ func (person *Person) TasksIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(person.TasksIds), db), nil
 }
 
-func (person *Person) Tasks(db data.DB) ([]*Task, error) {
-
-	tasks := make([]*Task, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(person.TasksIds), db)
+func (person *Person) Tasks(db data.DB) (tasks []*Task, err error) {
+	tasks = make([]*Task, len(person.TasksIds))
 	task := NewTask()
-	for iter.Next(task) {
-		tasks = append(tasks, task)
+	for i, id := range person.TasksIds {
+		task.Id = id
+		if err = db.PopulateByID(task); err != nil {
+			return
+		}
+
+		tasks[i] = task
 		task = NewTask()
 	}
-	return tasks, nil
+
+	return
 }
 
 // BSON {{{
@@ -528,6 +578,14 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 func (person *Person) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["name"]; ok {
+		person.Name = val.(string)
+	}
+
+	if val, ok := structure["phone"]; ok {
+		person.Phone = val.(string)
+	}
+
 	if val, ok := structure["key"]; ok {
 		person.Key = val.(string)
 	}
@@ -548,32 +606,16 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["name"]; ok {
-		person.Name = val.(string)
-	}
-
-	if val, ok := structure["phone"]; ok {
-		person.Phone = val.(string)
-	}
-
-	if val, ok := structure["ontology_id"]; ok {
-		person.OntologyId = val.(string)
-	}
-
-	if val, ok := structure["data_ids"]; ok {
-		person.DataIds = val.([]string)
-	}
-
-	if val, ok := structure["actions_ids"]; ok {
-		person.ActionsIds = val.([]string)
+	if val, ok := structure["events_ids"]; ok {
+		person.EventsIds = val.([]string)
 	}
 
 	if val, ok := structure["tasks_ids"]; ok {
 		person.TasksIds = val.([]string)
 	}
 
-	if val, ok := structure["routines_ids"]; ok {
-		person.RoutinesIds = val.([]string)
+	if val, ok := structure["ontology_id"]; ok {
+		person.OntologyId = val.(string)
 	}
 
 	if val, ok := structure["current_action_id"]; ok {
@@ -592,8 +634,16 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		person.EventsIds = val.([]string)
+	if val, ok := structure["data_ids"]; ok {
+		person.DataIds = val.([]string)
+	}
+
+	if val, ok := structure["actions_ids"]; ok {
+		person.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["routines_ids"]; ok {
+		person.RoutinesIds = val.([]string)
 	}
 
 }
@@ -614,23 +664,23 @@ var PersonStructure = map[string]metis.Primitive{
 
 	"phone": 3,
 
-	"current_actionable_id": 9,
-
-	"current_actionable_kind": 3,
-
 	"owner_id": 9,
-
-	"events_ids": 10,
-
-	"tasks_ids": 10,
-
-	"routines_ids": 10,
-
-	"current_action_id": 9,
 
 	"data_ids": 10,
 
 	"actions_ids": 10,
 
+	"routines_ids": 10,
+
+	"current_actionable_id": 9,
+
+	"current_actionable_kind": 3,
+
+	"events_ids": 10,
+
+	"tasks_ids": 10,
+
 	"ontology_id": 9,
+
+	"current_action_id": 9,
 }

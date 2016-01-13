@@ -143,7 +143,13 @@ func (task *Task) PersonOrCreate(db data.DB) (*Person, error) {
 }
 
 func (task *Task) IncludePrerequisite(prerequisite *Task) {
-	task.PrerequisitesIds = append(task.PrerequisitesIds, prerequisite.ID().String())
+	otherID := prerequisite.ID().String()
+	for i := range task.PrerequisitesIds {
+		if task.PrerequisitesIds[i] == otherID {
+			return
+		}
+	}
+	task.PrerequisitesIds = append(task.PrerequisitesIds, otherID)
 }
 
 func (task *Task) ExcludePrerequisite(prerequisite *Task) {
@@ -162,16 +168,20 @@ func (task *Task) PrerequisitesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(task.PrerequisitesIds), db), nil
 }
 
-func (task *Task) Prerequisites(db data.DB) ([]*Task, error) {
-
-	prerequisites := make([]*Task, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(task.PrerequisitesIds), db)
+func (task *Task) Prerequisites(db data.DB) (prerequisites []*Task, err error) {
+	prerequisites = make([]*Task, len(task.PrerequisitesIds))
 	prerequisite := NewTask()
-	for iter.Next(prerequisite) {
-		prerequisites = append(prerequisites, prerequisite)
+	for i, id := range task.PrerequisitesIds {
+		prerequisite.Id = id
+		if err = db.PopulateByID(prerequisite); err != nil {
+			return
+		}
+
+		prerequisites[i] = prerequisite
 		prerequisite = NewTask()
 	}
-	return prerequisites, nil
+
+	return
 }
 
 // BSON {{{
@@ -333,10 +343,6 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 
 var TaskStructure = map[string]metis.Primitive{
 
-	"complete": 0,
-
-	"id": 9,
-
 	"created_at": 4,
 
 	"updated_at": 4,
@@ -349,9 +355,13 @@ var TaskStructure = map[string]metis.Primitive{
 
 	"stages": 8,
 
+	"complete": 0,
+
+	"id": 9,
+
+	"prerequisites_ids": 10,
+
 	"owner_id": 9,
 
 	"person_id": 9,
-
-	"prerequisites_ids": 10,
 }

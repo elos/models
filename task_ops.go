@@ -23,6 +23,30 @@ func (t *Task) Salience() float64 {
 	return 1 / (t.Deadline.Sub(time.Now()).Hours())
 }
 
+func (t *Task) InProgress() bool {
+	return len(t.Stages)%2 == 1
+}
+
+func (t *Task) Start() {
+	if !t.InProgress() {
+		t.Stages = append(t.Stages, time.Now())
+		t.UpdatedAt = time.Now()
+	}
+}
+
+func (t *Task) Stop() {
+	if t.InProgress() {
+		t.Stages = append(t.Stages, time.Now())
+		t.UpdatedAt = time.Now()
+	}
+}
+
+func (t *Task) StopAndComplete() {
+	t.Stop()
+	t.Complete = true
+	t.UpdatedAt = time.Now()
+}
+
 type bySalience []*Task
 
 // Len is the number of elements in the collection.

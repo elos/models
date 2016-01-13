@@ -88,7 +88,13 @@ func (fixture *Fixture) Actionable(db data.DB) (Actionable, error) {
 }
 
 func (fixture *Fixture) IncludeAction(action *Action) {
-	fixture.ActionsIds = append(fixture.ActionsIds, action.ID().String())
+	otherID := action.ID().String()
+	for i := range fixture.ActionsIds {
+		if fixture.ActionsIds[i] == otherID {
+			return
+		}
+	}
+	fixture.ActionsIds = append(fixture.ActionsIds, otherID)
 }
 
 func (fixture *Fixture) ExcludeAction(action *Action) {
@@ -107,16 +113,20 @@ func (fixture *Fixture) ActionsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(fixture.ActionsIds), db), nil
 }
 
-func (fixture *Fixture) Actions(db data.DB) ([]*Action, error) {
-
-	actions := make([]*Action, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(fixture.ActionsIds), db)
+func (fixture *Fixture) Actions(db data.DB) (actions []*Action, err error) {
+	actions = make([]*Action, len(fixture.ActionsIds))
 	action := NewAction()
-	for iter.Next(action) {
-		actions = append(actions, action)
+	for i, id := range fixture.ActionsIds {
+		action.Id = id
+		if err = db.PopulateByID(action); err != nil {
+			return
+		}
+
+		actions[i] = action
 		action = NewAction()
 	}
-	return actions, nil
+
+	return
 }
 
 func (fixture *Fixture) SetEventable(eventableArgument Eventable) error {
@@ -140,7 +150,13 @@ func (fixture *Fixture) Eventable(db data.DB) (Eventable, error) {
 }
 
 func (fixture *Fixture) IncludeEvent(event *Event) {
-	fixture.EventsIds = append(fixture.EventsIds, event.ID().String())
+	otherID := event.ID().String()
+	for i := range fixture.EventsIds {
+		if fixture.EventsIds[i] == otherID {
+			return
+		}
+	}
+	fixture.EventsIds = append(fixture.EventsIds, otherID)
 }
 
 func (fixture *Fixture) ExcludeEvent(event *Event) {
@@ -159,16 +175,20 @@ func (fixture *Fixture) EventsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(fixture.EventsIds), db), nil
 }
 
-func (fixture *Fixture) Events(db data.DB) ([]*Event, error) {
-
-	events := make([]*Event, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(fixture.EventsIds), db)
+func (fixture *Fixture) Events(db data.DB) (events []*Event, err error) {
+	events = make([]*Event, len(fixture.EventsIds))
 	event := NewEvent()
-	for iter.Next(event) {
-		events = append(events, event)
+	for i, id := range fixture.EventsIds {
+		event.Id = id
+		if err = db.PopulateByID(event); err != nil {
+			return
+		}
+
+		events[i] = event
 		event = NewEvent()
 	}
-	return events, nil
+
+	return
 }
 
 func (fixture *Fixture) SetOwner(userArgument *User) error {
@@ -379,12 +399,8 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["label"]; ok {
-		fixture.Label = val.(bool)
-	}
-
-	if val, ok := structure["expires_at"]; ok {
-		fixture.ExpiresAt = val.(time.Time)
+	if val, ok := structure["id"]; ok {
+		fixture.Id = val.(string)
 	}
 
 	if val, ok := structure["created_at"]; ok {
@@ -395,10 +411,6 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["name"]; ok {
-		fixture.Name = val.(string)
-	}
-
 	if val, ok := structure["end_time"]; ok {
 		fixture.EndTime = val.(time.Time)
 	}
@@ -407,12 +419,12 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.Exceptions = val.([]time.Time)
 	}
 
-	if val, ok := structure["id"]; ok {
-		fixture.Id = val.(string)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		fixture.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		fixture.Name = val.(string)
 	}
 
 	if val, ok := structure["start_time"]; ok {
@@ -421,6 +433,22 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["rank"]; ok {
 		fixture.Rank = val.(int)
+	}
+
+	if val, ok := structure["label"]; ok {
+		fixture.Label = val.(bool)
+	}
+
+	if val, ok := structure["expires_at"]; ok {
+		fixture.ExpiresAt = val.(time.Time)
+	}
+
+	if val, ok := structure["actionable_id"]; ok {
+		fixture.ActionableId = val.(string)
+	}
+
+	if val, ok := structure["actionable_kind"]; ok {
+		fixture.ActionableKind = val.(string)
 	}
 
 	if val, ok := structure["eventable_id"]; ok {
@@ -443,39 +471,35 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["actionable_id"]; ok {
-		fixture.ActionableId = val.(string)
-	}
-
-	if val, ok := structure["actionable_kind"]; ok {
-		fixture.ActionableKind = val.(string)
-	}
-
 }
 
 var FixtureStructure = map[string]metis.Primitive{
 
-	"expires_at": 4,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
 	"name": 3,
-
-	"end_time": 4,
-
-	"label": 0,
-
-	"id": 9,
-
-	"deleted_at": 4,
 
 	"start_time": 4,
 
 	"rank": 1,
 
+	"label": 0,
+
+	"expires_at": 4,
+
+	"deleted_at": 4,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"end_time": 4,
+
 	"exceptions": 8,
+
+	"id": 9,
+
+	"events_ids": 10,
+
+	"owner_id": 9,
 
 	"actionable_id": 9,
 
@@ -486,8 +510,4 @@ var FixtureStructure = map[string]metis.Primitive{
 	"eventable_kind": 3,
 
 	"actions_ids": 10,
-
-	"events_ids": 10,
-
-	"owner_id": 9,
 }

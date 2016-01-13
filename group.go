@@ -59,7 +59,13 @@ func (group *Group) ID() data.ID {
 }
 
 func (group *Group) IncludeContext(context *Context) {
-	group.ContextsIds = append(group.ContextsIds, context.ID().String())
+	otherID := context.ID().String()
+	for i := range group.ContextsIds {
+		if group.ContextsIds[i] == otherID {
+			return
+		}
+	}
+	group.ContextsIds = append(group.ContextsIds, otherID)
 }
 
 func (group *Group) ExcludeContext(context *Context) {
@@ -78,20 +84,30 @@ func (group *Group) ContextsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(group.ContextsIds), db), nil
 }
 
-func (group *Group) Contexts(db data.DB) ([]*Context, error) {
-
-	contexts := make([]*Context, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(group.ContextsIds), db)
+func (group *Group) Contexts(db data.DB) (contexts []*Context, err error) {
+	contexts = make([]*Context, len(group.ContextsIds))
 	context := NewContext()
-	for iter.Next(context) {
-		contexts = append(contexts, context)
+	for i, id := range group.ContextsIds {
+		context.Id = id
+		if err = db.PopulateByID(context); err != nil {
+			return
+		}
+
+		contexts[i] = context
 		context = NewContext()
 	}
-	return contexts, nil
+
+	return
 }
 
 func (group *Group) IncludeGrantee(grantee *User) {
-	group.GranteesIds = append(group.GranteesIds, grantee.ID().String())
+	otherID := grantee.ID().String()
+	for i := range group.GranteesIds {
+		if group.GranteesIds[i] == otherID {
+			return
+		}
+	}
+	group.GranteesIds = append(group.GranteesIds, otherID)
 }
 
 func (group *Group) ExcludeGrantee(grantee *User) {
@@ -110,16 +126,20 @@ func (group *Group) GranteesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(group.GranteesIds), db), nil
 }
 
-func (group *Group) Grantees(db data.DB) ([]*User, error) {
-
-	grantees := make([]*User, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(group.GranteesIds), db)
+func (group *Group) Grantees(db data.DB) (grantees []*User, err error) {
+	grantees = make([]*User, len(group.GranteesIds))
 	grantee := NewUser()
-	for iter.Next(grantee) {
-		grantees = append(grantees, grantee)
+	for i, id := range group.GranteesIds {
+		grantee.Id = id
+		if err = db.PopulateByID(grantee); err != nil {
+			return
+		}
+
+		grantees[i] = grantee
 		grantee = NewUser()
 	}
-	return grantees, nil
+
+	return
 }
 
 func (group *Group) SetOwner(userArgument *User) error {
@@ -258,6 +278,14 @@ func (group *Group) SetBSON(raw bson.Raw) error {
 
 func (group *Group) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["id"]; ok {
+		group.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		group.CreatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["updated_at"]; ok {
 		group.UpdatedAt = val.(time.Time)
 	}
@@ -272,14 +300,6 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["access"]; ok {
 		group.Access = val.(int)
-	}
-
-	if val, ok := structure["id"]; ok {
-		group.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		group.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -298,6 +318,8 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 
 var GroupStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
@@ -308,11 +330,9 @@ var GroupStructure = map[string]metis.Primitive{
 
 	"access": 1,
 
-	"id": 9,
+	"grantees_ids": 10,
 
 	"contexts_ids": 10,
 
 	"owner_id": 9,
-
-	"grantees_ids": 10,
 }

@@ -285,6 +285,18 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["deleted_at"]; ok {
+		calendar.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		calendar.Name = val.(string)
+	}
+
+	if val, ok := structure["weekday_schedules"]; ok {
+		calendar.WeekdaySchedules = val.(map[string]string)
+	}
+
 	if val, ok := structure["yearday_schedules"]; ok {
 		calendar.YeardaySchedules = val.(map[string]string)
 	}
@@ -299,18 +311,6 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["updated_at"]; ok {
 		calendar.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		calendar.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["name"]; ok {
-		calendar.Name = val.(string)
-	}
-
-	if val, ok := structure["weekday_schedules"]; ok {
-		calendar.WeekdaySchedules = val.(map[string]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -329,12 +329,6 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
 var CalendarStructure = map[string]metis.Primitive{
 
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
-
 	"name": 3,
 
 	"weekday_schedules": 11,
@@ -342,6 +336,12 @@ var CalendarStructure = map[string]metis.Primitive{
 	"yearday_schedules": 11,
 
 	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 

@@ -57,7 +57,13 @@ func (ontology *Ontology) ID() data.ID {
 }
 
 func (ontology *Ontology) IncludeModel(model *Model) {
-	ontology.ModelsIds = append(ontology.ModelsIds, model.ID().String())
+	otherID := model.ID().String()
+	for i := range ontology.ModelsIds {
+		if ontology.ModelsIds[i] == otherID {
+			return
+		}
+	}
+	ontology.ModelsIds = append(ontology.ModelsIds, otherID)
 }
 
 func (ontology *Ontology) ExcludeModel(model *Model) {
@@ -76,20 +82,30 @@ func (ontology *Ontology) ModelsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(ontology.ModelsIds), db), nil
 }
 
-func (ontology *Ontology) Models(db data.DB) ([]*Model, error) {
-
-	models := make([]*Model, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(ontology.ModelsIds), db)
+func (ontology *Ontology) Models(db data.DB) (models []*Model, err error) {
+	models = make([]*Model, len(ontology.ModelsIds))
 	model := NewModel()
-	for iter.Next(model) {
-		models = append(models, model)
+	for i, id := range ontology.ModelsIds {
+		model.Id = id
+		if err = db.PopulateByID(model); err != nil {
+			return
+		}
+
+		models[i] = model
 		model = NewModel()
 	}
-	return models, nil
+
+	return
 }
 
 func (ontology *Ontology) IncludeObject(object *Object) {
-	ontology.ObjectsIds = append(ontology.ObjectsIds, object.ID().String())
+	otherID := object.ID().String()
+	for i := range ontology.ObjectsIds {
+		if ontology.ObjectsIds[i] == otherID {
+			return
+		}
+	}
+	ontology.ObjectsIds = append(ontology.ObjectsIds, otherID)
 }
 
 func (ontology *Ontology) ExcludeObject(object *Object) {
@@ -108,16 +124,20 @@ func (ontology *Ontology) ObjectsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(ontology.ObjectsIds), db), nil
 }
 
-func (ontology *Ontology) Objects(db data.DB) ([]*Object, error) {
-
-	objects := make([]*Object, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(ontology.ObjectsIds), db)
+func (ontology *Ontology) Objects(db data.DB) (objects []*Object, err error) {
+	objects = make([]*Object, len(ontology.ObjectsIds))
 	object := NewObject()
-	for iter.Next(object) {
-		objects = append(objects, object)
+	for i, id := range ontology.ObjectsIds {
+		object.Id = id
+		if err = db.PopulateByID(object); err != nil {
+			return
+		}
+
+		objects[i] = object
 		object = NewObject()
 	}
-	return objects, nil
+
+	return
 }
 
 func (ontology *Ontology) SetOwner(userArgument *User) error {
@@ -272,17 +292,17 @@ func (ontology *Ontology) FromStructure(structure map[string]interface{}) {
 
 var OntologyStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
-	"id": 9,
-
-	"objects_ids": 10,
-
 	"owner_id": 9,
 
 	"models_ids": 10,
+
+	"objects_ids": 10,
 }

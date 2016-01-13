@@ -62,7 +62,13 @@ func (routine *Routine) ID() data.ID {
 }
 
 func (routine *Routine) IncludeAction(action *Action) {
-	routine.ActionsIds = append(routine.ActionsIds, action.ID().String())
+	otherID := action.ID().String()
+	for i := range routine.ActionsIds {
+		if routine.ActionsIds[i] == otherID {
+			return
+		}
+	}
+	routine.ActionsIds = append(routine.ActionsIds, otherID)
 }
 
 func (routine *Routine) ExcludeAction(action *Action) {
@@ -81,20 +87,30 @@ func (routine *Routine) ActionsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.ActionsIds), db), nil
 }
 
-func (routine *Routine) Actions(db data.DB) ([]*Action, error) {
-
-	actions := make([]*Action, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.ActionsIds), db)
+func (routine *Routine) Actions(db data.DB) (actions []*Action, err error) {
+	actions = make([]*Action, len(routine.ActionsIds))
 	action := NewAction()
-	for iter.Next(action) {
-		actions = append(actions, action)
+	for i, id := range routine.ActionsIds {
+		action.Id = id
+		if err = db.PopulateByID(action); err != nil {
+			return
+		}
+
+		actions[i] = action
 		action = NewAction()
 	}
-	return actions, nil
+
+	return
 }
 
 func (routine *Routine) IncludeCompletedTask(completedTask *Task) {
-	routine.CompletedTasksIds = append(routine.CompletedTasksIds, completedTask.ID().String())
+	otherID := completedTask.ID().String()
+	for i := range routine.CompletedTasksIds {
+		if routine.CompletedTasksIds[i] == otherID {
+			return
+		}
+	}
+	routine.CompletedTasksIds = append(routine.CompletedTasksIds, otherID)
 }
 
 func (routine *Routine) ExcludeCompletedTask(completedTask *Task) {
@@ -113,16 +129,20 @@ func (routine *Routine) CompletedTasksIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.CompletedTasksIds), db), nil
 }
 
-func (routine *Routine) CompletedTasks(db data.DB) ([]*Task, error) {
-
-	completed_tasks := make([]*Task, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.CompletedTasksIds), db)
+func (routine *Routine) CompletedTasks(db data.DB) (completed_tasks []*Task, err error) {
+	completed_tasks = make([]*Task, len(routine.CompletedTasksIds))
 	completed_task := NewTask()
-	for iter.Next(completed_task) {
-		completed_tasks = append(completed_tasks, completed_task)
+	for i, id := range routine.CompletedTasksIds {
+		completed_task.Id = id
+		if err = db.PopulateByID(completed_task); err != nil {
+			return
+		}
+
+		completed_tasks[i] = completed_task
 		completed_task = NewTask()
 	}
-	return completed_tasks, nil
+
+	return
 }
 
 func (routine *Routine) SetCurrentAction(actionArgument *Action) error {
@@ -249,7 +269,13 @@ func (routine *Routine) PersonOrCreate(db data.DB) (*Person, error) {
 }
 
 func (routine *Routine) IncludeTask(task *Task) {
-	routine.TasksIds = append(routine.TasksIds, task.ID().String())
+	otherID := task.ID().String()
+	for i := range routine.TasksIds {
+		if routine.TasksIds[i] == otherID {
+			return
+		}
+	}
+	routine.TasksIds = append(routine.TasksIds, otherID)
 }
 
 func (routine *Routine) ExcludeTask(task *Task) {
@@ -268,16 +294,20 @@ func (routine *Routine) TasksIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.TasksIds), db), nil
 }
 
-func (routine *Routine) Tasks(db data.DB) ([]*Task, error) {
-
-	tasks := make([]*Task, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(routine.TasksIds), db)
+func (routine *Routine) Tasks(db data.DB) (tasks []*Task, err error) {
+	tasks = make([]*Task, len(routine.TasksIds))
 	task := NewTask()
-	for iter.Next(task) {
-		tasks = append(tasks, task)
+	for i, id := range routine.TasksIds {
+		task.Id = id
+		if err = db.PopulateByID(task); err != nil {
+			return
+		}
+
+		tasks[i] = task
 		task = NewTask()
 	}
-	return tasks, nil
+
+	return
 }
 
 // BSON {{{
@@ -399,6 +429,14 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 func (routine *Routine) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["start_time"]; ok {
+		routine.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["end_time"]; ok {
+		routine.EndTime = val.(time.Time)
+	}
+
 	if val, ok := structure["id"]; ok {
 		routine.Id = val.(string)
 	}
@@ -413,14 +451,6 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["name"]; ok {
 		routine.Name = val.(string)
-	}
-
-	if val, ok := structure["start_time"]; ok {
-		routine.StartTime = val.(time.Time)
-	}
-
-	if val, ok := structure["end_time"]; ok {
-		routine.EndTime = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -463,10 +493,6 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
-	"actions_ids": 10,
-
-	"current_action_id": 9,
-
 	"owner_id": 9,
 
 	"person_id": 9,
@@ -474,4 +500,8 @@ var RoutineStructure = map[string]metis.Primitive{
 	"tasks_ids": 10,
 
 	"completed_tasks_ids": 10,
+
+	"actions_ids": 10,
+
+	"current_action_id": 9,
 }

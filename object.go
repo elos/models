@@ -59,7 +59,13 @@ func (object *Object) ID() data.ID {
 }
 
 func (object *Object) IncludeAttribute(attribute *Attribute) {
-	object.AttributesIds = append(object.AttributesIds, attribute.ID().String())
+	otherID := attribute.ID().String()
+	for i := range object.AttributesIds {
+		if object.AttributesIds[i] == otherID {
+			return
+		}
+	}
+	object.AttributesIds = append(object.AttributesIds, otherID)
 }
 
 func (object *Object) ExcludeAttribute(attribute *Attribute) {
@@ -78,20 +84,30 @@ func (object *Object) AttributesIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(object.AttributesIds), db), nil
 }
 
-func (object *Object) Attributes(db data.DB) ([]*Attribute, error) {
-
-	attributes := make([]*Attribute, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(object.AttributesIds), db)
+func (object *Object) Attributes(db data.DB) (attributes []*Attribute, err error) {
+	attributes = make([]*Attribute, len(object.AttributesIds))
 	attribute := NewAttribute()
-	for iter.Next(attribute) {
-		attributes = append(attributes, attribute)
+	for i, id := range object.AttributesIds {
+		attribute.Id = id
+		if err = db.PopulateByID(attribute); err != nil {
+			return
+		}
+
+		attributes[i] = attribute
 		attribute = NewAttribute()
 	}
-	return attributes, nil
+
+	return
 }
 
 func (object *Object) IncludeLink(link *Link) {
-	object.LinksIds = append(object.LinksIds, link.ID().String())
+	otherID := link.ID().String()
+	for i := range object.LinksIds {
+		if object.LinksIds[i] == otherID {
+			return
+		}
+	}
+	object.LinksIds = append(object.LinksIds, otherID)
 }
 
 func (object *Object) ExcludeLink(link *Link) {
@@ -110,16 +126,20 @@ func (object *Object) LinksIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(object.LinksIds), db), nil
 }
 
-func (object *Object) Links(db data.DB) ([]*Link, error) {
-
-	links := make([]*Link, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(object.LinksIds), db)
+func (object *Object) Links(db data.DB) (links []*Link, err error) {
+	links = make([]*Link, len(object.LinksIds))
 	link := NewLink()
-	for iter.Next(link) {
-		links = append(links, link)
+	for i, id := range object.LinksIds {
+		link.Id = id
+		if err = db.PopulateByID(link); err != nil {
+			return
+		}
+
+		links[i] = link
 		link = NewLink()
 	}
-	return links, nil
+
+	return
 }
 
 func (object *Object) SetModel(modelArgument *Model) error {
@@ -340,14 +360,6 @@ func (object *Object) SetBSON(raw bson.Raw) error {
 
 func (object *Object) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["updated_at"]; ok {
-		object.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		object.DeletedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["id"]; ok {
 		object.Id = val.(string)
 	}
@@ -356,12 +368,12 @@ func (object *Object) FromStructure(structure map[string]interface{}) {
 		object.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["model_id"]; ok {
-		object.ModelId = val.(string)
+	if val, ok := structure["updated_at"]; ok {
+		object.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["ontology_id"]; ok {
-		object.OntologyId = val.(string)
+	if val, ok := structure["deleted_at"]; ok {
+		object.DeletedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -374,6 +386,14 @@ func (object *Object) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["links_ids"]; ok {
 		object.LinksIds = val.([]string)
+	}
+
+	if val, ok := structure["model_id"]; ok {
+		object.ModelId = val.(string)
+	}
+
+	if val, ok := structure["ontology_id"]; ok {
+		object.OntologyId = val.(string)
 	}
 
 }

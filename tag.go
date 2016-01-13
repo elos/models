@@ -57,7 +57,13 @@ func (tag *Tag) ID() data.ID {
 }
 
 func (tag *Tag) IncludeEvent(event *Event) {
-	tag.EventsIds = append(tag.EventsIds, event.ID().String())
+	otherID := event.ID().String()
+	for i := range tag.EventsIds {
+		if tag.EventsIds[i] == otherID {
+			return
+		}
+	}
+	tag.EventsIds = append(tag.EventsIds, otherID)
 }
 
 func (tag *Tag) ExcludeEvent(event *Event) {
@@ -76,16 +82,20 @@ func (tag *Tag) EventsIter(db data.DB) (data.Iterator, error) {
 	return mongo.NewIDIter(mongo.NewIDSetFromStrings(tag.EventsIds), db), nil
 }
 
-func (tag *Tag) Events(db data.DB) ([]*Event, error) {
-
-	events := make([]*Event, 0)
-	iter := mongo.NewIDIter(mongo.NewIDSetFromStrings(tag.EventsIds), db)
+func (tag *Tag) Events(db data.DB) (events []*Event, err error) {
+	events = make([]*Event, len(tag.EventsIds))
 	event := NewEvent()
-	for iter.Next(event) {
-		events = append(events, event)
+	for i, id := range tag.EventsIds {
+		event.Id = id
+		if err = db.PopulateByID(event); err != nil {
+			return
+		}
+
+		events[i] = event
 		event = NewEvent()
 	}
-	return events, nil
+
+	return
 }
 
 func (tag *Tag) SetOwner(userArgument *User) error {
@@ -228,27 +238,27 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 		tag.Name = val.(string)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		tag.EventsIds = val.([]string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		tag.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["events_ids"]; ok {
+		tag.EventsIds = val.([]string)
 	}
 
 }
 
 var TagStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
+	"created_at": 4,
+
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
 	"name": 3,
-
-	"id": 9,
-
-	"created_at": 4,
 
 	"owner_id": 9,
 
