@@ -109,8 +109,8 @@ func (tag *Tag) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(tag.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(tag.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -218,10 +218,6 @@ func (tag *Tag) SetBSON(raw bson.Raw) error {
 
 func (tag *Tag) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		tag.Name = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		tag.Id = val.(string)
 	}
@@ -238,6 +234,10 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 		tag.DeletedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["name"]; ok {
+		tag.Name = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		tag.OwnerId = val.(string)
 	}
@@ -250,6 +250,8 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 
 var TagStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
@@ -257,8 +259,6 @@ var TagStructure = map[string]metis.Primitive{
 	"deleted_at": 4,
 
 	"name": 3,
-
-	"id": 9,
 
 	"owner_id": 9,
 

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -66,8 +65,8 @@ func (note *Note) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(note.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(note.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }

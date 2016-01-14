@@ -80,9 +80,9 @@ func (fixture *Fixture) Actionable(db data.DB) (Actionable, error) {
 	m := ModelFor(data.Kind(fixture.ActionableKind))
 	actionable := m.(Actionable)
 
-	pid, _ := mongo.ParseObjectID(fixture.ActionableId)
+	id, _ := db.ParseID(fixture.ActionableId)
 
-	actionable.SetID(data.ID(pid.Hex()))
+	actionable.SetID(id)
 	return actionable, db.PopulateByID(actionable)
 
 }
@@ -142,9 +142,9 @@ func (fixture *Fixture) Eventable(db data.DB) (Eventable, error) {
 	m := ModelFor(data.Kind(fixture.EventableKind))
 	eventable := m.(Eventable)
 
-	pid, _ := mongo.ParseObjectID(fixture.EventableId)
+	id, _ := db.ParseID(fixture.EventableId)
 
-	eventable.SetID(data.ID(pid.Hex()))
+	eventable.SetID(id)
 	return eventable, db.PopulateByID(eventable)
 
 }
@@ -202,8 +202,8 @@ func (fixture *Fixture) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(fixture.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(fixture.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -399,12 +399,24 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["end_time"]; ok {
-		fixture.EndTime = val.(time.Time)
+	if val, ok := structure["created_at"]; ok {
+		fixture.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		fixture.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		fixture.StartTime = val.(time.Time)
 	}
 
 	if val, ok := structure["rank"]; ok {
 		fixture.Rank = val.(int)
+	}
+
+	if val, ok := structure["label"]; ok {
+		fixture.Label = val.(bool)
 	}
 
 	if val, ok := structure["expires_at"]; ok {
@@ -423,24 +435,12 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["deleted_at"]; ok {
-		fixture.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["label"]; ok {
-		fixture.Label = val.(bool)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		fixture.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["name"]; ok {
 		fixture.Name = val.(string)
 	}
 
-	if val, ok := structure["start_time"]; ok {
-		fixture.StartTime = val.(time.Time)
+	if val, ok := structure["end_time"]; ok {
+		fixture.EndTime = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -475,27 +475,27 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
 var FixtureStructure = map[string]metis.Primitive{
 
-	"updated_at": 4,
+	"created_at": 4,
 
 	"deleted_at": 4,
+
+	"start_time": 4,
+
+	"id": 9,
+
+	"updated_at": 4,
+
+	"name": 3,
 
 	"end_time": 4,
 
 	"rank": 1,
 
+	"label": 0,
+
 	"expires_at": 4,
 
 	"exceptions": 8,
-
-	"id": 9,
-
-	"name": 3,
-
-	"start_time": 4,
-
-	"label": 0,
-
-	"created_at": 4,
 
 	"owner_id": 9,
 

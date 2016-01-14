@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -68,8 +67,8 @@ func (session *Session) Credential(db data.DB) (*Credential, error) {
 	}
 
 	credentialArgument := NewCredential()
-	pid, _ := mongo.ParseObjectID(session.CredentialId)
-	credentialArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(session.CredentialId)
+	credentialArgument.SetID(id)
 	return credentialArgument, db.PopulateByID(credentialArgument)
 
 }
@@ -109,8 +108,8 @@ func (session *Session) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(session.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(session.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -226,10 +225,6 @@ func (session *Session) SetBSON(raw bson.Raw) error {
 
 func (session *Session) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["expires_after"]; ok {
-		session.ExpiresAfter = val.(int)
-	}
-
 	if val, ok := structure["id"]; ok {
 		session.Id = val.(string)
 	}
@@ -250,6 +245,10 @@ func (session *Session) FromStructure(structure map[string]interface{}) {
 		session.Token = val.(string)
 	}
 
+	if val, ok := structure["expires_after"]; ok {
+		session.ExpiresAfter = val.(int)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		session.OwnerId = val.(string)
 	}
@@ -262,8 +261,6 @@ func (session *Session) FromStructure(structure map[string]interface{}) {
 
 var SessionStructure = map[string]metis.Primitive{
 
-	"updated_at": 4,
-
 	"deleted_at": 4,
 
 	"token": 3,
@@ -274,7 +271,9 @@ var SessionStructure = map[string]metis.Primitive{
 
 	"created_at": 4,
 
-	"owner_id": 9,
+	"updated_at": 4,
 
 	"credential_id": 9,
+
+	"owner_id": 9,
 }

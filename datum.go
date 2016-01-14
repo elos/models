@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -69,8 +68,8 @@ func (datum *Datum) Event(db data.DB) (*Event, error) {
 	}
 
 	eventArgument := NewEvent()
-	pid, _ := mongo.ParseObjectID(datum.EventId)
-	eventArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(datum.EventId)
+	eventArgument.SetID(id)
 	return eventArgument, db.PopulateByID(eventArgument)
 
 }
@@ -110,8 +109,8 @@ func (datum *Datum) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(datum.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(datum.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -151,8 +150,8 @@ func (datum *Datum) Person(db data.DB) (*Person, error) {
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(datum.PersonId)
-	personArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(datum.PersonId)
+	personArgument.SetID(id)
 	return personArgument, db.PopulateByID(personArgument)
 
 }

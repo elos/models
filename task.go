@@ -71,8 +71,8 @@ func (task *Task) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(task.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(task.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -112,8 +112,8 @@ func (task *Task) Person(db data.DB) (*Person, error) {
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(task.PersonId)
-	personArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(task.PersonId)
+	personArgument.SetID(id)
 	return personArgument, db.PopulateByID(personArgument)
 
 }
@@ -295,6 +295,10 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 func (task *Task) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["complete"]; ok {
+		task.Complete = val.(bool)
+	}
+
 	if val, ok := structure["id"]; ok {
 		task.Id = val.(string)
 	}
@@ -323,10 +327,6 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 		task.Stages = val.([]time.Time)
 	}
 
-	if val, ok := structure["complete"]; ok {
-		task.Complete = val.(bool)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		task.OwnerId = val.(string)
 	}
@@ -343,14 +343,6 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 
 var TaskStructure = map[string]metis.Primitive{
 
-	"complete": 0,
-
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
 	"deleted_at": 4,
 
 	"name": 3,
@@ -359,9 +351,17 @@ var TaskStructure = map[string]metis.Primitive{
 
 	"stages": 8,
 
-	"owner_id": 9,
+	"complete": 0,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"person_id": 9,
 
 	"prerequisites_ids": 10,
+
+	"owner_id": 9,
 }

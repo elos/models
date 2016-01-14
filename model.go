@@ -112,8 +112,8 @@ func (model *Model) Ontology(db data.DB) (*Ontology, error) {
 	}
 
 	ontologyArgument := NewOntology()
-	pid, _ := mongo.ParseObjectID(model.OntologyId)
-	ontologyArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(model.OntologyId)
+	ontologyArgument.SetID(id)
 	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
 }
@@ -153,8 +153,8 @@ func (model *Model) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(model.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(model.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }

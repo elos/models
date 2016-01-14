@@ -73,8 +73,8 @@ func (event *Event) Location(db data.DB) (*Location, error) {
 	}
 
 	locationArgument := NewLocation()
-	pid, _ := mongo.ParseObjectID(event.LocationId)
-	locationArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.LocationId)
+	locationArgument.SetID(id)
 	return locationArgument, db.PopulateByID(locationArgument)
 
 }
@@ -114,8 +114,8 @@ func (event *Event) Media(db data.DB) (*Media, error) {
 	}
 
 	mediaArgument := NewMedia()
-	pid, _ := mongo.ParseObjectID(event.MediaId)
-	mediaArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.MediaId)
+	mediaArgument.SetID(id)
 	return mediaArgument, db.PopulateByID(mediaArgument)
 
 }
@@ -155,8 +155,8 @@ func (event *Event) Note(db data.DB) (*Note, error) {
 	}
 
 	noteArgument := NewNote()
-	pid, _ := mongo.ParseObjectID(event.NoteId)
-	noteArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.NoteId)
+	noteArgument.SetID(id)
 	return noteArgument, db.PopulateByID(noteArgument)
 
 }
@@ -196,8 +196,8 @@ func (event *Event) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(event.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -237,8 +237,8 @@ func (event *Event) Prior(db data.DB) (*Event, error) {
 	}
 
 	eventArgument := NewEvent()
-	pid, _ := mongo.ParseObjectID(event.PriorId)
-	eventArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.PriorId)
+	eventArgument.SetID(id)
 	return eventArgument, db.PopulateByID(eventArgument)
 
 }
@@ -278,8 +278,8 @@ func (event *Event) Quantity(db data.DB) (*Quantity, error) {
 	}
 
 	quantityArgument := NewQuantity()
-	pid, _ := mongo.ParseObjectID(event.QuantityId)
-	quantityArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(event.QuantityId)
+	quantityArgument.SetID(id)
 	return quantityArgument, db.PopulateByID(quantityArgument)
 
 }
@@ -477,6 +477,14 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 func (event *Event) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["name"]; ok {
+		event.Name = val.(string)
+	}
+
+	if val, ok := structure["time"]; ok {
+		event.Time = val.(time.Time)
+	}
+
 	if val, ok := structure["id"]; ok {
 		event.Id = val.(string)
 	}
@@ -493,12 +501,8 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 		event.DeletedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["name"]; ok {
-		event.Name = val.(string)
-	}
-
-	if val, ok := structure["time"]; ok {
-		event.Time = val.(time.Time)
+	if val, ok := structure["owner_id"]; ok {
+		event.OwnerId = val.(string)
 	}
 
 	if val, ok := structure["prior_id"]; ok {
@@ -525,13 +529,11 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 		event.MediaId = val.(string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		event.OwnerId = val.(string)
-	}
-
 }
 
 var EventStructure = map[string]metis.Primitive{
+
+	"created_at": 4,
 
 	"updated_at": 4,
 
@@ -543,7 +545,9 @@ var EventStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"created_at": 4,
+	"quantity_id": 9,
+
+	"note_id": 9,
 
 	"location_id": 9,
 
@@ -554,8 +558,4 @@ var EventStructure = map[string]metis.Primitive{
 	"owner_id": 9,
 
 	"prior_id": 9,
-
-	"quantity_id": 9,
-
-	"note_id": 9,
 }

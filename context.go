@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -67,8 +66,8 @@ func (context *Context) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(context.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(context.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -176,14 +175,6 @@ func (context *Context) SetBSON(raw bson.Raw) error {
 
 func (context *Context) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		context.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		context.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		context.UpdatedAt = val.(time.Time)
 	}
@@ -200,6 +191,14 @@ func (context *Context) FromStructure(structure map[string]interface{}) {
 		context.Ids = val.([]string)
 	}
 
+	if val, ok := structure["id"]; ok {
+		context.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		context.CreatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		context.OwnerId = val.(string)
 	}
@@ -207,6 +206,8 @@ func (context *Context) FromStructure(structure map[string]interface{}) {
 }
 
 var ContextStructure = map[string]metis.Primitive{
+
+	"id": 9,
 
 	"created_at": 4,
 
@@ -217,8 +218,6 @@ var ContextStructure = map[string]metis.Primitive{
 	"domain": 3,
 
 	"ids": 10,
-
-	"id": 9,
 
 	"owner_id": 9,
 }

@@ -113,8 +113,8 @@ func (relation *Relation) Model(db data.DB) (*Model, error) {
 	}
 
 	modelArgument := NewModel()
-	pid, _ := mongo.ParseObjectID(relation.ModelId)
-	modelArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(relation.ModelId)
+	modelArgument.SetID(id)
 	return modelArgument, db.PopulateByID(modelArgument)
 
 }
@@ -154,8 +154,8 @@ func (relation *Relation) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(relation.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(relation.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -295,6 +295,10 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["deleted_at"]; ok {
+		relation.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["name"]; ok {
 		relation.Name = val.(string)
 	}
@@ -323,14 +327,6 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 		relation.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["deleted_at"]; ok {
-		relation.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["owner_id"]; ok {
-		relation.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["model_id"]; ok {
 		relation.ModelId = val.(string)
 	}
@@ -339,9 +335,17 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 		relation.LinksIds = val.([]string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		relation.OwnerId = val.(string)
+	}
+
 }
 
 var RelationStructure = map[string]metis.Primitive{
+
+	"multiplicity": 3,
+
+	"codomain": 3,
 
 	"inverse": 3,
 
@@ -355,13 +359,9 @@ var RelationStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
-	"multiplicity": 3,
-
-	"codomain": 3,
-
-	"model_id": 9,
-
 	"links_ids": 10,
 
 	"owner_id": 9,
+
+	"model_id": 9,
 }

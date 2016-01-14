@@ -70,8 +70,8 @@ func (credential *Credential) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(credential.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(credential.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -245,22 +245,6 @@ func (credential *Credential) SetBSON(raw bson.Raw) error {
 
 func (credential *Credential) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["created_at"]; ok {
-		credential.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		credential.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		credential.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["public"]; ok {
-		credential.Public = val.(string)
-	}
-
 	if val, ok := structure["private"]; ok {
 		credential.Private = val.(string)
 	}
@@ -277,6 +261,22 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 		credential.Id = val.(string)
 	}
 
+	if val, ok := structure["created_at"]; ok {
+		credential.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		credential.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		credential.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["public"]; ok {
+		credential.Public = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		credential.OwnerId = val.(string)
 	}
@@ -288,8 +288,6 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 }
 
 var CredentialStructure = map[string]metis.Primitive{
-
-	"updated_at": 4,
 
 	"deleted_at": 4,
 
@@ -304,6 +302,8 @@ var CredentialStructure = map[string]metis.Primitive{
 	"id": 9,
 
 	"created_at": 4,
+
+	"updated_at": 4,
 
 	"owner_id": 9,
 

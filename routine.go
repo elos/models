@@ -156,8 +156,8 @@ func (routine *Routine) CurrentAction(db data.DB) (*Action, error) {
 	}
 
 	actionArgument := NewAction()
-	pid, _ := mongo.ParseObjectID(routine.CurrentActionId)
-	actionArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(routine.CurrentActionId)
+	actionArgument.SetID(id)
 	return actionArgument, db.PopulateByID(actionArgument)
 
 }
@@ -197,8 +197,8 @@ func (routine *Routine) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(routine.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(routine.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -238,8 +238,8 @@ func (routine *Routine) Person(db data.DB) (*Person, error) {
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(routine.PersonId)
-	personArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(routine.PersonId)
+	personArgument.SetID(id)
 	return personArgument, db.PopulateByID(personArgument)
 
 }
@@ -481,6 +481,8 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 
 var RoutineStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
@@ -491,7 +493,7 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
-	"id": 9,
+	"person_id": 9,
 
 	"tasks_ids": 10,
 
@@ -502,6 +504,4 @@ var RoutineStructure = map[string]metis.Primitive{
 	"current_action_id": 9,
 
 	"owner_id": 9,
-
-	"person_id": 9,
 }

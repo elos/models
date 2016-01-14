@@ -153,8 +153,8 @@ func (object *Object) Model(db data.DB) (*Model, error) {
 	}
 
 	modelArgument := NewModel()
-	pid, _ := mongo.ParseObjectID(object.ModelId)
-	modelArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(object.ModelId)
+	modelArgument.SetID(id)
 	return modelArgument, db.PopulateByID(modelArgument)
 
 }
@@ -194,8 +194,8 @@ func (object *Object) Ontology(db data.DB) (*Ontology, error) {
 	}
 
 	ontologyArgument := NewOntology()
-	pid, _ := mongo.ParseObjectID(object.OntologyId)
-	ontologyArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(object.OntologyId)
+	ontologyArgument.SetID(id)
 	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
 }
@@ -235,8 +235,8 @@ func (object *Object) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(object.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(object.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -360,20 +360,20 @@ func (object *Object) SetBSON(raw bson.Raw) error {
 
 func (object *Object) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		object.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		object.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		object.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["deleted_at"]; ok {
 		object.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["id"]; ok {
+		object.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		object.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["model_id"]; ok {
@@ -408,13 +408,13 @@ var ObjectStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"owner_id": 9,
-
-	"attributes_ids": 10,
-
 	"links_ids": 10,
 
 	"model_id": 9,
 
 	"ontology_id": 9,
+
+	"owner_id": 9,
+
+	"attributes_ids": 10,
 }

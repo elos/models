@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -74,9 +73,9 @@ func (action *Action) Actionable(db data.DB) (Actionable, error) {
 	m := ModelFor(data.Kind(action.ActionableKind))
 	actionable := m.(Actionable)
 
-	pid, _ := mongo.ParseObjectID(action.ActionableId)
+	id, _ := db.ParseID(action.ActionableId)
 
-	actionable.SetID(data.ID(pid.Hex()))
+	actionable.SetID(id)
 	return actionable, db.PopulateByID(actionable)
 
 }
@@ -92,8 +91,8 @@ func (action *Action) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(action.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(action.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -133,8 +132,8 @@ func (action *Action) Person(db data.DB) (*Person, error) {
 	}
 
 	personArgument := NewPerson()
-	pid, _ := mongo.ParseObjectID(action.PersonId)
-	personArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(action.PersonId)
+	personArgument.SetID(id)
 	return personArgument, db.PopulateByID(personArgument)
 
 }
@@ -174,8 +173,8 @@ func (action *Action) Task(db data.DB) (*Task, error) {
 	}
 
 	taskArgument := NewTask()
-	pid, _ := mongo.ParseObjectID(action.TaskId)
-	taskArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(action.TaskId)
+	taskArgument.SetID(id)
 	return taskArgument, db.PopulateByID(taskArgument)
 
 }
@@ -323,14 +322,6 @@ func (action *Action) SetBSON(raw bson.Raw) error {
 
 func (action *Action) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		action.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		action.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		action.UpdatedAt = val.(time.Time)
 	}
@@ -351,6 +342,18 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.Completed = val.(bool)
 	}
 
+	if val, ok := structure["id"]; ok {
+		action.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		action.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["task_id"]; ok {
+		action.TaskId = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		action.OwnerId = val.(string)
 	}
@@ -367,17 +370,9 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.ActionableKind = val.(string)
 	}
 
-	if val, ok := structure["task_id"]; ok {
-		action.TaskId = val.(string)
-	}
-
 }
 
 var ActionStructure = map[string]metis.Primitive{
-
-	"completed": 0,
-
-	"id": 9,
 
 	"created_at": 4,
 
@@ -389,7 +384,9 @@ var ActionStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
-	"task_id": 9,
+	"completed": 0,
+
+	"id": 9,
 
 	"owner_id": 9,
 
@@ -398,4 +395,6 @@ var ActionStructure = map[string]metis.Primitive{
 	"actionable_id": 9,
 
 	"actionable_kind": 3,
+
+	"task_id": 9,
 }

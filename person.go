@@ -120,8 +120,8 @@ func (person *Person) Calendar(db data.DB) (*Calendar, error) {
 	}
 
 	calendarArgument := NewCalendar()
-	pid, _ := mongo.ParseObjectID(person.CalendarId)
-	calendarArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(person.CalendarId)
+	calendarArgument.SetID(id)
 	return calendarArgument, db.PopulateByID(calendarArgument)
 
 }
@@ -161,8 +161,8 @@ func (person *Person) CurrentAction(db data.DB) (*Action, error) {
 	}
 
 	actionArgument := NewAction()
-	pid, _ := mongo.ParseObjectID(person.CurrentActionId)
-	actionArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(person.CurrentActionId)
+	actionArgument.SetID(id)
 	return actionArgument, db.PopulateByID(actionArgument)
 
 }
@@ -204,9 +204,9 @@ func (person *Person) CurrentActionable(db data.DB) (Actionable, error) {
 	m := ModelFor(data.Kind(person.CurrentActionableKind))
 	actionable := m.(Actionable)
 
-	pid, _ := mongo.ParseObjectID(person.CurrentActionableId)
+	id, _ := db.ParseID(person.CurrentActionableId)
 
-	actionable.SetID(data.ID(pid.Hex()))
+	actionable.SetID(id)
 	return actionable, db.PopulateByID(actionable)
 
 }
@@ -306,8 +306,8 @@ func (person *Person) Ontology(db data.DB) (*Ontology, error) {
 	}
 
 	ontologyArgument := NewOntology()
-	pid, _ := mongo.ParseObjectID(person.OntologyId)
-	ontologyArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(person.OntologyId)
+	ontologyArgument.SetID(id)
 	return ontologyArgument, db.PopulateByID(ontologyArgument)
 
 }
@@ -347,8 +347,8 @@ func (person *Person) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(person.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(person.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -628,6 +628,18 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 func (person *Person) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["public_keys"]; ok {
+		person.PublicKeys = val.([]string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		person.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		person.CreatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["updated_at"]; ok {
 		person.UpdatedAt = val.(time.Time)
 	}
@@ -644,28 +656,16 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.Key = val.(string)
 	}
 
-	if val, ok := structure["public_keys"]; ok {
-		person.PublicKeys = val.([]string)
+	if val, ok := structure["data_ids"]; ok {
+		person.DataIds = val.([]string)
 	}
 
-	if val, ok := structure["id"]; ok {
-		person.Id = val.(string)
+	if val, ok := structure["events_ids"]; ok {
+		person.EventsIds = val.([]string)
 	}
 
-	if val, ok := structure["created_at"]; ok {
-		person.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["actions_ids"]; ok {
-		person.ActionsIds = val.([]string)
-	}
-
-	if val, ok := structure["current_actionable_id"]; ok {
-		person.CurrentActionableId = val.(string)
-	}
-
-	if val, ok := structure["current_actionable_kind"]; ok {
-		person.CurrentActionableKind = val.(string)
+	if val, ok := structure["current_action_id"]; ok {
+		person.CurrentActionId = val.(string)
 	}
 
 	if val, ok := structure["calendar_id"]; ok {
@@ -676,8 +676,12 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["data_ids"]; ok {
-		person.DataIds = val.([]string)
+	if val, ok := structure["actions_ids"]; ok {
+		person.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["tasks_ids"]; ok {
+		person.TasksIds = val.([]string)
 	}
 
 	if val, ok := structure["routines_ids"]; ok {
@@ -688,16 +692,12 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.OntologyId = val.(string)
 	}
 
-	if val, ok := structure["current_action_id"]; ok {
-		person.CurrentActionId = val.(string)
+	if val, ok := structure["current_actionable_id"]; ok {
+		person.CurrentActionableId = val.(string)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		person.EventsIds = val.([]string)
-	}
-
-	if val, ok := structure["tasks_ids"]; ok {
-		person.TasksIds = val.([]string)
+	if val, ok := structure["current_actionable_kind"]; ok {
+		person.CurrentActionableKind = val.(string)
 	}
 
 }
@@ -718,19 +718,15 @@ var PersonStructure = map[string]metis.Primitive{
 
 	"public_keys": 7,
 
-	"owner_id": 9,
-
 	"data_ids": 10,
 
-	"actions_ids": 10,
-
-	"current_actionable_id": 9,
-
-	"current_actionable_kind": 3,
-
-	"calendar_id": 9,
-
 	"events_ids": 10,
+
+	"current_action_id": 9,
+
+	"owner_id": 9,
+
+	"actions_ids": 10,
 
 	"tasks_ids": 10,
 
@@ -738,5 +734,9 @@ var PersonStructure = map[string]metis.Primitive{
 
 	"ontology_id": 9,
 
-	"current_action_id": 9,
+	"current_actionable_id": 9,
+
+	"current_actionable_kind": 3,
+
+	"calendar_id": 9,
 }

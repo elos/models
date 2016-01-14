@@ -111,8 +111,8 @@ func (trait *Trait) Model(db data.DB) (*Model, error) {
 	}
 
 	modelArgument := NewModel()
-	pid, _ := mongo.ParseObjectID(trait.ModelId)
-	modelArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(trait.ModelId)
+	modelArgument.SetID(id)
 	return modelArgument, db.PopulateByID(modelArgument)
 
 }
@@ -152,8 +152,8 @@ func (trait *Trait) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(trait.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(trait.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }

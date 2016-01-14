@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -68,8 +67,8 @@ func (attribute *Attribute) Object(db data.DB) (*Object, error) {
 	}
 
 	objectArgument := NewObject()
-	pid, _ := mongo.ParseObjectID(attribute.ObjectId)
-	objectArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(attribute.ObjectId)
+	objectArgument.SetID(id)
 	return objectArgument, db.PopulateByID(objectArgument)
 
 }
@@ -109,8 +108,8 @@ func (attribute *Attribute) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(attribute.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(attribute.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -150,8 +149,8 @@ func (attribute *Attribute) Trait(db data.DB) (*Trait, error) {
 	}
 
 	traitArgument := NewTrait()
-	pid, _ := mongo.ParseObjectID(attribute.TraitId)
-	traitArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(attribute.TraitId)
+	traitArgument.SetID(id)
 	return traitArgument, db.PopulateByID(traitArgument)
 
 }
@@ -287,6 +286,10 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 		attribute.Value = val.(string)
 	}
 
+	if val, ok := structure["trait_id"]; ok {
+		attribute.TraitId = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		attribute.OwnerId = val.(string)
 	}
@@ -295,13 +298,11 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 		attribute.ObjectId = val.(string)
 	}
 
-	if val, ok := structure["trait_id"]; ok {
-		attribute.TraitId = val.(string)
-	}
-
 }
 
 var AttributeStructure = map[string]metis.Primitive{
+
+	"deleted_at": 4,
 
 	"value": 3,
 
@@ -310,8 +311,6 @@ var AttributeStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"owner_id": 9,
 

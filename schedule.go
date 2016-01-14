@@ -111,8 +111,8 @@ func (schedule *Schedule) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(schedule.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(schedule.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -236,6 +236,18 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["id"]; ok {
+		schedule.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		schedule.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		schedule.UpdatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["deleted_at"]; ok {
 		schedule.DeletedAt = val.(time.Time)
 	}
@@ -250,18 +262,6 @@ func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["end_time"]; ok {
 		schedule.EndTime = val.(time.Time)
-	}
-
-	if val, ok := structure["id"]; ok {
-		schedule.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		schedule.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		schedule.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["fixtures_ids"]; ok {

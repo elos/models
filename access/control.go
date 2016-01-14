@@ -7,7 +7,7 @@ import (
 	"github.com/elos/models"
 )
 
-func CanCreate(u User, k data.Kind) bool {
+func CanCreate(u *models.User, k data.Kind) bool {
 	if k == models.UserKind {
 		return false
 	} else {
@@ -15,30 +15,33 @@ func CanCreate(u User, k data.Kind) bool {
 	}
 }
 
-func CanRead(db data.DB, u User, record data.Record) (bool, error) {
-	_, ok := record.(ModelProperty)
+func CanRead(db data.DB, u *models.User, record data.Record) (bool, error) {
+	property, ok := record.(Property)
 
 	if !ok {
 		return data.Equivalent(u, record), nil
-	} else {
-		log.Print("User and Property not equivalent")
 	}
 
-	property := WrapProperty(record.(ModelProperty))
-
 	if owner, err := property.Owner(db); err != nil {
+		if err == models.ErrEmptyLink {
+			log.Print("Model without an owner!")
+			return false, nil
+		}
+
 		return false, err
 	} else {
 		if data.Equivalent(u, owner) {
 			return true, nil
 		} else {
-			log.Print("User doesn't own Property")
+			log.Print("user is not the model's owner")
 		}
 	}
 
 	groups, err := u.Groups(db)
 
-	if err != nil {
+	if err == models.ErrEmptyLink {
+		return false, nil
+	} else if err != nil {
 		return false, err
 	}
 
@@ -51,7 +54,7 @@ func CanRead(db data.DB, u User, record data.Record) (bool, error) {
 
 		for _, c := range contexts {
 			if c.Contains(property) {
-				if Level(g.Access()) > None {
+				if Level(g.Access) > None {
 					return true, nil
 				}
 			}
@@ -61,7 +64,7 @@ func CanRead(db data.DB, u User, record data.Record) (bool, error) {
 	return false, nil
 }
 
-func CanWrite(db data.DB, u User, record data.Record) (bool, error) {
+func CanWrite(db data.DB, u *models.User, record data.Record) (bool, error) {
 	property, ok := record.(Property)
 
 	if !ok {
@@ -72,6 +75,21 @@ func CanWrite(db data.DB, u User, record data.Record) (bool, error) {
 		return false, nil
 	}
 
+	if owner, err := property.Owner(db); err != nil {
+		if err == models.ErrEmptyLink {
+			log.Print("Model without an owner!")
+			return false, nil
+		}
+
+		return false, err
+	} else {
+		if data.Equivalent(u, owner) {
+			return true, nil
+		} else {
+			log.Print("user is not the model's owner")
+		}
+	}
+
 	groups, err := u.Groups(db)
 
 	if err != nil {
@@ -87,7 +105,7 @@ func CanWrite(db data.DB, u User, record data.Record) (bool, error) {
 
 		for _, c := range contexts {
 			if c.Contains(property) {
-				if Level(g.Access()) > Read {
+				if Level(g.Access) > Read {
 					return true, nil
 				}
 			}
@@ -97,7 +115,7 @@ func CanWrite(db data.DB, u User, record data.Record) (bool, error) {
 	return false, nil
 }
 
-func CanDelete(db data.DB, u User, record data.Record) (bool, error) {
+func CanDelete(db data.DB, u *models.User, record data.Record) (bool, error) {
 	property, ok := record.(Property)
 
 	if !ok {

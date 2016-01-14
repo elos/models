@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -70,8 +69,8 @@ func (calendar *Calendar) BaseSchedule(db data.DB) (*Schedule, error) {
 	}
 
 	scheduleArgument := NewSchedule()
-	pid, _ := mongo.ParseObjectID(calendar.BaseScheduleId)
-	scheduleArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(calendar.BaseScheduleId)
+	scheduleArgument.SetID(id)
 	return scheduleArgument, db.PopulateByID(scheduleArgument)
 
 }
@@ -111,8 +110,8 @@ func (calendar *Calendar) ManifestFixture(db data.DB) (*Fixture, error) {
 	}
 
 	fixtureArgument := NewFixture()
-	pid, _ := mongo.ParseObjectID(calendar.ManifestFixtureId)
-	fixtureArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(calendar.ManifestFixtureId)
+	fixtureArgument.SetID(id)
 	return fixtureArgument, db.PopulateByID(fixtureArgument)
 
 }
@@ -152,8 +151,8 @@ func (calendar *Calendar) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(calendar.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(calendar.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -285,6 +284,18 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["created_at"]; ok {
+		calendar.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		calendar.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		calendar.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["name"]; ok {
 		calendar.Name = val.(string)
 	}
@@ -301,16 +312,8 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.Id = val.(string)
 	}
 
-	if val, ok := structure["created_at"]; ok {
-		calendar.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		calendar.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		calendar.DeletedAt = val.(time.Time)
+	if val, ok := structure["manifest_fixture_id"]; ok {
+		calendar.ManifestFixtureId = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -321,13 +324,15 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.BaseScheduleId = val.(string)
 	}
 
-	if val, ok := structure["manifest_fixture_id"]; ok {
-		calendar.ManifestFixtureId = val.(string)
-	}
-
 }
 
 var CalendarStructure = map[string]metis.Primitive{
+
+	"deleted_at": 4,
+
+	"name": 3,
+
+	"weekday_schedules": 11,
 
 	"yearday_schedules": 11,
 
@@ -337,15 +342,9 @@ var CalendarStructure = map[string]metis.Primitive{
 
 	"updated_at": 4,
 
-	"deleted_at": 4,
-
-	"name": 3,
-
-	"weekday_schedules": 11,
-
-	"owner_id": 9,
-
 	"base_schedule_id": 9,
 
 	"manifest_fixture_id": 9,
+
+	"owner_id": 9,
 }

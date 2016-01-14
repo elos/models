@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -68,8 +67,8 @@ func (link *Link) Object(db data.DB) (*Object, error) {
 	}
 
 	objectArgument := NewObject()
-	pid, _ := mongo.ParseObjectID(link.ObjectId)
-	objectArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(link.ObjectId)
+	objectArgument.SetID(id)
 	return objectArgument, db.PopulateByID(objectArgument)
 
 }
@@ -109,8 +108,8 @@ func (link *Link) Owner(db data.DB) (*User, error) {
 	}
 
 	userArgument := NewUser()
-	pid, _ := mongo.ParseObjectID(link.OwnerId)
-	userArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(link.OwnerId)
+	userArgument.SetID(id)
 	return userArgument, db.PopulateByID(userArgument)
 
 }
@@ -150,8 +149,8 @@ func (link *Link) Relation(db data.DB) (*Relation, error) {
 	}
 
 	relationArgument := NewRelation()
-	pid, _ := mongo.ParseObjectID(link.RelationId)
-	relationArgument.SetID(data.ID(pid.Hex()))
+	id, _ := db.ParseID(link.RelationId)
+	relationArgument.SetID(id)
 	return relationArgument, db.PopulateByID(relationArgument)
 
 }
@@ -267,10 +266,6 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 
 func (link *Link) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["ids"]; ok {
-		link.Ids = val.(map[int]string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		link.Id = val.(string)
 	}
@@ -285,6 +280,10 @@ func (link *Link) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["deleted_at"]; ok {
 		link.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["ids"]; ok {
+		link.Ids = val.(map[int]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -313,9 +312,9 @@ var LinkStructure = map[string]metis.Primitive{
 
 	"ids": 12,
 
+	"relation_id": 9,
+
 	"owner_id": 9,
 
 	"object_id": 9,
-
-	"relation_id": 9,
 }
