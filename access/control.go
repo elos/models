@@ -7,27 +7,30 @@ import (
 	"github.com/elos/models"
 )
 
-func CanCreate(db data.DB, u *models.User, r data.Record) bool {
+func CanCreate(db data.DB, u *models.User, r data.Record) (bool, error) {
 	k := r.Kind()
 
 	// a user can certainly never create a User
 	if k == models.UserKind {
-		return false
+		return false, nil
 	}
 
 	// a user can only create property
 	property, ok := r.(Property)
 	if !ok {
-		return false
+		return false, nil
 	}
 
 	owner, err := property.Owner(db)
-	if err != nil {
-		log.Print("error loading models user")
-		return false
+
+	// if ownerless
+	if err == models.ErrEmptyLink {
+		return false, nil
+	} else {
+		return false, err
 	}
 
-	return data.Equivalent(u, owner)
+	return data.Equivalent(u, owner), nil
 }
 
 func CanRead(db data.DB, u *models.User, record data.Record) (bool, error) {
