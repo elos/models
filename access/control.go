@@ -42,7 +42,7 @@ func CanRead(db data.DB, u *models.User, record data.Record) (bool, error) {
 
 	if owner, err := property.Owner(db); err != nil {
 		if err == models.ErrEmptyLink {
-			log.Print("Model without an owner!")
+			log.Printf("(%s, %s) without an owner!", record.Kind(), record.ID())
 			return false, nil
 		}
 
@@ -95,7 +95,7 @@ func CanWrite(db data.DB, u *models.User, record data.Record) (bool, error) {
 
 	if owner, err := property.Owner(db); err != nil {
 		if err == models.ErrEmptyLink {
-			log.Print("Model without an owner!")
+			log.Printf("(%s, %s) without an owner!", record.Kind(), record.ID())
 			return false, nil
 		}
 
