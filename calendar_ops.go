@@ -98,7 +98,7 @@ func (c *Calendar) YeardayScheduleOrCreate(t time.Time, db data.DB) (*Schedule, 
 func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
 	schedules := make([]*Schedule, 0)
 
-	if base, err := c.BaseScheduleOrCreate(db); err == nil {
+	if base, err := c.BaseSchedule(db); err == nil {
 		schedules = append(schedules, base)
 	}
 
@@ -111,4 +111,16 @@ func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
 	}
 
 	return schedules
+}
+
+func (c *Calendar) FixturesForDate(date time.Time, db data.DB) ([]*Fixture, error) {
+	// TODO: perhaps this should return an error
+	schedules := c.SchedulesForDate(date, db)
+
+	fixtures, err := MergedFixtures(db, schedules...)
+	if err != nil {
+		return nil, err
+	}
+
+	return RelevantFixtures(date, fixtures), nil
 }
