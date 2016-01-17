@@ -21,6 +21,8 @@ const (
 
 	GroupKind data.Kind = "group"
 
+	HabitKind data.Kind = "habit"
+
 	LinkKind data.Kind = "link"
 
 	LocationKind data.Kind = "location"
@@ -77,6 +79,8 @@ var Kinds = map[data.Kind]bool{
 	FixtureKind: true,
 
 	GroupKind: true,
+
+	HabitKind: true,
 
 	LinkKind: true,
 

@@ -251,21 +251,17 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.Name = val.(string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		person.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["notes_ids"]; ok {
 		person.NotesIds = val.([]string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		person.OwnerId = val.(string)
 	}
 
 }
 
 var PersonStructure = map[string]metis.Primitive{
-
-	"first_name": 3,
-
-	"last_name": 3,
 
 	"name": 3,
 
@@ -274,6 +270,10 @@ var PersonStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"first_name": 3,
+
+	"last_name": 3,
 
 	"owner_id": 9,
 

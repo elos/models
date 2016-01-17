@@ -175,18 +175,6 @@ func (media *Media) SetBSON(raw bson.Raw) error {
 
 func (media *Media) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["deleted_at"]; ok {
-		media.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["content"]; ok {
-		media.Content = val.(string)
-	}
-
-	if val, ok := structure["codec"]; ok {
-		media.Codec = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		media.Id = val.(string)
 	}
@@ -199,6 +187,18 @@ func (media *Media) FromStructure(structure map[string]interface{}) {
 		media.UpdatedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["deleted_at"]; ok {
+		media.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["content"]; ok {
+		media.Content = val.(string)
+	}
+
+	if val, ok := structure["codec"]; ok {
+		media.Codec = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		media.OwnerId = val.(string)
 	}
@@ -207,17 +207,17 @@ func (media *Media) FromStructure(structure map[string]interface{}) {
 
 var MediaStructure = map[string]metis.Primitive{
 
-	"codec": 3,
-
-	"id": 9,
-
-	"created_at": 4,
-
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
 	"content": 3,
+
+	"codec": 3,
+
+	"id": 9,
+
+	"created_at": 4,
 
 	"owner_id": 9,
 }

@@ -175,6 +175,14 @@ func (context *Context) SetBSON(raw bson.Raw) error {
 
 func (context *Context) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["domain"]; ok {
+		context.Domain = val.(string)
+	}
+
+	if val, ok := structure["ids"]; ok {
+		context.Ids = val.([]string)
+	}
+
 	if val, ok := structure["id"]; ok {
 		context.Id = val.(string)
 	}
@@ -189,14 +197,6 @@ func (context *Context) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["deleted_at"]; ok {
 		context.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["domain"]; ok {
-		context.Domain = val.(string)
-	}
-
-	if val, ok := structure["ids"]; ok {
-		context.Ids = val.([]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

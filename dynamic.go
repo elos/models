@@ -36,6 +36,9 @@ func ModelFor(k data.Kind) data.Record {
 	case GroupKind:
 		return NewGroup()
 
+	case HabitKind:
+		return NewHabit()
+
 	case LinkKind:
 		return NewLink()
 

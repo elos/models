@@ -343,6 +343,12 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
 var RelationStructure = map[string]metis.Primitive{
 
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"name": 3,
+
 	"multiplicity": 3,
 
 	"codomain": 3,
@@ -352,12 +358,6 @@ var RelationStructure = map[string]metis.Primitive{
 	"id": 9,
 
 	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
-
-	"name": 3,
 
 	"owner_id": 9,
 

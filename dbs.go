@@ -32,6 +32,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(GroupKind, "groups")
 
+	db.RegisterKind(HabitKind, "habits")
+
 	db.RegisterKind(LinkKind, "links")
 
 	db.RegisterKind(LocationKind, "locations")

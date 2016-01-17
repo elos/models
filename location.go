@@ -220,8 +220,6 @@ func (location *Location) FromStructure(structure map[string]interface{}) {
 
 var LocationStructure = map[string]metis.Primitive{
 
-	"altitude": 2,
-
 	"id": 9,
 
 	"created_at": 4,
@@ -233,6 +231,8 @@ var LocationStructure = map[string]metis.Primitive{
 	"latitude": 2,
 
 	"longitude": 2,
+
+	"altitude": 2,
 
 	"owner_id": 9,
 }
