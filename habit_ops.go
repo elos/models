@@ -56,6 +56,7 @@ func TagByName(db data.DB, name string, u *User) (*Tag, error) {
 		t.SetID(db.NewID())
 		t.CreatedAt = time.Now()
 		t.Name = name
+		t.SetOwner(u)
 		t.UpdatedAt = t.CreatedAt
 		if err := db.Save(t); err != nil {
 			return nil, err
