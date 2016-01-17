@@ -20,7 +20,6 @@ type Task struct {
 	Id               string      `json:"id" bson:"_id,omitempty"`
 	Name             string      `json:"name" bson:"name"`
 	OwnerId          string      `json:"owner_id" bson:"owner_id"`
-	PersonId         string      `json:"person_id" bson:"person_id"`
 	PrerequisitesIds []string    `json:"prerequisites_ids" bson:"prerequisites_ids"`
 	Stages           []time.Time `json:"stages" bson:"stages"`
 	UpdatedAt        time.Time   `json:"updated_at" bson:"updated_at"`
@@ -101,47 +100,6 @@ func (task *Task) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (task *Task) SetPerson(personArgument *Person) error {
-	task.PersonId = personArgument.ID().String()
-	return nil
-}
-
-func (task *Task) Person(db data.DB) (*Person, error) {
-	if task.PersonId == "" {
-		return nil, ErrEmptyLink
-	}
-
-	personArgument := NewPerson()
-	id, _ := db.ParseID(task.PersonId)
-	personArgument.SetID(id)
-	return personArgument, db.PopulateByID(personArgument)
-
-}
-
-func (task *Task) PersonOrCreate(db data.DB) (*Person, error) {
-	person, err := task.Person(db)
-
-	if err == ErrEmptyLink {
-		person := NewPerson()
-		person.SetID(db.NewID())
-		if err := task.SetPerson(person); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(person); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(task); err != nil {
-			return nil, err
-		}
-
-		return person, nil
-	} else {
-		return person, err
-	}
-}
-
 func (task *Task) IncludePrerequisite(prerequisite *Task) {
 	otherID := prerequisite.ID().String()
 	for i := range task.PrerequisitesIds {
@@ -206,8 +164,6 @@ func (task *Task) GetBSON() (interface{}, error) {
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonId string `json:"person_id" bson:"person_id"`
-
 		PrerequisitesIds []string `json:"prerequisites_ids" bson:"prerequisites_ids"`
 	}{
 
@@ -226,8 +182,6 @@ func (task *Task) GetBSON() (interface{}, error) {
 		UpdatedAt: task.UpdatedAt,
 
 		OwnerId: task.OwnerId,
-
-		PersonId: task.PersonId,
 
 		PrerequisitesIds: task.PrerequisitesIds,
 	}, nil
@@ -255,8 +209,6 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonId string `json:"person_id" bson:"person_id"`
-
 		PrerequisitesIds []string `json:"prerequisites_ids" bson:"prerequisites_ids"`
 	}{}
 
@@ -283,8 +235,6 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 
 	task.OwnerId = tmp.OwnerId
 
-	task.PersonId = tmp.PersonId
-
 	task.PrerequisitesIds = tmp.PrerequisitesIds
 
 	return nil
@@ -294,22 +244,6 @@ func (task *Task) SetBSON(raw bson.Raw) error {
 // BSON }}}
 
 func (task *Task) FromStructure(structure map[string]interface{}) {
-
-	if val, ok := structure["complete"]; ok {
-		task.Complete = val.(bool)
-	}
-
-	if val, ok := structure["id"]; ok {
-		task.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		task.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		task.UpdatedAt = val.(time.Time)
-	}
 
 	if val, ok := structure["deleted_at"]; ok {
 		task.DeletedAt = val.(time.Time)
@@ -327,25 +261,33 @@ func (task *Task) FromStructure(structure map[string]interface{}) {
 		task.Stages = val.([]time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		task.OwnerId = val.(string)
+	if val, ok := structure["complete"]; ok {
+		task.Complete = val.(bool)
 	}
 
-	if val, ok := structure["person_id"]; ok {
-		task.PersonId = val.(string)
+	if val, ok := structure["id"]; ok {
+		task.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		task.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		task.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["prerequisites_ids"]; ok {
 		task.PrerequisitesIds = val.([]string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		task.OwnerId = val.(string)
+	}
+
 }
 
 var TaskStructure = map[string]metis.Primitive{
-
-	"deleted_at": 4,
-
-	"name": 3,
 
 	"deadline": 4,
 
@@ -359,9 +301,11 @@ var TaskStructure = map[string]metis.Primitive{
 
 	"updated_at": 4,
 
-	"person_id": 9,
+	"deleted_at": 4,
 
-	"prerequisites_ids": 10,
+	"name": 3,
 
 	"owner_id": 9,
+
+	"prerequisites_ids": 10,
 }

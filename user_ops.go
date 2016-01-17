@@ -7,16 +7,13 @@ import (
 )
 
 func Authenticate(db data.DB, public, private string) (*Credential, error) {
-	credentialsIter, err := db.Query(CredentialKind).Select(data.AttrMap{"public": public}).Execute()
-	if err != nil {
+	c := NewCredential()
+	if err := db.PopulateByField("public", public, c); err != nil {
 		return nil, err
 	}
 
-	credential := NewCredential()
-	credentialsIter.Next(credential)
-
-	if credential.Challenge(private) {
-		return credential, nil
+	if c.Challenge(private) {
+		return c, nil
 	}
 
 	return nil, errors.New("challenge failed")

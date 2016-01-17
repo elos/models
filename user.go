@@ -321,10 +321,6 @@ func (user *User) SetBSON(raw bson.Raw) error {
 
 func (user *User) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		user.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		user.CreatedAt = val.(time.Time)
 	}
@@ -341,12 +337,8 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 		user.Password = val.(string)
 	}
 
-	if val, ok := structure["credentials_ids"]; ok {
-		user.CredentialsIds = val.([]string)
-	}
-
-	if val, ok := structure["groups_ids"]; ok {
-		user.GroupsIds = val.([]string)
+	if val, ok := structure["id"]; ok {
+		user.Id = val.(string)
 	}
 
 	if val, ok := structure["authorizations_ids"]; ok {
@@ -357,9 +349,19 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 		user.SessionsIds = val.([]string)
 	}
 
+	if val, ok := structure["credentials_ids"]; ok {
+		user.CredentialsIds = val.([]string)
+	}
+
+	if val, ok := structure["groups_ids"]; ok {
+		user.GroupsIds = val.([]string)
+	}
+
 }
 
 var UserStructure = map[string]metis.Primitive{
+
+	"password": 3,
 
 	"id": 9,
 
@@ -369,13 +371,11 @@ var UserStructure = map[string]metis.Primitive{
 
 	"deleted_at": 4,
 
-	"password": 3,
+	"credentials_ids": 10,
 
 	"groups_ids": 10,
 
 	"authorizations_ids": 10,
 
 	"sessions_ids": 10,
-
-	"credentials_ids": 10,
 }

@@ -266,14 +266,6 @@ func (link *Link) SetBSON(raw bson.Raw) error {
 
 func (link *Link) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		link.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		link.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		link.UpdatedAt = val.(time.Time)
 	}
@@ -284,6 +276,14 @@ func (link *Link) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["ids"]; ok {
 		link.Ids = val.(map[int]string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		link.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		link.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -312,9 +312,9 @@ var LinkStructure = map[string]metis.Primitive{
 
 	"ids": 12,
 
+	"object_id": 9,
+
 	"relation_id": 9,
 
 	"owner_id": 9,
-
-	"object_id": 9,
 }

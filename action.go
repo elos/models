@@ -322,18 +322,6 @@ func (action *Action) SetBSON(raw bson.Raw) error {
 
 func (action *Action) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["updated_at"]; ok {
-		action.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["name"]; ok {
-		action.Name = val.(string)
-	}
-
-	if val, ok := structure["start_time"]; ok {
-		action.StartTime = val.(time.Time)
-	}
-
 	if val, ok := structure["end_time"]; ok {
 		action.EndTime = val.(time.Time)
 	}
@@ -350,6 +338,26 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.CreatedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["updated_at"]; ok {
+		action.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		action.Name = val.(string)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		action.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["actionable_id"]; ok {
+		action.ActionableId = val.(string)
+	}
+
+	if val, ok := structure["actionable_kind"]; ok {
+		action.ActionableKind = val.(string)
+	}
+
 	if val, ok := structure["task_id"]; ok {
 		action.TaskId = val.(string)
 	}
@@ -362,23 +370,9 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.PersonId = val.(string)
 	}
 
-	if val, ok := structure["actionable_id"]; ok {
-		action.ActionableId = val.(string)
-	}
-
-	if val, ok := structure["actionable_kind"]; ok {
-		action.ActionableKind = val.(string)
-	}
-
 }
 
 var ActionStructure = map[string]metis.Primitive{
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"name": 3,
 
 	"start_time": 4,
 
@@ -387,6 +381,12 @@ var ActionStructure = map[string]metis.Primitive{
 	"completed": 0,
 
 	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"name": 3,
 
 	"owner_id": 9,
 

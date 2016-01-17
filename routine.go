@@ -21,7 +21,6 @@ type Routine struct {
 	Id                string    `json:"id" bson:"_id,omitempty"`
 	Name              string    `json:"name" bson:"name"`
 	OwnerId           string    `json:"owner_id" bson:"owner_id"`
-	PersonId          string    `json:"person_id" bson:"person_id"`
 	StartTime         time.Time `json:"start_time" bson:"start_time"`
 	TasksIds          []string  `json:"tasks_ids" bson:"tasks_ids"`
 	UpdatedAt         time.Time `json:"updated_at" bson:"updated_at"`
@@ -227,47 +226,6 @@ func (routine *Routine) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
-func (routine *Routine) SetPerson(personArgument *Person) error {
-	routine.PersonId = personArgument.ID().String()
-	return nil
-}
-
-func (routine *Routine) Person(db data.DB) (*Person, error) {
-	if routine.PersonId == "" {
-		return nil, ErrEmptyLink
-	}
-
-	personArgument := NewPerson()
-	id, _ := db.ParseID(routine.PersonId)
-	personArgument.SetID(id)
-	return personArgument, db.PopulateByID(personArgument)
-
-}
-
-func (routine *Routine) PersonOrCreate(db data.DB) (*Person, error) {
-	person, err := routine.Person(db)
-
-	if err == ErrEmptyLink {
-		person := NewPerson()
-		person.SetID(db.NewID())
-		if err := routine.SetPerson(person); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(person); err != nil {
-			return nil, err
-		}
-
-		if err := db.Save(routine); err != nil {
-			return nil, err
-		}
-
-		return person, nil
-	} else {
-		return person, err
-	}
-}
-
 func (routine *Routine) IncludeTask(task *Task) {
 	otherID := task.ID().String()
 	for i := range routine.TasksIds {
@@ -334,8 +292,6 @@ func (routine *Routine) GetBSON() (interface{}, error) {
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonId string `json:"person_id" bson:"person_id"`
-
 		TasksIds []string `json:"tasks_ids" bson:"tasks_ids"`
 	}{
 
@@ -356,8 +312,6 @@ func (routine *Routine) GetBSON() (interface{}, error) {
 		CurrentActionId: routine.CurrentActionId,
 
 		OwnerId: routine.OwnerId,
-
-		PersonId: routine.PersonId,
 
 		TasksIds: routine.TasksIds,
 	}, nil
@@ -387,8 +341,6 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 
-		PersonId string `json:"person_id" bson:"person_id"`
-
 		TasksIds []string `json:"tasks_ids" bson:"tasks_ids"`
 	}{}
 
@@ -417,8 +369,6 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 	routine.OwnerId = tmp.OwnerId
 
-	routine.PersonId = tmp.PersonId
-
 	routine.TasksIds = tmp.TasksIds
 
 	return nil
@@ -428,14 +378,6 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 // BSON }}}
 
 func (routine *Routine) FromStructure(structure map[string]interface{}) {
-
-	if val, ok := structure["start_time"]; ok {
-		routine.StartTime = val.(time.Time)
-	}
-
-	if val, ok := structure["end_time"]; ok {
-		routine.EndTime = val.(time.Time)
-	}
 
 	if val, ok := structure["id"]; ok {
 		routine.Id = val.(string)
@@ -453,12 +395,16 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 		routine.Name = val.(string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		routine.OwnerId = val.(string)
+	if val, ok := structure["start_time"]; ok {
+		routine.StartTime = val.(time.Time)
 	}
 
-	if val, ok := structure["person_id"]; ok {
-		routine.PersonId = val.(string)
+	if val, ok := structure["end_time"]; ok {
+		routine.EndTime = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		routine.OwnerId = val.(string)
 	}
 
 	if val, ok := structure["tasks_ids"]; ok {
@@ -493,15 +439,13 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
-	"person_id": 9,
+	"current_action_id": 9,
+
+	"owner_id": 9,
 
 	"tasks_ids": 10,
 
 	"completed_tasks_ids": 10,
 
 	"actions_ids": 10,
-
-	"current_action_id": 9,
-
-	"owner_id": 9,
 }

@@ -286,10 +286,6 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 		attribute.Value = val.(string)
 	}
 
-	if val, ok := structure["trait_id"]; ok {
-		attribute.TraitId = val.(string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		attribute.OwnerId = val.(string)
 	}
@@ -298,11 +294,13 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 		attribute.ObjectId = val.(string)
 	}
 
+	if val, ok := structure["trait_id"]; ok {
+		attribute.TraitId = val.(string)
+	}
+
 }
 
 var AttributeStructure = map[string]metis.Primitive{
-
-	"deleted_at": 4,
 
 	"value": 3,
 
@@ -311,6 +309,8 @@ var AttributeStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 

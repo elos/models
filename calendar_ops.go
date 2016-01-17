@@ -7,6 +7,10 @@ import (
 	"github.com/elos/data"
 )
 
+func ValidWeekday(i int) bool {
+	return i >= 0 && i <= 6
+}
+
 func WeekdayKey(t time.Time) string {
 	return string(int(t.Weekday()))
 }

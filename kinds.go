@@ -37,6 +37,8 @@ const (
 
 	PersonKind data.Kind = "person"
 
+	ProfileKind data.Kind = "profile"
+
 	QuantityKind data.Kind = "quantity"
 
 	RelationKind data.Kind = "relation"
@@ -91,6 +93,8 @@ var Kinds = map[data.Kind]bool{
 	OntologyKind: true,
 
 	PersonKind: true,
+
+	ProfileKind: true,
 
 	QuantityKind: true,
 

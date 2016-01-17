@@ -8,13 +8,8 @@ import (
 
 func (c *Credential) Challenge(private string) bool {
 	// eventually need to use spec mechanism
-
 	// eventually need encryption here
-	if private != c.Private {
-		return false
-	}
-
-	return true
+	return private == c.Private
 }
 
 func (c *Credential) NewSession(db data.DB, expiresAfter time.Duration) (*Session, error) {

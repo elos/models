@@ -48,6 +48,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(PersonKind, "persons")
 
+	db.RegisterKind(ProfileKind, "profiles")
+
 	db.RegisterKind(QuantityKind, "quantities")
 
 	db.RegisterKind(RelationKind, "relations")

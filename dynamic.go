@@ -60,6 +60,9 @@ func ModelFor(k data.Kind) data.Record {
 	case PersonKind:
 		return NewPerson()
 
+	case ProfileKind:
+		return NewProfile()
+
 	case QuantityKind:
 		return NewQuantity()
 

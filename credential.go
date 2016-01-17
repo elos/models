@@ -289,8 +289,6 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 
 var CredentialStructure = map[string]metis.Primitive{
 
-	"deleted_at": 4,
-
 	"public": 3,
 
 	"private": 3,
@@ -304,6 +302,8 @@ var CredentialStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 
