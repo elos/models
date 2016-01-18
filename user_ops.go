@@ -2,9 +2,35 @@ package models
 
 import (
 	"errors"
+	"time"
 
 	"github.com/elos/data"
 )
+
+func CreateUser(db data.DB, username, password string) (*User, error) {
+	u := NewUser()
+	u.SetID(db.NewID())
+	u.CreatedAt = time.Now()
+	u.UpdatedAt = time.Now()
+
+	c := NewCredential()
+	c.SetID(db.NewID())
+	c.CreatedAt = time.Now()
+	c.UpdatedAt = time.Now()
+	c.Public = username
+	c.Private = password
+	c.SetOwner(u)
+
+	if err := db.Save(u); err != nil {
+		return nil, err
+	}
+
+	if err := db.Save(c); err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
 
 func Authenticate(db data.DB, public, private string) (*Credential, error) {
 	c := NewCredential()
