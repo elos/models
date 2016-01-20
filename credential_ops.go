@@ -6,12 +6,6 @@ import (
 	"github.com/elos/data"
 )
 
-func (c *Credential) Challenge(private string) bool {
-	// eventually need to use spec mechanism
-	// eventually need encryption here
-	return private == c.Private
-}
-
 func (c *Credential) NewSession(db data.DB, expiresAfter time.Duration) (*Session, error) {
 	session := NewSession()
 	session.SetID(db.NewID())

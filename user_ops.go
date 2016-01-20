@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	"github.com/elos/data"
@@ -30,19 +29,6 @@ func CreateUser(db data.DB, username, password string) (*User, error) {
 	}
 
 	return u, nil
-}
-
-func Authenticate(db data.DB, public, private string) (*Credential, error) {
-	c := NewCredential()
-	if err := db.PopulateByField("public", public, c); err != nil {
-		return nil, err
-	}
-
-	if c.Challenge(private) {
-		return c, nil
-	}
-
-	return nil, errors.New("challenge failed")
 }
 
 func (u *User) Tasks(db data.DB, completedOnly bool) ([]*Task, error) {
