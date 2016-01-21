@@ -59,3 +59,13 @@ func (u *User) Tasks(db data.DB, completedOnly bool) ([]*Task, error) {
 
 	return tasks, nil
 }
+
+func UserForPhone(db data.DB, phone string) (*User, error) {
+	p := NewProfile()
+	err := db.PopulateByField("phone", phone, p)
+	if err != nil {
+		return nil, err
+	}
+
+	return p.Owner(db)
+}
