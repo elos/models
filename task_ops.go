@@ -8,8 +8,12 @@ import (
 	"github.com/nlandolfi/graph"
 )
 
+func (t *Task) IsComplete() bool {
+	return !emptyTime(t.CompletedAt)
+}
+
 func emptyTime(t time.Time) bool {
-	return t == *new(time.Time)
+	return t.Equal(*new(time.Time))
 }
 
 func (t *Task) Salience() float64 {
