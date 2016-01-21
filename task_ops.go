@@ -4,6 +4,7 @@ import (
 	"sort"
 	"time"
 
+	"github.com/elos/data"
 	"github.com/nlandolfi/graph"
 )
 
@@ -135,4 +136,24 @@ func (g *TaskGraph) searchMax(t *Task) *Task {
 
 func (g *TaskGraph) Suggest() *Task {
 	return g.searchMax(g.tasks[0])
+}
+
+func (t *Task) Tag(db data.DB, name string) (*Tag, error) {
+	u, err := t.Owner(db)
+	if err != nil {
+		return nil, err
+	}
+
+	tag, err := TagByName(db, name, u)
+	if err != nil {
+		return nil, err
+	}
+
+	t.IncludeTag(tag)
+
+	if err := db.Save(t); err != nil {
+		return nil, err
+	}
+
+	return tag, nil
 }

@@ -4,7 +4,6 @@ import (
 	"time"
 
 	"github.com/elos/data"
-	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -15,7 +14,6 @@ import (
 type Tag struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
-	EventsIds []string  `json:"events_ids" bson:"events_ids"`
 	Id        string    `json:"id" bson:"_id,omitempty"`
 	Name      string    `json:"name" bson:"name"`
 	OwnerId   string    `json:"owner_id" bson:"owner_id"`
@@ -54,48 +52,6 @@ func (tag *Tag) SetID(id data.ID) {
 
 func (tag *Tag) ID() data.ID {
 	return data.ID(tag.Id)
-}
-
-func (tag *Tag) IncludeEvent(event *Event) {
-	otherID := event.ID().String()
-	for i := range tag.EventsIds {
-		if tag.EventsIds[i] == otherID {
-			return
-		}
-	}
-	tag.EventsIds = append(tag.EventsIds, otherID)
-}
-
-func (tag *Tag) ExcludeEvent(event *Event) {
-	tmp := make([]string, 0)
-	id := event.ID().String()
-	for _, s := range tag.EventsIds {
-		if s != id {
-			tmp = append(tmp, s)
-		}
-	}
-	tag.EventsIds = tmp
-}
-
-func (tag *Tag) EventsIter(db data.DB) (data.Iterator, error) {
-	// not yet completely general
-	return mongo.NewIDIter(mongo.NewIDSetFromStrings(tag.EventsIds), db), nil
-}
-
-func (tag *Tag) Events(db data.DB) (events []*Event, err error) {
-	events = make([]*Event, len(tag.EventsIds))
-	event := NewEvent()
-	for i, id := range tag.EventsIds {
-		event.Id = id
-		if err = db.PopulateByID(event); err != nil {
-			return
-		}
-
-		events[i] = event
-		event = NewEvent()
-	}
-
-	return
 }
 
 func (tag *Tag) SetOwner(userArgument *User) error {
@@ -153,8 +109,6 @@ func (tag *Tag) GetBSON() (interface{}, error) {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		EventsIds []string `json:"events_ids" bson:"events_ids"`
-
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{
 
@@ -165,8 +119,6 @@ func (tag *Tag) GetBSON() (interface{}, error) {
 		Name: tag.Name,
 
 		UpdatedAt: tag.UpdatedAt,
-
-		EventsIds: tag.EventsIds,
 
 		OwnerId: tag.OwnerId,
 	}, nil
@@ -186,8 +138,6 @@ func (tag *Tag) SetBSON(raw bson.Raw) error {
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
 
-		EventsIds []string `json:"events_ids" bson:"events_ids"`
-
 		OwnerId string `json:"owner_id" bson:"owner_id"`
 	}{}
 
@@ -206,8 +156,6 @@ func (tag *Tag) SetBSON(raw bson.Raw) error {
 
 	tag.UpdatedAt = tmp.UpdatedAt
 
-	tag.EventsIds = tmp.EventsIds
-
 	tag.OwnerId = tmp.OwnerId
 
 	return nil
@@ -217,6 +165,10 @@ func (tag *Tag) SetBSON(raw bson.Raw) error {
 // BSON }}}
 
 func (tag *Tag) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["updated_at"]; ok {
+		tag.UpdatedAt = val.(time.Time)
+	}
 
 	if val, ok := structure["deleted_at"]; ok {
 		tag.DeletedAt = val.(time.Time)
@@ -234,23 +186,13 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 		tag.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["updated_at"]; ok {
-		tag.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		tag.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["events_ids"]; ok {
-		tag.EventsIds = val.([]string)
 	}
 
 }
 
 var TagStructure = map[string]metis.Primitive{
-
-	"name": 3,
 
 	"id": 9,
 
@@ -260,7 +202,7 @@ var TagStructure = map[string]metis.Primitive{
 
 	"deleted_at": 4,
 
-	"owner_id": 9,
+	"name": 3,
 
-	"events_ids": 10,
+	"owner_id": 9,
 }

@@ -18,6 +18,7 @@ func CreateUser(db data.DB, username, password string) (*User, error) {
 	c.UpdatedAt = time.Now()
 	c.Public = username
 	c.Private = password
+	c.Spec = "password"
 	c.SetOwner(u)
 
 	if err := db.Save(u); err != nil {

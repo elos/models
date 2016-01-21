@@ -292,13 +292,13 @@ func (ontology *Ontology) FromStructure(structure map[string]interface{}) {
 
 var OntologyStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
 	"created_at": 4,
 
 	"updated_at": 4,
 
 	"deleted_at": 4,
-
-	"id": 9,
 
 	"owner_id": 9,
 

@@ -35,37 +35,6 @@ func CreateHabit(db data.DB, user *User, name string) (*Habit, error) {
 	return h, nil
 }
 
-func TagByName(db data.DB, name string, u *User) (*Tag, error) {
-	q := db.Query(TagKind)
-	q.Select(data.AttrMap{
-		"owner_id": u.Id,
-		"name":     name,
-	})
-	iter, err := q.Execute()
-	if err != nil {
-		return nil, err
-	}
-	t := NewTag()
-	exists := iter.Next(t)
-	if err := iter.Close(); err != nil {
-		return nil, err
-	}
-
-	if !exists {
-		t = NewTag()
-		t.SetID(db.NewID())
-		t.CreatedAt = time.Now()
-		t.Name = name
-		t.SetOwner(u)
-		t.UpdatedAt = t.CreatedAt
-		if err := db.Save(t); err != nil {
-			return nil, err
-		}
-	}
-
-	return t, nil
-}
-
 func sameDay(t1, t2 time.Time) bool {
 	return t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day()
 }
@@ -99,12 +68,12 @@ func (h *Habit) Checkin(db data.DB, note string, date time.Time) (*Event, error)
 	}
 
 	e.IncludeTag(t)
-	ht, err := TagByName(db, "HABIT", user)
+	ht, err := TagByName(db, HabitTagName, user)
 	if err != nil {
 		return nil, err
 	}
 	e.IncludeTag(ht)
-	ct, err := TagByName(db, "CHECKIN", user)
+	ct, err := TagByName(db, CheckinTagName, user)
 	if err != nil {
 		return nil, err
 	}
