@@ -30,7 +30,7 @@ func Authenticate(db data.DB, public, private string) (*models.Credential, error
 func challenge(c *models.Credential, private string) bool {
 	switch c.Spec {
 	default:
-		log.Printf("Unrecognized credential spec: %s", c.Spec)
+		log.Printf("Unrecognized credential spec: '%s'", c.Spec)
 		fallthrough
 	case "password":
 		// eventually need encryption here

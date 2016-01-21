@@ -6,7 +6,7 @@ import (
 	"github.com/elos/data"
 )
 
-func CreateUser(db data.DB, username, password string) (*User, error) {
+func CreateUser(db data.DB, username, password string) (*User, *Credential, error) {
 	u := NewUser()
 	u.SetID(db.NewID())
 	u.CreatedAt = time.Now()
@@ -22,14 +22,14 @@ func CreateUser(db data.DB, username, password string) (*User, error) {
 	c.SetOwner(u)
 
 	if err := db.Save(u); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := db.Save(c); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return u, nil
+	return u, c, nil
 }
 
 func (u *User) Tasks(db data.DB, completedOnly bool) ([]*Task, error) {
