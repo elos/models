@@ -48,8 +48,8 @@ func (t *Task) Stop() {
 
 func (t *Task) StopAndComplete() {
 	t.Stop()
-	t.Complete = true
-	t.UpdatedAt = time.Now()
+	t.CompletedAt = time.Now()
+	t.UpdatedAt = t.CompletedAt
 }
 
 type bySalience []*Task

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/elos/data"
+	"github.com/elos/data/builtin/mongo"
 	"github.com/elos/metis"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -15,6 +16,7 @@ type Calendar struct {
 	BaseScheduleId    string            `json:"base_schedule_id" bson:"base_schedule_id"`
 	CreatedAt         time.Time         `json:"created_at" bson:"created_at"`
 	DeletedAt         time.Time         `json:"deleted_at" bson:"deleted_at"`
+	FixturesIds       []string          `json:"fixtures_ids" bson:"fixtures_ids"`
 	Id                string            `json:"id" bson:"_id,omitempty"`
 	ManifestFixtureId string            `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
 	Name              string            `json:"name" bson:"name"`
@@ -97,6 +99,48 @@ func (calendar *Calendar) BaseScheduleOrCreate(db data.DB) (*Schedule, error) {
 	} else {
 		return schedule, err
 	}
+}
+
+func (calendar *Calendar) IncludeFixture(fixture *Fixture) {
+	otherID := fixture.ID().String()
+	for i := range calendar.FixturesIds {
+		if calendar.FixturesIds[i] == otherID {
+			return
+		}
+	}
+	calendar.FixturesIds = append(calendar.FixturesIds, otherID)
+}
+
+func (calendar *Calendar) ExcludeFixture(fixture *Fixture) {
+	tmp := make([]string, 0)
+	id := fixture.ID().String()
+	for _, s := range calendar.FixturesIds {
+		if s != id {
+			tmp = append(tmp, s)
+		}
+	}
+	calendar.FixturesIds = tmp
+}
+
+func (calendar *Calendar) FixturesIter(db data.DB) (data.Iterator, error) {
+	// not yet completely general
+	return mongo.NewIDIter(mongo.NewIDSetFromStrings(calendar.FixturesIds), db), nil
+}
+
+func (calendar *Calendar) Fixtures(db data.DB) (fixtures []*Fixture, err error) {
+	fixtures = make([]*Fixture, len(calendar.FixturesIds))
+	fixture := NewFixture()
+	for i, id := range calendar.FixturesIds {
+		fixture.Id = id
+		if err = db.PopulateByID(fixture); err != nil {
+			return
+		}
+
+		fixtures[i] = fixture
+		fixture = NewFixture()
+	}
+
+	return
 }
 
 func (calendar *Calendar) SetManifestFixture(fixtureArgument *Fixture) error {
@@ -201,6 +245,8 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 
 		BaseScheduleId string `json:"base_schedule_id" bson:"base_schedule_id"`
 
+		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
+
 		ManifestFixtureId string `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
@@ -219,6 +265,8 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 		YeardaySchedules: calendar.YeardaySchedules,
 
 		BaseScheduleId: calendar.BaseScheduleId,
+
+		FixturesIds: calendar.FixturesIds,
 
 		ManifestFixtureId: calendar.ManifestFixtureId,
 
@@ -246,6 +294,8 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 		BaseScheduleId string `json:"base_schedule_id" bson:"base_schedule_id"`
 
+		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
+
 		ManifestFixtureId string `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
@@ -271,6 +321,8 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 	calendar.YeardaySchedules = tmp.YeardaySchedules
 
 	calendar.BaseScheduleId = tmp.BaseScheduleId
+
+	calendar.FixturesIds = tmp.FixturesIds
 
 	calendar.ManifestFixtureId = tmp.ManifestFixtureId
 
@@ -324,9 +376,15 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.ManifestFixtureId = val.(string)
 	}
 
+	if val, ok := structure["fixtures_ids"]; ok {
+		calendar.FixturesIds = val.([]string)
+	}
+
 }
 
 var CalendarStructure = map[string]metis.Primitive{
+
+	"yearday_schedules": 11,
 
 	"id": 9,
 
@@ -340,11 +398,11 @@ var CalendarStructure = map[string]metis.Primitive{
 
 	"weekday_schedules": 11,
 
-	"yearday_schedules": 11,
-
 	"owner_id": 9,
 
 	"base_schedule_id": 9,
 
 	"manifest_fixture_id": 9,
+
+	"fixtures_ids": 10,
 }

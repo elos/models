@@ -302,19 +302,19 @@ func (link *Link) FromStructure(structure map[string]interface{}) {
 
 var LinkStructure = map[string]metis.Primitive{
 
-	"deleted_at": 4,
-
-	"ids": 12,
-
 	"id": 9,
 
 	"created_at": 4,
 
 	"updated_at": 4,
 
+	"deleted_at": 4,
+
+	"ids": 12,
+
+	"owner_id": 9,
+
 	"object_id": 9,
 
 	"relation_id": 9,
-
-	"owner_id": 9,
 }

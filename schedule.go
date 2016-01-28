@@ -236,18 +236,6 @@ func (schedule *Schedule) SetBSON(raw bson.Raw) error {
 
 func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		schedule.Name = val.(string)
-	}
-
-	if val, ok := structure["start_time"]; ok {
-		schedule.StartTime = val.(time.Time)
-	}
-
-	if val, ok := structure["end_time"]; ok {
-		schedule.EndTime = val.(time.Time)
-	}
-
 	if val, ok := structure["id"]; ok {
 		schedule.Id = val.(string)
 	}
@@ -264,6 +252,18 @@ func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 		schedule.DeletedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["name"]; ok {
+		schedule.Name = val.(string)
+	}
+
+	if val, ok := structure["start_time"]; ok {
+		schedule.StartTime = val.(time.Time)
+	}
+
+	if val, ok := structure["end_time"]; ok {
+		schedule.EndTime = val.(time.Time)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		schedule.OwnerId = val.(string)
 	}
@@ -276,6 +276,12 @@ func (schedule *Schedule) FromStructure(structure map[string]interface{}) {
 
 var ScheduleStructure = map[string]metis.Primitive{
 
+	"name": 3,
+
+	"start_time": 4,
+
+	"end_time": 4,
+
 	"id": 9,
 
 	"created_at": 4,
@@ -283,12 +289,6 @@ var ScheduleStructure = map[string]metis.Primitive{
 	"updated_at": 4,
 
 	"deleted_at": 4,
-
-	"name": 3,
-
-	"start_time": 4,
-
-	"end_time": 4,
 
 	"owner_id": 9,
 

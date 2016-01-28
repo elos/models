@@ -295,6 +295,10 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["inverse"]; ok {
+		relation.Inverse = val.(string)
+	}
+
 	if val, ok := structure["id"]; ok {
 		relation.Id = val.(string)
 	}
@@ -323,10 +327,6 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 		relation.Codomain = val.(string)
 	}
 
-	if val, ok := structure["inverse"]; ok {
-		relation.Inverse = val.(string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		relation.OwnerId = val.(string)
 	}
@@ -343,14 +343,6 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
 var RelationStructure = map[string]metis.Primitive{
 
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
-
 	"name": 3,
 
 	"multiplicity": 3,
@@ -358,6 +350,14 @@ var RelationStructure = map[string]metis.Primitive{
 	"codomain": 3,
 
 	"inverse": 3,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 

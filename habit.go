@@ -288,10 +288,6 @@ func (habit *Habit) FromStructure(structure map[string]interface{}) {
 		habit.Name = val.(string)
 	}
 
-	if val, ok := structure["checkins_ids"]; ok {
-		habit.CheckinsIds = val.([]string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		habit.OwnerId = val.(string)
 	}
@@ -300,19 +296,23 @@ func (habit *Habit) FromStructure(structure map[string]interface{}) {
 		habit.TagId = val.(string)
 	}
 
+	if val, ok := structure["checkins_ids"]; ok {
+		habit.CheckinsIds = val.([]string)
+	}
+
 }
 
 var HabitStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"name": 3,
 
 	"id": 9,
 
 	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"owner_id": 9,
 

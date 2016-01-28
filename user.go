@@ -341,6 +341,10 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 		user.UpdatedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["credentials_ids"]; ok {
+		user.CredentialsIds = val.([]string)
+	}
+
 	if val, ok := structure["groups_ids"]; ok {
 		user.GroupsIds = val.([]string)
 	}
@@ -353,15 +357,9 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 		user.SessionsIds = val.([]string)
 	}
 
-	if val, ok := structure["credentials_ids"]; ok {
-		user.CredentialsIds = val.([]string)
-	}
-
 }
 
 var UserStructure = map[string]metis.Primitive{
-
-	"updated_at": 4,
 
 	"deleted_at": 4,
 
@@ -371,11 +369,13 @@ var UserStructure = map[string]metis.Primitive{
 
 	"created_at": 4,
 
-	"credentials_ids": 10,
+	"updated_at": 4,
 
 	"groups_ids": 10,
 
 	"authorizations_ids": 10,
 
 	"sessions_ids": 10,
+
+	"credentials_ids": 10,
 }

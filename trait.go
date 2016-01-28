@@ -277,6 +277,14 @@ func (trait *Trait) SetBSON(raw bson.Raw) error {
 
 func (trait *Trait) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["primitive"]; ok {
+		trait.Primitive = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		trait.Id = val.(string)
+	}
+
 	if val, ok := structure["created_at"]; ok {
 		trait.CreatedAt = val.(time.Time)
 	}
@@ -293,12 +301,8 @@ func (trait *Trait) FromStructure(structure map[string]interface{}) {
 		trait.Name = val.(string)
 	}
 
-	if val, ok := structure["primitive"]; ok {
-		trait.Primitive = val.(string)
-	}
-
-	if val, ok := structure["id"]; ok {
-		trait.Id = val.(string)
+	if val, ok := structure["attributes_ids"]; ok {
+		trait.AttributesIds = val.([]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -309,17 +313,9 @@ func (trait *Trait) FromStructure(structure map[string]interface{}) {
 		trait.ModelId = val.(string)
 	}
 
-	if val, ok := structure["attributes_ids"]; ok {
-		trait.AttributesIds = val.([]string)
-	}
-
 }
 
 var TraitStructure = map[string]metis.Primitive{
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"name": 3,
 
@@ -328,6 +324,10 @@ var TraitStructure = map[string]metis.Primitive{
 	"id": 9,
 
 	"created_at": 4,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"owner_id": 9,
 

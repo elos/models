@@ -117,14 +117,36 @@ func (c *Calendar) SchedulesForDate(t time.Time, db data.DB) []*Schedule {
 	return schedules
 }
 
+func filterFixturesOnDate(fixtures []*Fixture, date time.Time) []*Fixture {
+	filtered := make([]*Fixture, 0)
+	for _, f := range fixtures {
+		if date.After(f.StartTime) && date.Before(f.EndTime) {
+			filtered = append(filtered, f)
+		}
+	}
+	return filtered
+}
+
 func (c *Calendar) FixturesForDate(date time.Time, db data.DB) ([]*Fixture, error) {
+	// get the scheduled ones
+
 	// TODO: perhaps this should return an error
 	schedules := c.SchedulesForDate(date, db)
 
-	fixtures, err := MergedFixtures(db, schedules...)
+	scheduleFixtures, err := MergedFixtures(db, schedules...)
 	if err != nil {
 		return nil, err
 	}
 
-	return RelevantFixtures(date, fixtures), nil
+	scheduleFixtures = RelevantScheduleFixtures(date, scheduleFixtures)
+
+	// get the free floating ones for today
+	fixtures, err := c.Fixtures(db)
+	if err != nil {
+		return nil, err
+	}
+
+	fixtures = filterFixturesOnDate(fixtures, date)
+
+	return append(scheduleFixtures, fixtures...), nil
 }

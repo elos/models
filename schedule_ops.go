@@ -42,7 +42,7 @@ func DayEquivalent(t1 time.Time, t2 time.Time) bool {
 	return (t1.Year() == t2.Year() && t1.Month() == t2.Month() && t1.Day() == t2.Day())
 }
 
-func RelevantFixtures(t time.Time, fixtures []*Fixture) []*Fixture {
+func RelevantScheduleFixtures(t time.Time, fixtures []*Fixture) []*Fixture {
 	filtered := make([]*Fixture, 0)
 	now := time.Now()
 
