@@ -321,6 +321,10 @@ func (user *User) SetBSON(raw bson.Raw) error {
 
 func (user *User) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["updated_at"]; ok {
+		user.UpdatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["deleted_at"]; ok {
 		user.DeletedAt = val.(time.Time)
 	}
@@ -335,10 +339,6 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["created_at"]; ok {
 		user.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		user.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["credentials_ids"]; ok {
@@ -361,21 +361,21 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 
 var UserStructure = map[string]metis.Primitive{
 
-	"deleted_at": 4,
-
-	"password": 3,
-
 	"id": 9,
 
 	"created_at": 4,
 
 	"updated_at": 4,
 
+	"deleted_at": 4,
+
+	"password": 3,
+
+	"credentials_ids": 10,
+
 	"groups_ids": 10,
 
 	"authorizations_ids": 10,
 
 	"sessions_ids": 10,
-
-	"credentials_ids": 10,
 }

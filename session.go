@@ -225,10 +225,6 @@ func (session *Session) SetBSON(raw bson.Raw) error {
 
 func (session *Session) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		session.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		session.CreatedAt = val.(time.Time)
 	}
@@ -249,17 +245,23 @@ func (session *Session) FromStructure(structure map[string]interface{}) {
 		session.ExpiresAfter = val.(int)
 	}
 
-	if val, ok := structure["credential_id"]; ok {
-		session.CredentialId = val.(string)
+	if val, ok := structure["id"]; ok {
+		session.Id = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
 		session.OwnerId = val.(string)
 	}
 
+	if val, ok := structure["credential_id"]; ok {
+		session.CredentialId = val.(string)
+	}
+
 }
 
 var SessionStructure = map[string]metis.Primitive{
+
+	"token": 3,
 
 	"expires_after": 1,
 
@@ -270,8 +272,6 @@ var SessionStructure = map[string]metis.Primitive{
 	"updated_at": 4,
 
 	"deleted_at": 4,
-
-	"token": 3,
 
 	"owner_id": 9,
 

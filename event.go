@@ -477,10 +477,6 @@ func (event *Event) SetBSON(raw bson.Raw) error {
 
 func (event *Event) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["updated_at"]; ok {
-		event.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		event.DeletedAt = val.(time.Time)
 	}
@@ -499,6 +495,18 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["created_at"]; ok {
 		event.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		event.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["prior_id"]; ok {
+		event.PriorId = val.(string)
+	}
+
+	if val, ok := structure["quantity_id"]; ok {
+		event.QuantityId = val.(string)
 	}
 
 	if val, ok := structure["note_id"]; ok {
@@ -521,19 +529,9 @@ func (event *Event) FromStructure(structure map[string]interface{}) {
 		event.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["prior_id"]; ok {
-		event.PriorId = val.(string)
-	}
-
-	if val, ok := structure["quantity_id"]; ok {
-		event.QuantityId = val.(string)
-	}
-
 }
 
 var EventStructure = map[string]metis.Primitive{
-
-	"created_at": 4,
 
 	"updated_at": 4,
 
@@ -545,6 +543,12 @@ var EventStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
+	"created_at": 4,
+
+	"note_id": 9,
+
+	"location_id": 9,
+
 	"tags_ids": 10,
 
 	"media_id": 9,
@@ -554,8 +558,4 @@ var EventStructure = map[string]metis.Primitive{
 	"prior_id": 9,
 
 	"quantity_id": 9,
-
-	"note_id": 9,
-
-	"location_id": 9,
 }

@@ -166,10 +166,6 @@ func (tag *Tag) SetBSON(raw bson.Raw) error {
 
 func (tag *Tag) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		tag.Name = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		tag.Id = val.(string)
 	}
@@ -184,6 +180,10 @@ func (tag *Tag) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["deleted_at"]; ok {
 		tag.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		tag.Name = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

@@ -628,10 +628,6 @@ func (profile *Profile) SetBSON(raw bson.Raw) error {
 
 func (profile *Profile) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["phone"]; ok {
-		profile.Phone = val.(string)
-	}
-
 	if val, ok := structure["email"]; ok {
 		profile.Email = val.(string)
 	}
@@ -656,24 +652,24 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 		profile.Name = val.(string)
 	}
 
-	if val, ok := structure["routines_ids"]; ok {
-		profile.RoutinesIds = val.([]string)
+	if val, ok := structure["phone"]; ok {
+		profile.Phone = val.(string)
 	}
 
-	if val, ok := structure["current_action_id"]; ok {
-		profile.CurrentActionId = val.(string)
+	if val, ok := structure["owner_id"]; ok {
+		profile.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["actions_ids"]; ok {
-		profile.ActionsIds = val.([]string)
-	}
-
-	if val, ok := structure["events_ids"]; ok {
-		profile.EventsIds = val.([]string)
+	if val, ok := structure["data_ids"]; ok {
+		profile.DataIds = val.([]string)
 	}
 
 	if val, ok := structure["tasks_ids"]; ok {
 		profile.TasksIds = val.([]string)
+	}
+
+	if val, ok := structure["routines_ids"]; ok {
+		profile.RoutinesIds = val.([]string)
 	}
 
 	if val, ok := structure["ontology_id"]; ok {
@@ -688,21 +684,29 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 		profile.CurrentActionableKind = val.(string)
 	}
 
+	if val, ok := structure["actions_ids"]; ok {
+		profile.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["events_ids"]; ok {
+		profile.EventsIds = val.([]string)
+	}
+
+	if val, ok := structure["current_action_id"]; ok {
+		profile.CurrentActionId = val.(string)
+	}
+
 	if val, ok := structure["calendar_id"]; ok {
 		profile.CalendarId = val.(string)
-	}
-
-	if val, ok := structure["owner_id"]; ok {
-		profile.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["data_ids"]; ok {
-		profile.DataIds = val.([]string)
 	}
 
 }
 
 var ProfileStructure = map[string]metis.Primitive{
+
+	"id": 9,
+
+	"created_at": 4,
 
 	"updated_at": 4,
 
@@ -714,15 +718,13 @@ var ProfileStructure = map[string]metis.Primitive{
 
 	"email": 3,
 
-	"id": 9,
+	"owner_id": 9,
 
-	"created_at": 4,
-
-	"actions_ids": 10,
-
-	"events_ids": 10,
+	"data_ids": 10,
 
 	"tasks_ids": 10,
+
+	"routines_ids": 10,
 
 	"ontology_id": 9,
 
@@ -730,13 +732,11 @@ var ProfileStructure = map[string]metis.Primitive{
 
 	"current_actionable_kind": 3,
 
-	"calendar_id": 9,
+	"actions_ids": 10,
 
-	"owner_id": 9,
-
-	"data_ids": 10,
-
-	"routines_ids": 10,
+	"events_ids": 10,
 
 	"current_action_id": 9,
+
+	"calendar_id": 9,
 }

@@ -277,6 +277,14 @@ func (trait *Trait) SetBSON(raw bson.Raw) error {
 
 func (trait *Trait) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["deleted_at"]; ok {
+		trait.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		trait.Name = val.(string)
+	}
+
 	if val, ok := structure["primitive"]; ok {
 		trait.Primitive = val.(string)
 	}
@@ -293,24 +301,16 @@ func (trait *Trait) FromStructure(structure map[string]interface{}) {
 		trait.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["deleted_at"]; ok {
-		trait.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["name"]; ok {
-		trait.Name = val.(string)
-	}
-
-	if val, ok := structure["attributes_ids"]; ok {
-		trait.AttributesIds = val.([]string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		trait.OwnerId = val.(string)
 	}
 
 	if val, ok := structure["model_id"]; ok {
 		trait.ModelId = val.(string)
+	}
+
+	if val, ok := structure["attributes_ids"]; ok {
+		trait.AttributesIds = val.([]string)
 	}
 
 }

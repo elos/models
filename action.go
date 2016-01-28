@@ -350,10 +350,6 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		action.OwnerId = val.(string)
-	}
-
 	if val, ok := structure["person_id"]; ok {
 		action.PersonId = val.(string)
 	}
@@ -370,9 +366,15 @@ func (action *Action) FromStructure(structure map[string]interface{}) {
 		action.TaskId = val.(string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		action.OwnerId = val.(string)
+	}
+
 }
 
 var ActionStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
 
 	"name": 3,
 
@@ -386,7 +388,7 @@ var ActionStructure = map[string]metis.Primitive{
 
 	"created_at": 4,
 
-	"updated_at": 4,
+	"owner_id": 9,
 
 	"person_id": 9,
 
@@ -395,6 +397,4 @@ var ActionStructure = map[string]metis.Primitive{
 	"actionable_kind": 3,
 
 	"task_id": 9,
-
-	"owner_id": 9,
 }

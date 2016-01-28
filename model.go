@@ -370,14 +370,6 @@ func (model *Model) SetBSON(raw bson.Raw) error {
 
 func (model *Model) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		model.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		model.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		model.UpdatedAt = val.(time.Time)
 	}
@@ -388,6 +380,18 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["name"]; ok {
 		model.Name = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		model.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		model.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["objects_ids"]; ok {
+		model.ObjectsIds = val.([]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -404,10 +408,6 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["ontology_id"]; ok {
 		model.OntologyId = val.(string)
-	}
-
-	if val, ok := structure["objects_ids"]; ok {
-		model.ObjectsIds = val.([]string)
 	}
 
 }
