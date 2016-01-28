@@ -17,8 +17,8 @@ func emptyTime(t time.Time) bool {
 }
 
 func (t *Task) Salience() float64 {
-	if t.Complete {
-		return -1
+	if t.IsComplete() {
+		return 0
 	}
 
 	if emptyTime(t.Deadline) {
