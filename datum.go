@@ -275,14 +275,6 @@ func (datum *Datum) SetBSON(raw bson.Raw) error {
 
 func (datum *Datum) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["tags"]; ok {
-		datum.Tags = val.([]string)
-	}
-
-	if val, ok := structure["context"]; ok {
-		datum.Context = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		datum.Id = val.(string)
 	}
@@ -297,6 +289,14 @@ func (datum *Datum) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["unit"]; ok {
 		datum.Unit = val.(string)
+	}
+
+	if val, ok := structure["tags"]; ok {
+		datum.Tags = val.([]string)
+	}
+
+	if val, ok := structure["context"]; ok {
+		datum.Context = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

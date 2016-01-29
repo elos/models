@@ -266,14 +266,6 @@ func (attribute *Attribute) SetBSON(raw bson.Raw) error {
 
 func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		attribute.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		attribute.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		attribute.UpdatedAt = val.(time.Time)
 	}
@@ -284,6 +276,14 @@ func (attribute *Attribute) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["value"]; ok {
 		attribute.Value = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		attribute.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		attribute.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

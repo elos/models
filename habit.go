@@ -268,10 +268,6 @@ func (habit *Habit) SetBSON(raw bson.Raw) error {
 
 func (habit *Habit) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["name"]; ok {
-		habit.Name = val.(string)
-	}
-
 	if val, ok := structure["id"]; ok {
 		habit.Id = val.(string)
 	}
@@ -288,8 +284,8 @@ func (habit *Habit) FromStructure(structure map[string]interface{}) {
 		habit.DeletedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		habit.OwnerId = val.(string)
+	if val, ok := structure["name"]; ok {
+		habit.Name = val.(string)
 	}
 
 	if val, ok := structure["tag_id"]; ok {
@@ -298,6 +294,10 @@ func (habit *Habit) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["checkins_ids"]; ok {
 		habit.CheckinsIds = val.([]string)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		habit.OwnerId = val.(string)
 	}
 
 }

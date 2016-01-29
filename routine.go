@@ -403,6 +403,14 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 		routine.EndTime = val.(time.Time)
 	}
 
+	if val, ok := structure["actions_ids"]; ok {
+		routine.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["current_action_id"]; ok {
+		routine.CurrentActionId = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		routine.OwnerId = val.(string)
 	}
@@ -415,17 +423,13 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 		routine.CompletedTasksIds = val.([]string)
 	}
 
-	if val, ok := structure["actions_ids"]; ok {
-		routine.ActionsIds = val.([]string)
-	}
-
-	if val, ok := structure["current_action_id"]; ok {
-		routine.CurrentActionId = val.(string)
-	}
-
 }
 
 var RoutineStructure = map[string]metis.Primitive{
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"name": 3,
 
@@ -435,12 +439,6 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"tasks_ids": 10,
-
 	"completed_tasks_ids": 10,
 
 	"actions_ids": 10,
@@ -448,4 +446,6 @@ var RoutineStructure = map[string]metis.Primitive{
 	"current_action_id": 9,
 
 	"owner_id": 9,
+
+	"tasks_ids": 10,
 }

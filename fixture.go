@@ -403,16 +403,16 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.DeletedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["start_time"]; ok {
-		fixture.StartTime = val.(time.Time)
+	if val, ok := structure["name"]; ok {
+		fixture.Name = val.(string)
 	}
 
-	if val, ok := structure["expires_at"]; ok {
-		fixture.ExpiresAt = val.(time.Time)
+	if val, ok := structure["rank"]; ok {
+		fixture.Rank = val.(int)
 	}
 
-	if val, ok := structure["id"]; ok {
-		fixture.Id = val.(string)
+	if val, ok := structure["exceptions"]; ok {
+		fixture.Exceptions = val.([]time.Time)
 	}
 
 	if val, ok := structure["created_at"]; ok {
@@ -423,24 +423,32 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["name"]; ok {
-		fixture.Name = val.(string)
+	if val, ok := structure["start_time"]; ok {
+		fixture.StartTime = val.(time.Time)
 	}
 
 	if val, ok := structure["end_time"]; ok {
 		fixture.EndTime = val.(time.Time)
 	}
 
-	if val, ok := structure["rank"]; ok {
-		fixture.Rank = val.(int)
-	}
-
 	if val, ok := structure["label"]; ok {
 		fixture.Label = val.(bool)
 	}
 
-	if val, ok := structure["exceptions"]; ok {
-		fixture.Exceptions = val.([]time.Time)
+	if val, ok := structure["expires_at"]; ok {
+		fixture.ExpiresAt = val.(time.Time)
+	}
+
+	if val, ok := structure["id"]; ok {
+		fixture.Id = val.(string)
+	}
+
+	if val, ok := structure["actions_ids"]; ok {
+		fixture.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["events_ids"]; ok {
+		fixture.EventsIds = val.([]string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -463,14 +471,6 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.EventableKind = val.(string)
 	}
 
-	if val, ok := structure["actions_ids"]; ok {
-		fixture.ActionsIds = val.([]string)
-	}
-
-	if val, ok := structure["events_ids"]; ok {
-		fixture.EventsIds = val.([]string)
-	}
-
 }
 
 var FixtureStructure = map[string]metis.Primitive{
@@ -481,21 +481,21 @@ var FixtureStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"created_at": 4,
-
 	"updated_at": 4,
 
-	"name": 3,
+	"start_time": 4,
 
 	"end_time": 4,
 
-	"rank": 1,
-
 	"exceptions": 8,
+
+	"created_at": 4,
 
 	"deleted_at": 4,
 
-	"start_time": 4,
+	"name": 3,
+
+	"rank": 1,
 
 	"owner_id": 9,
 

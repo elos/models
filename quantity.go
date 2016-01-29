@@ -175,6 +175,14 @@ func (quantity *Quantity) SetBSON(raw bson.Raw) error {
 
 func (quantity *Quantity) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["unit"]; ok {
+		quantity.Unit = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		quantity.Id = val.(string)
+	}
+
 	if val, ok := structure["created_at"]; ok {
 		quantity.CreatedAt = val.(time.Time)
 	}
@@ -191,14 +199,6 @@ func (quantity *Quantity) FromStructure(structure map[string]interface{}) {
 		quantity.Value = val.(float64)
 	}
 
-	if val, ok := structure["unit"]; ok {
-		quantity.Unit = val.(string)
-	}
-
-	if val, ok := structure["id"]; ok {
-		quantity.Id = val.(string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		quantity.OwnerId = val.(string)
 	}
@@ -207,10 +207,6 @@ func (quantity *Quantity) FromStructure(structure map[string]interface{}) {
 
 var QuantityStructure = map[string]metis.Primitive{
 
-	"deleted_at": 4,
-
-	"value": 2,
-
 	"unit": 3,
 
 	"id": 9,
@@ -218,6 +214,10 @@ var QuantityStructure = map[string]metis.Primitive{
 	"created_at": 4,
 
 	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"value": 2,
 
 	"owner_id": 9,
 }
