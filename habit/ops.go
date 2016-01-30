@@ -37,12 +37,12 @@ func CheckinFor(db data.DB, h *models.Habit, note string, date time.Time) (*mode
 	}
 
 	e.IncludeTag(t)
-	ht, err := tag.ByName(db, user, tag.Habit)
+	ht, err := tag.ForName(db, user, tag.Habit)
 	if err != nil {
 		return nil, err
 	}
 	e.IncludeTag(ht)
-	ct, err := tag.ByName(db, user, tag.Checkin)
+	ct, err := tag.ForName(db, user, tag.Checkin)
 	if err != nil {
 		return nil, err
 	}
@@ -81,4 +81,33 @@ func DidCheckinOn(db data.DB, h *models.Habit, t time.Time) (bool, error) {
 	}
 
 	return false, nil
+}
+
+func Create(db data.DB, user *models.User, name string) (*models.Habit, error) {
+	h := models.NewHabit()
+	h.SetID(db.NewID())
+	h.CreatedAt = time.Now()
+	h.SetOwner(user)
+	h.Name = name
+
+	t := models.NewTag()
+	t.SetID(db.NewID())
+	t.CreatedAt = time.Now()
+	t.SetOwner(user)
+	t.Name = h.Name
+
+	h.SetTag(t)
+
+	t.UpdatedAt = time.Now()
+	h.UpdatedAt = time.Now()
+
+	if err := db.Save(t); err != nil {
+		return nil, err
+	}
+
+	if err := db.Save(h); err != nil {
+		return nil, err
+	}
+
+	return h, nil
 }

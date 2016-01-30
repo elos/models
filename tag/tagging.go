@@ -11,7 +11,7 @@ func Task(db data.DB, tsk *models.Task, name string) (*models.Tag, error) {
 		return nil, err
 	}
 
-	tag, err := ByName(db, u, Name(name))
+	tag, err := ForName(db, u, Name(name))
 	if err != nil {
 		return nil, err
 	}

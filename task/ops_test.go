@@ -86,3 +86,17 @@ func TestSalienceBasic(t *testing.T) {
 		t.Fatalf("Task should have positive salience, but had salience of: %f", s)
 	}
 }
+
+func TestTimeSpent(t *testing.T) {
+	tsk := models.NewTask()
+	now := time.Now()
+	tsk.Stages = []time.Time{now, now.Add(1 * time.Hour)}
+
+	if task.TimeSpent(tsk) != 1*time.Hour {
+		t.Fatal("Time spent should be 1 hour")
+	}
+
+	if task.CollectiveTimeSpent([]*models.Task{tsk}) != 1*time.Hour {
+		t.Fatal("collective time spent should be 1 hour")
+	}
+}

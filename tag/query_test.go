@@ -24,7 +24,7 @@ func TestEventsFor(t *testing.T) {
 	e1.SetOwner(u)
 	e2.SetOwner(u)
 
-	tg, err := tag.ByName(db, u, tag.Name("yo"))
+	tg, err := tag.ForName(db, u, tag.Name("yo"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,7 +69,7 @@ func TestTagsFor(t *testing.T) {
 	t1.SetOwner(u)
 	t2.SetOwner(u)
 
-	tg, err := tag.ByName(db, u, tag.Name("yo"))
+	tg, err := tag.ForName(db, u, tag.Name("yo"))
 	if err != nil {
 		t.Fatal(err)
 	}

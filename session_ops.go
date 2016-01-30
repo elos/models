@@ -8,7 +8,7 @@ import (
 )
 
 func NewSessionForUser(u *User) *Session {
-	log.Print("don't use")
+	log.Print("don't use") // <-- lol, what?
 	s := &Session{
 		CreatedAt:    time.Now(),
 		UpdatedAt:    time.Now(),

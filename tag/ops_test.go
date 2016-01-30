@@ -8,7 +8,7 @@ import (
 	"github.com/elos/models/tag"
 )
 
-func TestByName(t *testing.T) {
+func TestForName(t *testing.T) {
 	n := tag.Name("NAME")
 
 	db := mem.NewDB()
@@ -18,7 +18,7 @@ func TestByName(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	tg, err := tag.ByName(db, u, n)
+	tg, err := tag.ForName(db, u, n)
 
 	if err != nil {
 		t.Fatal(err)

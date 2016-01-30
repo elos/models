@@ -19,9 +19,9 @@ const (
 	Goal         = "GOAL"
 )
 
-// ByName finds the tag indicated by the name parameter for the
+// ForName finds the tag indicated by the name parameter for the
 // given user, or creates it if it doesn't exist
-func ByName(db data.DB, u *models.User, name Name) (*models.Tag, error) {
+func ForName(db data.DB, u *models.User, name Name) (*models.Tag, error) {
 	iter, err := db.Query(models.TagKind).Select(data.AttrMap{
 		"owner_id": u.Id,
 		"name":     name.String(),

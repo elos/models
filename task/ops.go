@@ -49,9 +49,37 @@ func Stop(t *models.Task) time.Time {
 	return now
 }
 
+// Stops and completes the current task
 func StopAndComplete(t *models.Task) time.Time {
 	stopTime := Stop(t)
 	t.CompletedAt = stopTime
 	t.UpdatedAt = stopTime
 	return stopTime
+}
+
+func sumIntervals(intervals []time.Time) time.Duration {
+	var duration time.Duration
+	for i := 0; i < len(intervals); i += 2 {
+		duration += intervals[i+1].Sub(intervals[i])
+	}
+	return duration
+}
+
+// TimeSpent calculuates the time spent on a task
+func TimeSpent(t *models.Task) time.Duration {
+	if !InProgress(t) {
+		return sumIntervals(t.Stages)
+	}
+
+	// look at right now
+	return sumIntervals(append(t.Stages, time.Now()))
+}
+
+// CollectiveTimeSpent
+func CollectiveTimeSpent(tasks []*models.Task) time.Duration {
+	var duration time.Duration
+	for _, t := range tasks {
+		duration += TimeSpent(t)
+	}
+	return duration
 }
