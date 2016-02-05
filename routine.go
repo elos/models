@@ -379,10 +379,6 @@ func (routine *Routine) SetBSON(raw bson.Raw) error {
 
 func (routine *Routine) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		routine.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		routine.CreatedAt = val.(time.Time)
 	}
@@ -403,6 +399,14 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 		routine.EndTime = val.(time.Time)
 	}
 
+	if val, ok := structure["id"]; ok {
+		routine.Id = val.(string)
+	}
+
+	if val, ok := structure["completed_tasks_ids"]; ok {
+		routine.CompletedTasksIds = val.([]string)
+	}
+
 	if val, ok := structure["actions_ids"]; ok {
 		routine.ActionsIds = val.([]string)
 	}
@@ -419,19 +423,9 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 		routine.TasksIds = val.([]string)
 	}
 
-	if val, ok := structure["completed_tasks_ids"]; ok {
-		routine.CompletedTasksIds = val.([]string)
-	}
-
 }
 
 var RoutineStructure = map[string]metis.Primitive{
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"name": 3,
 
 	"start_time": 4,
 
@@ -439,13 +433,19 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"name": 3,
+
+	"owner_id": 9,
+
+	"tasks_ids": 10,
+
 	"completed_tasks_ids": 10,
 
 	"actions_ids": 10,
 
 	"current_action_id": 9,
-
-	"owner_id": 9,
-
-	"tasks_ids": 10,
 }

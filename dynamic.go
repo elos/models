@@ -69,6 +69,9 @@ func ModelFor(k data.Kind) data.Record {
 	case QuantityKind:
 		return NewQuantity()
 
+	case RecurrenceKind:
+		return NewRecurrence()
+
 	case RelationKind:
 		return NewRelation()
 

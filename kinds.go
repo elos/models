@@ -43,6 +43,8 @@ const (
 
 	QuantityKind data.Kind = "quantity"
 
+	RecurrenceKind data.Kind = "recurrence"
+
 	RelationKind data.Kind = "relation"
 
 	RoutineKind data.Kind = "routine"
@@ -101,6 +103,8 @@ var Kinds = map[data.Kind]bool{
 	ProfileKind: true,
 
 	QuantityKind: true,
+
+	RecurrenceKind: true,
 
 	RelationKind: true,
 

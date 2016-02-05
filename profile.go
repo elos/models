@@ -628,14 +628,6 @@ func (profile *Profile) SetBSON(raw bson.Raw) error {
 
 func (profile *Profile) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["created_at"]; ok {
-		profile.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		profile.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		profile.DeletedAt = val.(time.Time)
 	}
@@ -654,6 +646,38 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["id"]; ok {
 		profile.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		profile.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		profile.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["owner_id"]; ok {
+		profile.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["ontology_id"]; ok {
+		profile.OntologyId = val.(string)
+	}
+
+	if val, ok := structure["current_action_id"]; ok {
+		profile.CurrentActionId = val.(string)
+	}
+
+	if val, ok := structure["routines_ids"]; ok {
+		profile.RoutinesIds = val.([]string)
+	}
+
+	if val, ok := structure["current_actionable_id"]; ok {
+		profile.CurrentActionableId = val.(string)
+	}
+
+	if val, ok := structure["current_actionable_kind"]; ok {
+		profile.CurrentActionableKind = val.(string)
 	}
 
 	if val, ok := structure["calendar_id"]; ok {
@@ -676,35 +700,9 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 		profile.TasksIds = val.([]string)
 	}
 
-	if val, ok := structure["routines_ids"]; ok {
-		profile.RoutinesIds = val.([]string)
-	}
-
-	if val, ok := structure["ontology_id"]; ok {
-		profile.OntologyId = val.(string)
-	}
-
-	if val, ok := structure["current_action_id"]; ok {
-		profile.CurrentActionId = val.(string)
-	}
-
-	if val, ok := structure["owner_id"]; ok {
-		profile.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["current_actionable_id"]; ok {
-		profile.CurrentActionableId = val.(string)
-	}
-
-	if val, ok := structure["current_actionable_kind"]; ok {
-		profile.CurrentActionableKind = val.(string)
-	}
-
 }
 
 var ProfileStructure = map[string]metis.Primitive{
-
-	"name": 3,
 
 	"phone": 3,
 
@@ -718,25 +716,27 @@ var ProfileStructure = map[string]metis.Primitive{
 
 	"deleted_at": 4,
 
-	"events_ids": 10,
-
-	"tasks_ids": 10,
-
-	"routines_ids": 10,
-
-	"ontology_id": 9,
-
-	"current_action_id": 9,
-
-	"owner_id": 9,
-
-	"data_ids": 10,
-
-	"actions_ids": 10,
+	"name": 3,
 
 	"current_actionable_id": 9,
 
 	"current_actionable_kind": 3,
 
 	"calendar_id": 9,
+
+	"data_ids": 10,
+
+	"actions_ids": 10,
+
+	"events_ids": 10,
+
+	"tasks_ids": 10,
+
+	"routines_ids": 10,
+
+	"owner_id": 9,
+
+	"ontology_id": 9,
+
+	"current_action_id": 9,
 }

@@ -295,18 +295,6 @@ func (relation *Relation) SetBSON(raw bson.Raw) error {
 
 func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["created_at"]; ok {
-		relation.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		relation.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		relation.DeletedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["name"]; ok {
 		relation.Name = val.(string)
 	}
@@ -327,6 +315,18 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 		relation.Id = val.(string)
 	}
 
+	if val, ok := structure["created_at"]; ok {
+		relation.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		relation.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		relation.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		relation.OwnerId = val.(string)
 	}
@@ -343,8 +343,6 @@ func (relation *Relation) FromStructure(structure map[string]interface{}) {
 
 var RelationStructure = map[string]metis.Primitive{
 
-	"multiplicity": 3,
-
 	"codomain": 3,
 
 	"inverse": 3,
@@ -359,9 +357,11 @@ var RelationStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
-	"links_ids": 10,
+	"multiplicity": 3,
 
 	"owner_id": 9,
 
 	"model_id": 9,
+
+	"links_ids": 10,
 }

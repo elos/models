@@ -227,10 +227,6 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 func (person *Person) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		person.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		person.CreatedAt = val.(time.Time)
 	}
@@ -251,12 +247,16 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.Name = val.(string)
 	}
 
-	if val, ok := structure["notes_ids"]; ok {
-		person.NotesIds = val.([]string)
+	if val, ok := structure["id"]; ok {
+		person.Id = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
 		person.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["notes_ids"]; ok {
+		person.NotesIds = val.([]string)
 	}
 
 }

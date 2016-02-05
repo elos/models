@@ -312,9 +312,9 @@ var AttributeStructure = map[string]metis.Primitive{
 
 	"value": 3,
 
+	"owner_id": 9,
+
 	"object_id": 9,
 
 	"trait_id": 9,
-
-	"owner_id": 9,
 }

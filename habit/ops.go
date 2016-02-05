@@ -75,7 +75,7 @@ func DidCheckinOn(db data.DB, h *models.Habit, t time.Time) (bool, error) {
 	}
 
 	for _, c := range checkins {
-		if sameDay(t, c.CreatedAt) {
+		if sameDay(t, c.CreatedAt.Local()) {
 			return true, nil
 		}
 	}

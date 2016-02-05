@@ -54,6 +54,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(QuantityKind, "quantities")
 
+	db.RegisterKind(RecurrenceKind, "recurrences")
+
 	db.RegisterKind(RelationKind, "relations")
 
 	db.RegisterKind(RoutineKind, "routines")

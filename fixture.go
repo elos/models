@@ -18,6 +18,7 @@ type Fixture struct {
 	ActionsIds     []string    `json:"actions_ids" bson:"actions_ids"`
 	CreatedAt      time.Time   `json:"created_at" bson:"created_at"`
 	DeletedAt      time.Time   `json:"deleted_at" bson:"deleted_at"`
+	EndOffset      int         `json:"end_offset" bson:"end_offset"`
 	EndTime        time.Time   `json:"end_time" bson:"end_time"`
 	EventableId    string      `json:"eventable_id" bson:"eventable_id"`
 	EventableKind  string      `json:"eventable_kind" bson:"eventable_kind"`
@@ -29,6 +30,7 @@ type Fixture struct {
 	Name           string      `json:"name" bson:"name"`
 	OwnerId        string      `json:"owner_id" bson:"owner_id"`
 	Rank           int         `json:"rank" bson:"rank"`
+	StartOffset    int         `json:"start_offset" bson:"start_offset"`
 	StartTime      time.Time   `json:"start_time" bson:"start_time"`
 	UpdatedAt      time.Time   `json:"updated_at" bson:"updated_at"`
 }
@@ -240,6 +242,8 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 
 		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
+		EndOffset int `json:"end_offset" bson:"end_offset"`
+
 		EndTime time.Time `json:"end_time" bson:"end_time"`
 
 		Exceptions []time.Time `json:"exceptions" bson:"exceptions"`
@@ -253,6 +257,8 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 		Name string `json:"name" bson:"name"`
 
 		Rank int `json:"rank" bson:"rank"`
+
+		StartOffset int `json:"start_offset" bson:"start_offset"`
 
 		StartTime time.Time `json:"start_time" bson:"start_time"`
 
@@ -277,6 +283,8 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 
 		DeletedAt: fixture.DeletedAt,
 
+		EndOffset: fixture.EndOffset,
+
 		EndTime: fixture.EndTime,
 
 		Exceptions: fixture.Exceptions,
@@ -288,6 +296,8 @@ func (fixture *Fixture) GetBSON() (interface{}, error) {
 		Name: fixture.Name,
 
 		Rank: fixture.Rank,
+
+		StartOffset: fixture.StartOffset,
 
 		StartTime: fixture.StartTime,
 
@@ -317,6 +327,8 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 		DeletedAt time.Time `json:"deleted_at" bson:"deleted_at"`
 
+		EndOffset int `json:"end_offset" bson:"end_offset"`
+
 		EndTime time.Time `json:"end_time" bson:"end_time"`
 
 		Exceptions []time.Time `json:"exceptions" bson:"exceptions"`
@@ -330,6 +342,8 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 		Name string `json:"name" bson:"name"`
 
 		Rank int `json:"rank" bson:"rank"`
+
+		StartOffset int `json:"start_offset" bson:"start_offset"`
 
 		StartTime time.Time `json:"start_time" bson:"start_time"`
 
@@ -359,6 +373,8 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 	fixture.DeletedAt = tmp.DeletedAt
 
+	fixture.EndOffset = tmp.EndOffset
+
 	fixture.EndTime = tmp.EndTime
 
 	fixture.Exceptions = tmp.Exceptions
@@ -372,6 +388,8 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 	fixture.Name = tmp.Name
 
 	fixture.Rank = tmp.Rank
+
+	fixture.StartOffset = tmp.StartOffset
 
 	fixture.StartTime = tmp.StartTime
 
@@ -399,6 +417,10 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["id"]; ok {
+		fixture.Id = val.(string)
+	}
+
 	if val, ok := structure["deleted_at"]; ok {
 		fixture.DeletedAt = val.(time.Time)
 	}
@@ -407,12 +429,16 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.Name = val.(string)
 	}
 
-	if val, ok := structure["rank"]; ok {
-		fixture.Rank = val.(int)
+	if val, ok := structure["start_offset"]; ok {
+		fixture.StartOffset = val.(int)
 	}
 
-	if val, ok := structure["exceptions"]; ok {
-		fixture.Exceptions = val.([]time.Time)
+	if val, ok := structure["label"]; ok {
+		fixture.Label = val.(bool)
+	}
+
+	if val, ok := structure["expires_at"]; ok {
+		fixture.ExpiresAt = val.(time.Time)
 	}
 
 	if val, ok := structure["created_at"]; ok {
@@ -431,24 +457,16 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.EndTime = val.(time.Time)
 	}
 
-	if val, ok := structure["label"]; ok {
-		fixture.Label = val.(bool)
+	if val, ok := structure["end_offset"]; ok {
+		fixture.EndOffset = val.(int)
 	}
 
-	if val, ok := structure["expires_at"]; ok {
-		fixture.ExpiresAt = val.(time.Time)
+	if val, ok := structure["rank"]; ok {
+		fixture.Rank = val.(int)
 	}
 
-	if val, ok := structure["id"]; ok {
-		fixture.Id = val.(string)
-	}
-
-	if val, ok := structure["actions_ids"]; ok {
-		fixture.ActionsIds = val.([]string)
-	}
-
-	if val, ok := structure["events_ids"]; ok {
-		fixture.EventsIds = val.([]string)
+	if val, ok := structure["exceptions"]; ok {
+		fixture.Exceptions = val.([]time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -471,15 +489,19 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.EventableKind = val.(string)
 	}
 
+	if val, ok := structure["actions_ids"]; ok {
+		fixture.ActionsIds = val.([]string)
+	}
+
+	if val, ok := structure["events_ids"]; ok {
+		fixture.EventsIds = val.([]string)
+	}
+
 }
 
 var FixtureStructure = map[string]metis.Primitive{
 
-	"label": 0,
-
-	"expires_at": 4,
-
-	"id": 9,
+	"created_at": 4,
 
 	"updated_at": 4,
 
@@ -487,21 +509,23 @@ var FixtureStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
+	"end_offset": 1,
+
+	"rank": 1,
+
+	"label": 0,
+
+	"expires_at": 4,
+
 	"exceptions": 8,
 
-	"created_at": 4,
+	"id": 9,
 
 	"deleted_at": 4,
 
 	"name": 3,
 
-	"rank": 1,
-
-	"owner_id": 9,
-
-	"actionable_id": 9,
-
-	"actionable_kind": 3,
+	"start_offset": 1,
 
 	"eventable_id": 9,
 
@@ -510,4 +534,10 @@ var FixtureStructure = map[string]metis.Primitive{
 	"actions_ids": 10,
 
 	"events_ids": 10,
+
+	"owner_id": 9,
+
+	"actionable_id": 9,
+
+	"actionable_kind": 3,
 }

@@ -15,15 +15,20 @@ import (
 type Calendar struct {
 	BaseScheduleId    string            `json:"base_schedule_id" bson:"base_schedule_id"`
 	CreatedAt         time.Time         `json:"created_at" bson:"created_at"`
+	DailyScheduleId   string            `json:"daily_schedule_id" bson:"daily_schedule_id"`
 	DeletedAt         time.Time         `json:"deleted_at" bson:"deleted_at"`
 	FixturesIds       []string          `json:"fixtures_ids" bson:"fixtures_ids"`
 	Id                string            `json:"id" bson:"_id,omitempty"`
 	ManifestFixtureId string            `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
+	MonthlyScheduleId string            `json:"monthly_schedule_id" bson:"monthly_schedule_id"`
 	Name              string            `json:"name" bson:"name"`
 	OwnerId           string            `json:"owner_id" bson:"owner_id"`
+	ScheduleId        string            `json:"schedule_id" bson:"schedule_id"`
 	UpdatedAt         time.Time         `json:"updated_at" bson:"updated_at"`
 	WeekdaySchedules  map[string]string `json:"weekday_schedules" bson:"weekday_schedules"`
+	WeeklyScheduleId  string            `json:"weekly_schedule_id" bson:"weekly_schedule_id"`
 	YeardaySchedules  map[string]string `json:"yearday_schedules" bson:"yearday_schedules"`
+	YearlyScheduleId  string            `json:"yearly_schedule_id" bson:"yearly_schedule_id"`
 }
 
 func NewCalendar() *Calendar {
@@ -84,6 +89,47 @@ func (calendar *Calendar) BaseScheduleOrCreate(db data.DB) (*Schedule, error) {
 		schedule := NewSchedule()
 		schedule.SetID(db.NewID())
 		if err := calendar.SetBaseSchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
+func (calendar *Calendar) SetDailySchedule(scheduleArgument *Schedule) error {
+	calendar.DailyScheduleId = scheduleArgument.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) DailySchedule(db data.DB) (*Schedule, error) {
+	if calendar.DailyScheduleId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	scheduleArgument := NewSchedule()
+	id, _ := db.ParseID(calendar.DailyScheduleId)
+	scheduleArgument.SetID(id)
+	return scheduleArgument, db.PopulateByID(scheduleArgument)
+
+}
+
+func (calendar *Calendar) DailyScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.DailySchedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetDailySchedule(schedule); err != nil {
 			return nil, err
 		}
 
@@ -184,6 +230,47 @@ func (calendar *Calendar) ManifestFixtureOrCreate(db data.DB) (*Fixture, error) 
 	}
 }
 
+func (calendar *Calendar) SetMonthlySchedule(scheduleArgument *Schedule) error {
+	calendar.MonthlyScheduleId = scheduleArgument.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) MonthlySchedule(db data.DB) (*Schedule, error) {
+	if calendar.MonthlyScheduleId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	scheduleArgument := NewSchedule()
+	id, _ := db.ParseID(calendar.MonthlyScheduleId)
+	scheduleArgument.SetID(id)
+	return scheduleArgument, db.PopulateByID(scheduleArgument)
+
+}
+
+func (calendar *Calendar) MonthlyScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.MonthlySchedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetMonthlySchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
 func (calendar *Calendar) SetOwner(userArgument *User) error {
 	calendar.OwnerId = userArgument.ID().String()
 	return nil
@@ -225,6 +312,129 @@ func (calendar *Calendar) OwnerOrCreate(db data.DB) (*User, error) {
 	}
 }
 
+func (calendar *Calendar) SetSchedule(scheduleArgument *Schedule) error {
+	calendar.ScheduleId = scheduleArgument.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) Schedule(db data.DB) (*Schedule, error) {
+	if calendar.ScheduleId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	scheduleArgument := NewSchedule()
+	id, _ := db.ParseID(calendar.ScheduleId)
+	scheduleArgument.SetID(id)
+	return scheduleArgument, db.PopulateByID(scheduleArgument)
+
+}
+
+func (calendar *Calendar) ScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.Schedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetSchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
+func (calendar *Calendar) SetWeeklySchedule(scheduleArgument *Schedule) error {
+	calendar.WeeklyScheduleId = scheduleArgument.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) WeeklySchedule(db data.DB) (*Schedule, error) {
+	if calendar.WeeklyScheduleId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	scheduleArgument := NewSchedule()
+	id, _ := db.ParseID(calendar.WeeklyScheduleId)
+	scheduleArgument.SetID(id)
+	return scheduleArgument, db.PopulateByID(scheduleArgument)
+
+}
+
+func (calendar *Calendar) WeeklyScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.WeeklySchedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetWeeklySchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
+func (calendar *Calendar) SetYearlySchedule(scheduleArgument *Schedule) error {
+	calendar.YearlyScheduleId = scheduleArgument.ID().String()
+	return nil
+}
+
+func (calendar *Calendar) YearlySchedule(db data.DB) (*Schedule, error) {
+	if calendar.YearlyScheduleId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	scheduleArgument := NewSchedule()
+	id, _ := db.ParseID(calendar.YearlyScheduleId)
+	scheduleArgument.SetID(id)
+	return scheduleArgument, db.PopulateByID(scheduleArgument)
+
+}
+
+func (calendar *Calendar) YearlyScheduleOrCreate(db data.DB) (*Schedule, error) {
+	schedule, err := calendar.YearlySchedule(db)
+
+	if err == ErrEmptyLink {
+		schedule := NewSchedule()
+		schedule.SetID(db.NewID())
+		if err := calendar.SetYearlySchedule(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(schedule); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(calendar); err != nil {
+			return nil, err
+		}
+
+		return schedule, nil
+	} else {
+		return schedule, err
+	}
+}
+
 // BSON {{{
 func (calendar *Calendar) GetBSON() (interface{}, error) {
 
@@ -245,11 +455,21 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 
 		BaseScheduleId string `json:"base_schedule_id" bson:"base_schedule_id"`
 
+		DailyScheduleId string `json:"daily_schedule_id" bson:"daily_schedule_id"`
+
 		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
 		ManifestFixtureId string `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
 
+		MonthlyScheduleId string `json:"monthly_schedule_id" bson:"monthly_schedule_id"`
+
 		OwnerId string `json:"owner_id" bson:"owner_id"`
+
+		ScheduleId string `json:"schedule_id" bson:"schedule_id"`
+
+		WeeklyScheduleId string `json:"weekly_schedule_id" bson:"weekly_schedule_id"`
+
+		YearlyScheduleId string `json:"yearly_schedule_id" bson:"yearly_schedule_id"`
 	}{
 
 		CreatedAt: calendar.CreatedAt,
@@ -266,11 +486,21 @@ func (calendar *Calendar) GetBSON() (interface{}, error) {
 
 		BaseScheduleId: calendar.BaseScheduleId,
 
+		DailyScheduleId: calendar.DailyScheduleId,
+
 		FixturesIds: calendar.FixturesIds,
 
 		ManifestFixtureId: calendar.ManifestFixtureId,
 
+		MonthlyScheduleId: calendar.MonthlyScheduleId,
+
 		OwnerId: calendar.OwnerId,
+
+		ScheduleId: calendar.ScheduleId,
+
+		WeeklyScheduleId: calendar.WeeklyScheduleId,
+
+		YearlyScheduleId: calendar.YearlyScheduleId,
 	}, nil
 
 }
@@ -294,11 +524,21 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 		BaseScheduleId string `json:"base_schedule_id" bson:"base_schedule_id"`
 
+		DailyScheduleId string `json:"daily_schedule_id" bson:"daily_schedule_id"`
+
 		FixturesIds []string `json:"fixtures_ids" bson:"fixtures_ids"`
 
 		ManifestFixtureId string `json:"manifest_fixture_id" bson:"manifest_fixture_id"`
 
+		MonthlyScheduleId string `json:"monthly_schedule_id" bson:"monthly_schedule_id"`
+
 		OwnerId string `json:"owner_id" bson:"owner_id"`
+
+		ScheduleId string `json:"schedule_id" bson:"schedule_id"`
+
+		WeeklyScheduleId string `json:"weekly_schedule_id" bson:"weekly_schedule_id"`
+
+		YearlyScheduleId string `json:"yearly_schedule_id" bson:"yearly_schedule_id"`
 	}{}
 
 	err := raw.Unmarshal(&tmp)
@@ -322,11 +562,21 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 	calendar.BaseScheduleId = tmp.BaseScheduleId
 
+	calendar.DailyScheduleId = tmp.DailyScheduleId
+
 	calendar.FixturesIds = tmp.FixturesIds
 
 	calendar.ManifestFixtureId = tmp.ManifestFixtureId
 
+	calendar.MonthlyScheduleId = tmp.MonthlyScheduleId
+
 	calendar.OwnerId = tmp.OwnerId
+
+	calendar.ScheduleId = tmp.ScheduleId
+
+	calendar.WeeklyScheduleId = tmp.WeeklyScheduleId
+
+	calendar.YearlyScheduleId = tmp.YearlyScheduleId
 
 	return nil
 
@@ -335,6 +585,10 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 // BSON }}}
 
 func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["id"]; ok {
+		calendar.Id = val.(string)
+	}
 
 	if val, ok := structure["created_at"]; ok {
 		calendar.CreatedAt = val.(time.Time)
@@ -360,8 +614,32 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.YeardaySchedules = val.(map[string]string)
 	}
 
-	if val, ok := structure["id"]; ok {
-		calendar.Id = val.(string)
+	if val, ok := structure["owner_id"]; ok {
+		calendar.OwnerId = val.(string)
+	}
+
+	if val, ok := structure["base_schedule_id"]; ok {
+		calendar.BaseScheduleId = val.(string)
+	}
+
+	if val, ok := structure["daily_schedule_id"]; ok {
+		calendar.DailyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["weekly_schedule_id"]; ok {
+		calendar.WeeklyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["monthly_schedule_id"]; ok {
+		calendar.MonthlyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["yearly_schedule_id"]; ok {
+		calendar.YearlyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["schedule_id"]; ok {
+		calendar.ScheduleId = val.(string)
 	}
 
 	if val, ok := structure["manifest_fixture_id"]; ok {
@@ -372,17 +650,15 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.FixturesIds = val.([]string)
 	}
 
-	if val, ok := structure["owner_id"]; ok {
-		calendar.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["base_schedule_id"]; ok {
-		calendar.BaseScheduleId = val.(string)
-	}
-
 }
 
 var CalendarStructure = map[string]metis.Primitive{
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"deleted_at": 4,
 
@@ -392,17 +668,21 @@ var CalendarStructure = map[string]metis.Primitive{
 
 	"yearday_schedules": 11,
 
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"owner_id": 9,
-
 	"base_schedule_id": 9,
+
+	"daily_schedule_id": 9,
+
+	"weekly_schedule_id": 9,
+
+	"monthly_schedule_id": 9,
+
+	"yearly_schedule_id": 9,
+
+	"schedule_id": 9,
 
 	"manifest_fixture_id": 9,
 
 	"fixtures_ids": 10,
+
+	"owner_id": 9,
 }

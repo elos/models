@@ -14,9 +14,12 @@ func (n Name) String() string {
 }
 
 const (
-	Habit   Name = "HABIT"
-	Checkin      = "CHECKIN"
-	Goal         = "GOAL"
+	Habit    Name = "HABIT"
+	Checkin       = "CHECKIN"
+	Goal          = "GOAL"
+	Location      = "LOCATION"
+	Update        = "UPDATE"
+	Mobile        = "MOBILE"
 )
 
 // ForName finds the tag indicated by the name parameter for the
