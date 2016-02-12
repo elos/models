@@ -92,6 +92,7 @@ func Map(db data.DB, f func(db data.DB, u *models.User) error) error {
 		if err = f(db, u); err != nil {
 			return err
 		}
+		u = models.NewUser()
 	}
 
 	return iter.Close()
