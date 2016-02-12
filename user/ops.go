@@ -72,3 +72,27 @@ func Tasks(db data.DB, u *models.User, attrs data.AttrMap) ([]*models.Task, erro
 
 	return tasks, nil
 }
+
+func Profile(db data.DB, u *models.User) (*models.Profile, error) {
+	p := models.NewProfile()
+	if err := db.PopulateByField("owner_id", u.ID().String(), p); err != nil {
+		return nil, err
+	}
+	return p, nil
+}
+
+func Map(db data.DB, f func(db data.DB, u *models.User) error) error {
+	iter, err := db.Query(models.UserKind).Execute()
+	if err != nil {
+		return err
+	}
+
+	u := models.NewUser()
+	for iter.Next(u) {
+		if err = f(db, u); err != nil {
+			return err
+		}
+	}
+
+	return iter.Close()
+}

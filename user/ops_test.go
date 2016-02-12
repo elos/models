@@ -1,7 +1,9 @@
 package user_test
 
 import (
+	"log"
 	"testing"
+	"time"
 
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mem"
@@ -106,5 +108,71 @@ func TestTasks(t *testing.T) {
 
 	if !data.Equivalent(tsk, tasks[0]) {
 		t.Fatal("Expected task to match the one we created")
+	}
+}
+
+func TestProfile(t *testing.T) {
+	db := mem.NewDB()
+	u, _, err := user.Create(db, "username", "password")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	p := models.NewProfile()
+	p.SetID(db.NewID())
+	p.SetOwner(u)
+	if err := db.Save(p); err != nil {
+		log.Fatal(err)
+	}
+
+	pFound, err := user.Profile(db, u)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !data.Equivalent(pFound, p) {
+		t.Fatal("Profile saved and retrieved should match")
+	}
+}
+
+func TestMap(t *testing.T) {
+	db := mem.NewDB()
+
+	u1, _, err := user.Create(db, "username", "password")
+	if err != nil {
+		log.Fatal(err)
+	}
+	u2, _, err := user.Create(db, "newusername", "newpassword")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if !u1.DeletedAt.IsZero() {
+		t.Fatal("User DeletedAt should be zero")
+	}
+
+	if !u2.DeletedAt.IsZero() {
+		t.Fatal("User DeletedAt should be zero")
+	}
+
+	user.Map(db, func(db data.DB, u *models.User) error {
+		u.DeletedAt = time.Now()
+		return db.Save(u)
+	})
+
+	if err := db.PopulateByID(u1); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := db.PopulateByID(u2); err != nil {
+		t.Fatal(err)
+	}
+
+	if u1.DeletedAt.IsZero() {
+		t.Fatal("User DeletedAt should not be zero")
+	}
+
+	if u2.DeletedAt.IsZero() {
+		t.Fatal("User DeletedAt should not be zero")
 	}
 }

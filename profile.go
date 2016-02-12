@@ -24,6 +24,7 @@ type Profile struct {
 	Email                 string    `json:"email" bson:"email"`
 	EventsIds             []string  `json:"events_ids" bson:"events_ids"`
 	Id                    string    `json:"id" bson:"_id,omitempty"`
+	LocationId            string    `json:"location_id" bson:"location_id"`
 	Name                  string    `json:"name" bson:"name"`
 	OntologyId            string    `json:"ontology_id" bson:"ontology_id"`
 	OwnerId               string    `json:"owner_id" bson:"owner_id"`
@@ -295,6 +296,47 @@ func (profile *Profile) Events(db data.DB) (events []*Event, err error) {
 	return
 }
 
+func (profile *Profile) SetLocation(locationArgument *Location) error {
+	profile.LocationId = locationArgument.ID().String()
+	return nil
+}
+
+func (profile *Profile) Location(db data.DB) (*Location, error) {
+	if profile.LocationId == "" {
+		return nil, ErrEmptyLink
+	}
+
+	locationArgument := NewLocation()
+	id, _ := db.ParseID(profile.LocationId)
+	locationArgument.SetID(id)
+	return locationArgument, db.PopulateByID(locationArgument)
+
+}
+
+func (profile *Profile) LocationOrCreate(db data.DB) (*Location, error) {
+	location, err := profile.Location(db)
+
+	if err == ErrEmptyLink {
+		location := NewLocation()
+		location.SetID(db.NewID())
+		if err := profile.SetLocation(location); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(location); err != nil {
+			return nil, err
+		}
+
+		if err := db.Save(profile); err != nil {
+			return nil, err
+		}
+
+		return location, nil
+	} else {
+		return location, err
+	}
+}
+
 func (profile *Profile) SetOntology(ontologyArgument *Ontology) error {
 	profile.OntologyId = ontologyArgument.ID().String()
 	return nil
@@ -493,6 +535,8 @@ func (profile *Profile) GetBSON() (interface{}, error) {
 
 		EventsIds []string `json:"events_ids" bson:"events_ids"`
 
+		LocationId string `json:"location_id" bson:"location_id"`
+
 		OntologyId string `json:"ontology_id" bson:"ontology_id"`
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
@@ -527,6 +571,8 @@ func (profile *Profile) GetBSON() (interface{}, error) {
 		DataIds: profile.DataIds,
 
 		EventsIds: profile.EventsIds,
+
+		LocationId: profile.LocationId,
 
 		OntologyId: profile.OntologyId,
 
@@ -570,6 +616,8 @@ func (profile *Profile) SetBSON(raw bson.Raw) error {
 
 		EventsIds []string `json:"events_ids" bson:"events_ids"`
 
+		LocationId string `json:"location_id" bson:"location_id"`
+
 		OntologyId string `json:"ontology_id" bson:"ontology_id"`
 
 		OwnerId string `json:"owner_id" bson:"owner_id"`
@@ -612,6 +660,8 @@ func (profile *Profile) SetBSON(raw bson.Raw) error {
 
 	profile.EventsIds = tmp.EventsIds
 
+	profile.LocationId = tmp.LocationId
+
 	profile.OntologyId = tmp.OntologyId
 
 	profile.OwnerId = tmp.OwnerId
@@ -627,6 +677,10 @@ func (profile *Profile) SetBSON(raw bson.Raw) error {
 // BSON }}}
 
 func (profile *Profile) FromStructure(structure map[string]interface{}) {
+
+	if val, ok := structure["updated_at"]; ok {
+		profile.UpdatedAt = val.(time.Time)
+	}
 
 	if val, ok := structure["deleted_at"]; ok {
 		profile.DeletedAt = val.(time.Time)
@@ -652,26 +706,6 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 		profile.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["updated_at"]; ok {
-		profile.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["owner_id"]; ok {
-		profile.OwnerId = val.(string)
-	}
-
-	if val, ok := structure["ontology_id"]; ok {
-		profile.OntologyId = val.(string)
-	}
-
-	if val, ok := structure["current_action_id"]; ok {
-		profile.CurrentActionId = val.(string)
-	}
-
-	if val, ok := structure["routines_ids"]; ok {
-		profile.RoutinesIds = val.([]string)
-	}
-
 	if val, ok := structure["current_actionable_id"]; ok {
 		profile.CurrentActionableId = val.(string)
 	}
@@ -684,29 +718,45 @@ func (profile *Profile) FromStructure(structure map[string]interface{}) {
 		profile.CalendarId = val.(string)
 	}
 
-	if val, ok := structure["data_ids"]; ok {
-		profile.DataIds = val.([]string)
+	if val, ok := structure["owner_id"]; ok {
+		profile.OwnerId = val.(string)
 	}
 
 	if val, ok := structure["actions_ids"]; ok {
 		profile.ActionsIds = val.([]string)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		profile.EventsIds = val.([]string)
-	}
-
 	if val, ok := structure["tasks_ids"]; ok {
 		profile.TasksIds = val.([]string)
+	}
+
+	if val, ok := structure["routines_ids"]; ok {
+		profile.RoutinesIds = val.([]string)
+	}
+
+	if val, ok := structure["ontology_id"]; ok {
+		profile.OntologyId = val.(string)
+	}
+
+	if val, ok := structure["current_action_id"]; ok {
+		profile.CurrentActionId = val.(string)
+	}
+
+	if val, ok := structure["location_id"]; ok {
+		profile.LocationId = val.(string)
+	}
+
+	if val, ok := structure["data_ids"]; ok {
+		profile.DataIds = val.([]string)
+	}
+
+	if val, ok := structure["events_ids"]; ok {
+		profile.EventsIds = val.([]string)
 	}
 
 }
 
 var ProfileStructure = map[string]metis.Primitive{
-
-	"phone": 3,
-
-	"email": 3,
 
 	"id": 9,
 
@@ -718,6 +768,14 @@ var ProfileStructure = map[string]metis.Primitive{
 
 	"name": 3,
 
+	"phone": 3,
+
+	"email": 3,
+
+	"owner_id": 9,
+
+	"actions_ids": 10,
+
 	"current_actionable_id": 9,
 
 	"current_actionable_kind": 3,
@@ -726,17 +784,15 @@ var ProfileStructure = map[string]metis.Primitive{
 
 	"data_ids": 10,
 
-	"actions_ids": 10,
-
 	"events_ids": 10,
 
 	"tasks_ids": 10,
 
 	"routines_ids": 10,
 
-	"owner_id": 9,
-
 	"ontology_id": 9,
 
 	"current_action_id": 9,
+
+	"location_id": 9,
 }

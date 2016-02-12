@@ -28,7 +28,9 @@ type Recurrence struct {
 	Id         string      `json:"id" bson:"_id,omitempty"`
 	Inclusions []time.Time `json:"inclusions" bson:"inclusions"`
 	Interval   int         `json:"interval" bson:"interval"`
+	Limit      time.Time   `json:"limit" bson:"limit"`
 	OwnerId    string      `json:"owner_id" bson:"owner_id"`
+	Start      time.Time   `json:"start" bson:"start"`
 	Until      time.Time   `json:"until" bson:"until"`
 	UpdatedAt  time.Time   `json:"updated_at" bson:"updated_at"`
 	WeekStart  int         `json:"week_start" bson:"week_start"`
@@ -145,6 +147,10 @@ func (recurrence *Recurrence) GetBSON() (interface{}, error) {
 
 		Interval int `json:"interval" bson:"interval"`
 
+		Limit time.Time `json:"limit" bson:"limit"`
+
+		Start time.Time `json:"start" bson:"start"`
+
 		Until time.Time `json:"until" bson:"until"`
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
@@ -183,6 +189,10 @@ func (recurrence *Recurrence) GetBSON() (interface{}, error) {
 		Inclusions: recurrence.Inclusions,
 
 		Interval: recurrence.Interval,
+
+		Limit: recurrence.Limit,
+
+		Start: recurrence.Start,
 
 		Until: recurrence.Until,
 
@@ -230,6 +240,10 @@ func (recurrence *Recurrence) SetBSON(raw bson.Raw) error {
 
 		Interval int `json:"interval" bson:"interval"`
 
+		Limit time.Time `json:"limit" bson:"limit"`
+
+		Start time.Time `json:"start" bson:"start"`
+
 		Until time.Time `json:"until" bson:"until"`
 
 		UpdatedAt time.Time `json:"updated_at" bson:"updated_at"`
@@ -276,6 +290,10 @@ func (recurrence *Recurrence) SetBSON(raw bson.Raw) error {
 
 	recurrence.Interval = tmp.Interval
 
+	recurrence.Limit = tmp.Limit
+
+	recurrence.Start = tmp.Start
+
 	recurrence.Until = tmp.Until
 
 	recurrence.UpdatedAt = tmp.UpdatedAt
@@ -292,48 +310,12 @@ func (recurrence *Recurrence) SetBSON(raw bson.Raw) error {
 
 func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["created_at"]; ok {
-		recurrence.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		recurrence.UpdatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["by_second"]; ok {
-		recurrence.BySecond = val.([]int)
-	}
-
-	if val, ok := structure["by_year_day"]; ok {
-		recurrence.ByYearDay = val.([]int)
-	}
-
-	if val, ok := structure["week_start"]; ok {
-		recurrence.WeekStart = val.(int)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		recurrence.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["by_set_pos"]; ok {
-		recurrence.BySetPos = val.([]int)
-	}
-
-	if val, ok := structure["inclusions"]; ok {
-		recurrence.Inclusions = val.([]time.Time)
-	}
-
-	if val, ok := structure["by_month_day"]; ok {
-		recurrence.ByMonthDay = val.([]int)
-	}
-
-	if val, ok := structure["frequency"]; ok {
-		recurrence.Frequency = val.(string)
-	}
-
-	if val, ok := structure["until"]; ok {
-		recurrence.Until = val.(time.Time)
+	if val, ok := structure["start"]; ok {
+		recurrence.Start = val.(time.Time)
 	}
 
 	if val, ok := structure["count"]; ok {
@@ -344,24 +326,68 @@ func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 		recurrence.Interval = val.(int)
 	}
 
+	if val, ok := structure["inclusions"]; ok {
+		recurrence.Inclusions = val.([]time.Time)
+	}
+
+	if val, ok := structure["by_second"]; ok {
+		recurrence.BySecond = val.([]int)
+	}
+
 	if val, ok := structure["by_hour"]; ok {
 		recurrence.ByHour = val.([]int)
+	}
+
+	if val, ok := structure["by_month_num"]; ok {
+		recurrence.ByMonthNum = val.([]int)
+	}
+
+	if val, ok := structure["by_set_pos"]; ok {
+		recurrence.BySetPos = val.([]int)
+	}
+
+	if val, ok := structure["week_start"]; ok {
+		recurrence.WeekStart = val.(int)
+	}
+
+	if val, ok := structure["limit"]; ok {
+		recurrence.Limit = val.(time.Time)
+	}
+
+	if val, ok := structure["frequency"]; ok {
+		recurrence.Frequency = val.(string)
 	}
 
 	if val, ok := structure["by_day"]; ok {
 		recurrence.ByDay = val.([]int)
 	}
 
+	if val, ok := structure["by_year_day"]; ok {
+		recurrence.ByYearDay = val.([]int)
+	}
+
 	if val, ok := structure["id"]; ok {
 		recurrence.Id = val.(string)
 	}
 
-	if val, ok := structure["by_week_num"]; ok {
-		recurrence.ByWeekNum = val.([]int)
+	if val, ok := structure["created_at"]; ok {
+		recurrence.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["by_month_num"]; ok {
-		recurrence.ByMonthNum = val.([]int)
+	if val, ok := structure["deleted_at"]; ok {
+		recurrence.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["until"]; ok {
+		recurrence.Until = val.(time.Time)
+	}
+
+	if val, ok := structure["by_month_day"]; ok {
+		recurrence.ByMonthDay = val.([]int)
+	}
+
+	if val, ok := structure["by_week_num"]; ok {
+		recurrence.ByWeekNum = val.([]int)
 	}
 
 	if val, ok := structure["exclusions"]; ok {
@@ -376,43 +402,47 @@ func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 
 var RecurrenceStructure = map[string]metis.Primitive{
 
-	"frequency": 3,
-
 	"until": 4,
-
-	"count": 1,
-
-	"interval": 1,
-
-	"by_hour": 6,
-
-	"by_day": 6,
 
 	"by_month_day": 6,
 
-	"id": 9,
-
 	"by_week_num": 6,
-
-	"by_month_num": 6,
 
 	"exclusions": 8,
 
+	"id": 9,
+
 	"created_at": 4,
-
-	"updated_at": 4,
-
-	"by_second": 6,
-
-	"by_year_day": 6,
-
-	"week_start": 1,
 
 	"deleted_at": 4,
 
-	"by_set_pos": 6,
+	"interval": 1,
 
 	"inclusions": 8,
+
+	"updated_at": 4,
+
+	"start": 4,
+
+	"count": 1,
+
+	"by_set_pos": 6,
+
+	"week_start": 1,
+
+	"limit": 4,
+
+	"by_second": 6,
+
+	"by_hour": 6,
+
+	"by_month_num": 6,
+
+	"frequency": 3,
+
+	"by_day": 6,
+
+	"by_year_day": 6,
 
 	"owner_id": 9,
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/elos/data/builtin/mem"
 	"github.com/elos/models"
 	"github.com/elos/models/task"
 )
@@ -98,5 +99,28 @@ func TestTimeSpent(t *testing.T) {
 
 	if task.CollectiveTimeSpent([]*models.Task{tsk}) != 1*time.Hour {
 		t.Fatal("collective time spent should be 1 hour")
+	}
+}
+
+func TestContainsTags(t *testing.T) {
+	db := mem.NewDB()
+
+	tsk := models.NewTask()
+
+	tag1 := models.NewTag()
+	tag2 := models.NewTag()
+	tag1.SetID(db.NewID())
+	tag2.SetID(db.NewID())
+
+	tsk.IncludeTag(tag1)
+
+	if task.ContainsTags(tsk, tag1, tag2) {
+		t.Fatal("Shouldn't have included both tags")
+	}
+
+	tsk.IncludeTag(tag2)
+
+	if !task.ContainsTags(tsk, tag1, tag2) {
+		t.Fatal("Should have included both tags")
 	}
 }
