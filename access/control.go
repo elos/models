@@ -23,13 +23,19 @@ func CanCreate(db data.DB, u *models.User, r data.Record) (bool, error) {
 
 	owner, err := property.Owner(db)
 
+	log.Printf("User: %+v", u)
+	log.Print("Owner: %+v", owner)
+
 	// if ownerless
 	if err == models.ErrEmptyLink {
+		log.Print("empty link")
 		return false, nil
 	} else {
+		log.Print("other error")
 		return false, err
 	}
 
+	log.Print("going to equivalnce")
 	return data.Equivalent(u, owner), nil
 }
 
