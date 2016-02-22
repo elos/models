@@ -24,14 +24,14 @@ func CanCreate(db data.DB, u *models.User, r data.Record) (bool, error) {
 	owner, err := property.Owner(db)
 
 	log.Printf("User: %+v", u)
-	log.Print("Owner: %+v", owner)
+	log.Printf("Owner: %+v", owner)
 
 	// if ownerless
 	if err == models.ErrEmptyLink {
 		log.Print("empty link")
 		return false, nil
 	} else {
-		log.Print("other error")
+		log.Printf("other error %s", err)
 		return false, err
 	}
 
