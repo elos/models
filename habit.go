@@ -304,8 +304,6 @@ func (habit *Habit) FromStructure(structure map[string]interface{}) {
 
 var HabitStructure = map[string]metis.Primitive{
 
-	"created_at": 4,
-
 	"updated_at": 4,
 
 	"deleted_at": 4,
@@ -314,9 +312,11 @@ var HabitStructure = map[string]metis.Primitive{
 
 	"id": 9,
 
-	"checkins_ids": 10,
+	"created_at": 4,
 
 	"owner_id": 9,
 
 	"tag_id": 9,
+
+	"checkins_ids": 10,
 }

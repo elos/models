@@ -8,16 +8,19 @@ import (
 )
 
 func CanCreate(db data.DB, u *models.User, r data.Record) (bool, error) {
+	log.Print(r)
 	k := r.Kind()
 
 	// a user can certainly never create a User
 	if k == models.UserKind {
+		log.Print("tried to create user")
 		return false, nil
 	}
 
 	// a user can only create property
 	property, ok := r.(Property)
 	if !ok {
+		log.Print("model isn't property")
 		return false, nil
 	}
 

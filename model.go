@@ -370,14 +370,6 @@ func (model *Model) SetBSON(raw bson.Raw) error {
 
 func (model *Model) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["created_at"]; ok {
-		model.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		model.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		model.DeletedAt = val.(time.Time)
 	}
@@ -388,6 +380,18 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["id"]; ok {
 		model.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		model.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		model.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["traits_ids"]; ok {
+		model.TraitsIds = val.([]string)
 	}
 
 	if val, ok := structure["relations_ids"]; ok {
@@ -406,13 +410,13 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 		model.OwnerId = val.(string)
 	}
 
-	if val, ok := structure["traits_ids"]; ok {
-		model.TraitsIds = val.([]string)
-	}
-
 }
 
 var ModelStructure = map[string]metis.Primitive{
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
 
 	"name": 3,
 
@@ -420,17 +424,13 @@ var ModelStructure = map[string]metis.Primitive{
 
 	"created_at": 4,
 
-	"updated_at": 4,
+	"ontology_id": 9,
 
-	"deleted_at": 4,
+	"objects_ids": 10,
 
 	"owner_id": 9,
 
 	"traits_ids": 10,
 
 	"relations_ids": 10,
-
-	"ontology_id": 9,
-
-	"objects_ids": 10,
 }

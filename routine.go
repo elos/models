@@ -439,8 +439,6 @@ var RoutineStructure = map[string]metis.Primitive{
 
 	"end_time": 4,
 
-	"current_action_id": 9,
-
 	"owner_id": 9,
 
 	"tasks_ids": 10,
@@ -448,4 +446,6 @@ var RoutineStructure = map[string]metis.Primitive{
 	"completed_tasks_ids": 10,
 
 	"actions_ids": 10,
+
+	"current_action_id": 9,
 }

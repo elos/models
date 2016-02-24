@@ -245,14 +245,6 @@ func (credential *Credential) SetBSON(raw bson.Raw) error {
 
 func (credential *Credential) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["updated_at"]; ok {
-		credential.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["deleted_at"]; ok {
-		credential.DeletedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["public"]; ok {
 		credential.Public = val.(string)
 	}
@@ -277,6 +269,14 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 		credential.CreatedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["updated_at"]; ok {
+		credential.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		credential.DeletedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		credential.OwnerId = val.(string)
 	}
@@ -288,8 +288,6 @@ func (credential *Credential) FromStructure(structure map[string]interface{}) {
 }
 
 var CredentialStructure = map[string]metis.Primitive{
-
-	"spec": 3,
 
 	"name": 3,
 
@@ -305,7 +303,9 @@ var CredentialStructure = map[string]metis.Primitive{
 
 	"private": 3,
 
-	"owner_id": 9,
+	"spec": 3,
 
 	"sessions_ids": 10,
+
+	"owner_id": 9,
 }
