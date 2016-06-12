@@ -8,23 +8,43 @@ import (
 	"github.com/elos/models"
 )
 
-var (
-	ErrBadPublic  = errors.New("bad public credential")
-	ErrBadPrivate = errors.New("bad private credential")
+const (
+	publicField  = "public"
+	passwordSpec = "password"
 )
 
-func Authenticate(db data.DB, public, private string) (*models.Credential, error) {
-	c := models.NewCredential()
+type (
+	Error error
 
-	if err := db.PopulateByField("public", public, c); err != nil {
-		return nil, ErrBadPublic
+	ErrInternal   Error
+	ErrBadPublic  Error
+	ErrBadPrivate Error
+)
+
+var (
+	errInternal   ErrInternal   = errors.New("access error: internal")
+	errBadPublic  ErrBadPublic  = errors.New("access error: bad public credential")
+	errBadPrivate ErrBadPrivate = errors.New("access error: bad private credential")
+)
+
+func Authenticate(db data.DB, public, private string) (*models.Credential, Error) {
+	c := new(models.Credential)
+
+	if err := db.PopulateByField(publicField, public, c); err != nil {
+		switch err {
+		case data.ErrNotFound:
+			return nil, errBadPublic
+		default:
+			return nil, errInternal
+		}
+		return nil, errBadPublic
 	}
 
 	if challenge(c, private) {
 		return c, nil
 	}
 
-	return nil, ErrBadPrivate
+	return nil, errBadPrivate
 }
 
 func challenge(c *models.Credential, private string) bool {
@@ -32,7 +52,7 @@ func challenge(c *models.Credential, private string) bool {
 	default:
 		log.Printf("Unrecognized credential spec: '%s'", c.Spec)
 		fallthrough
-	case "password":
+	case passwordSpec:
 		// eventually need encryption here
 		return private == c.Private
 	}
