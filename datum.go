@@ -315,6 +315,8 @@ func (datum *Datum) FromStructure(structure map[string]interface{}) {
 
 var DatumStructure = map[string]metis.Primitive{
 
+	"unit": 3,
+
 	"tags": 7,
 
 	"context": 3,
@@ -325,11 +327,9 @@ var DatumStructure = map[string]metis.Primitive{
 
 	"value": 2,
 
-	"unit": 3,
-
-	"owner_id": 9,
-
 	"person_id": 9,
 
 	"event_id": 9,
+
+	"owner_id": 9,
 }

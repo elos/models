@@ -361,21 +361,21 @@ func (user *User) FromStructure(structure map[string]interface{}) {
 
 var UserStructure = map[string]metis.Primitive{
 
+	"id": 9,
+
+	"created_at": 4,
+
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
 	"password": 3,
 
-	"id": 9,
-
-	"created_at": 4,
+	"authorizations_ids": 10,
 
 	"sessions_ids": 10,
 
 	"credentials_ids": 10,
 
 	"groups_ids": 10,
-
-	"authorizations_ids": 10,
 }

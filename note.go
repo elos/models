@@ -166,14 +166,6 @@ func (note *Note) SetBSON(raw bson.Raw) error {
 
 func (note *Note) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		note.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		note.CreatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["updated_at"]; ok {
 		note.UpdatedAt = val.(time.Time)
 	}
@@ -184,6 +176,14 @@ func (note *Note) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["text"]; ok {
 		note.Text = val.(string)
+	}
+
+	if val, ok := structure["id"]; ok {
+		note.Id = val.(string)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		note.CreatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

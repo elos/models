@@ -427,17 +427,17 @@ func (routine *Routine) FromStructure(structure map[string]interface{}) {
 
 var RoutineStructure = map[string]metis.Primitive{
 
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
 	"name": 3,
 
 	"start_time": 4,
 
 	"end_time": 4,
+
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"owner_id": 9,
 

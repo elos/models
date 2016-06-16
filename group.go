@@ -278,18 +278,6 @@ func (group *Group) SetBSON(raw bson.Raw) error {
 
 func (group *Group) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["deleted_at"]; ok {
-		group.DeletedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["name"]; ok {
-		group.Name = val.(string)
-	}
-
-	if val, ok := structure["access"]; ok {
-		group.Access = val.(int)
-	}
-
 	if val, ok := structure["id"]; ok {
 		group.Id = val.(string)
 	}
@@ -300,6 +288,18 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["updated_at"]; ok {
 		group.UpdatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["deleted_at"]; ok {
+		group.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["name"]; ok {
+		group.Name = val.(string)
+	}
+
+	if val, ok := structure["access"]; ok {
+		group.Access = val.(int)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -318,21 +318,21 @@ func (group *Group) FromStructure(structure map[string]interface{}) {
 
 var GroupStructure = map[string]metis.Primitive{
 
-	"name": 3,
-
-	"access": 1,
-
-	"id": 9,
-
 	"created_at": 4,
 
 	"updated_at": 4,
 
 	"deleted_at": 4,
 
+	"name": 3,
+
+	"access": 1,
+
+	"id": 9,
+
+	"contexts_ids": 10,
+
 	"owner_id": 9,
 
 	"grantees_ids": 10,
-
-	"contexts_ids": 10,
 }

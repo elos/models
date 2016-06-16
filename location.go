@@ -184,10 +184,6 @@ func (location *Location) SetBSON(raw bson.Raw) error {
 
 func (location *Location) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["latitude"]; ok {
-		location.Latitude = val.(float64)
-	}
-
 	if val, ok := structure["longitude"]; ok {
 		location.Longitude = val.(float64)
 	}
@@ -212,6 +208,10 @@ func (location *Location) FromStructure(structure map[string]interface{}) {
 		location.DeletedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["latitude"]; ok {
+		location.Latitude = val.(float64)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		location.OwnerId = val.(string)
 	}
@@ -219,6 +219,8 @@ func (location *Location) FromStructure(structure map[string]interface{}) {
 }
 
 var LocationStructure = map[string]metis.Primitive{
+
+	"id": 9,
 
 	"created_at": 4,
 
@@ -231,8 +233,6 @@ var LocationStructure = map[string]metis.Primitive{
 	"longitude": 2,
 
 	"altitude": 2,
-
-	"id": 9,
 
 	"owner_id": 9,
 }

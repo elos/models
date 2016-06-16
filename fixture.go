@@ -417,22 +417,6 @@ func (fixture *Fixture) SetBSON(raw bson.Raw) error {
 
 func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["rank"]; ok {
-		fixture.Rank = val.(int)
-	}
-
-	if val, ok := structure["id"]; ok {
-		fixture.Id = val.(string)
-	}
-
-	if val, ok := structure["created_at"]; ok {
-		fixture.CreatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["updated_at"]; ok {
-		fixture.UpdatedAt = val.(time.Time)
-	}
-
 	if val, ok := structure["deleted_at"]; ok {
 		fixture.DeletedAt = val.(time.Time)
 	}
@@ -441,12 +425,12 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.Name = val.(string)
 	}
 
-	if val, ok := structure["end_time"]; ok {
-		fixture.EndTime = val.(time.Time)
+	if val, ok := structure["start_time"]; ok {
+		fixture.StartTime = val.(time.Time)
 	}
 
-	if val, ok := structure["end_offset"]; ok {
-		fixture.EndOffset = val.(int)
+	if val, ok := structure["rank"]; ok {
+		fixture.Rank = val.(int)
 	}
 
 	if val, ok := structure["label"]; ok {
@@ -457,20 +441,32 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.ExpiresAt = val.(time.Time)
 	}
 
-	if val, ok := structure["exceptions"]; ok {
-		fixture.Exceptions = val.([]time.Time)
+	if val, ok := structure["id"]; ok {
+		fixture.Id = val.(string)
 	}
 
-	if val, ok := structure["start_time"]; ok {
-		fixture.StartTime = val.(time.Time)
+	if val, ok := structure["updated_at"]; ok {
+		fixture.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["start_offset"]; ok {
 		fixture.StartOffset = val.(int)
 	}
 
-	if val, ok := structure["events_ids"]; ok {
-		fixture.EventsIds = val.([]string)
+	if val, ok := structure["end_offset"]; ok {
+		fixture.EndOffset = val.(int)
+	}
+
+	if val, ok := structure["exceptions"]; ok {
+		fixture.Exceptions = val.([]time.Time)
+	}
+
+	if val, ok := structure["created_at"]; ok {
+		fixture.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["end_time"]; ok {
+		fixture.EndTime = val.(time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -497,35 +493,41 @@ func (fixture *Fixture) FromStructure(structure map[string]interface{}) {
 		fixture.ActionsIds = val.([]string)
 	}
 
+	if val, ok := structure["events_ids"]; ok {
+		fixture.EventsIds = val.([]string)
+	}
+
 }
 
 var FixtureStructure = map[string]metis.Primitive{
 
-	"name": 3,
+	"created_at": 4,
 
 	"end_time": 4,
 
+	"start_offset": 1,
+
 	"end_offset": 1,
 
+	"exceptions": 8,
+
 	"rank": 1,
-
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"label": 0,
 
 	"expires_at": 4,
 
-	"exceptions": 8,
+	"id": 9,
+
+	"updated_at": 4,
+
+	"deleted_at": 4,
+
+	"name": 3,
 
 	"start_time": 4,
 
-	"start_offset": 1,
+	"events_ids": 10,
 
 	"owner_id": 9,
 
@@ -538,6 +540,4 @@ var FixtureStructure = map[string]metis.Primitive{
 	"eventable_kind": 3,
 
 	"actions_ids": 10,
-
-	"events_ids": 10,
 }

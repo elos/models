@@ -376,10 +376,6 @@ func (object *Object) FromStructure(structure map[string]interface{}) {
 		object.DeletedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["ontology_id"]; ok {
-		object.OntologyId = val.(string)
-	}
-
 	if val, ok := structure["owner_id"]; ok {
 		object.OwnerId = val.(string)
 	}
@@ -396,17 +392,21 @@ func (object *Object) FromStructure(structure map[string]interface{}) {
 		object.ModelId = val.(string)
 	}
 
+	if val, ok := structure["ontology_id"]; ok {
+		object.OntologyId = val.(string)
+	}
+
 }
 
 var ObjectStructure = map[string]metis.Primitive{
+
+	"deleted_at": 4,
 
 	"id": 9,
 
 	"created_at": 4,
 
 	"updated_at": 4,
-
-	"deleted_at": 4,
 
 	"attributes_ids": 10,
 
