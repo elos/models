@@ -80,3 +80,61 @@ func TaskMakeGoal(db data.DB, t *models.Task) (*models.Event, error) {
 
 	return e, nil
 }
+
+func TaskDropGoal(db data.DB, t *models.Task) (*models.Event, error) {
+	u, _ := t.Owner(db)
+	now := time.Now()
+
+	e := models.NewEvent()
+	e.CreatedAt = now
+	e.SetID(db.NewID())
+	e.SetOwner(u)
+	e.Name = "TASK_DROP_GOAL"
+	p, _ := user.Profile(db, u)
+	if p != nil {
+		l, _ := p.Location(db)
+		if l != nil {
+			e.SetLocation(l)
+		}
+	}
+	e.Time = now
+	e.UpdatedAt = now
+	e.Data = map[string]interface{}{
+		"task_id": t.Id,
+	}
+
+	if err := db.Save(e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
+
+func WebSensorLocation(db data.DB, u *models.User, lat, lon float64) (*models.Event, error) {
+	now := time.Now()
+
+	e := models.NewEvent()
+	e.CreatedAt = now
+	e.SetID(db.NewID())
+	e.SetOwner(u)
+	e.Name = "WEB_SENSOR_LOCATION"
+	p, _ := user.Profile(db, u)
+	if p != nil {
+		l, _ := p.Location(db)
+		if l != nil {
+			e.SetLocation(l)
+		}
+	}
+	e.Time = now
+	e.UpdatedAt = now
+	e.Data = map[string]interface{}{
+		"latitude":  lat,
+		"longitude": lon,
+	}
+
+	if err := db.Save(e); err != nil {
+		return nil, err
+	}
+
+	return e, nil
+}
