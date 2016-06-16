@@ -21,6 +21,15 @@ func NewContext(ctx context.Context, u *models.User) context.Context {
 
 // FromContext returns the User value stored in ctx, if any.
 func FromContext(ctx context.Context) (*models.User, bool) {
-	u, ok := ctx.Value(userKey).(*models.User)
+	if ctx == nil {
+		return nil, false
+	}
+
+	v := ctx.Value(userKey)
+	if v == nil {
+		return nil, false
+	}
+
+	u, ok := v.(*models.User)
 	return u, ok
 }
