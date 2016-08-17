@@ -3,16 +3,21 @@ package models
 import (
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
+
+	xmodels "github.com/elos/x/models"
 )
 
 func MongoDB(addr string) (data.DB, error) {
-	db, err := mongo.New(&mongo.Opts{Addr: addr})
+	db, err := mongo.New(
+		&mongo.Opts{
+			Addr: addr,
+			Name: "test",
+		},
+	)
 
 	if err != nil {
 		return db, err
 	}
-
-	db.SetName("test")
 
 	db.RegisterKind(ActionKind, "actions")
 
@@ -34,6 +39,8 @@ func MongoDB(addr string) (data.DB, error) {
 
 	db.RegisterKind(HabitKind, "habits")
 
+	db.RegisterKind(IntegrationKind, "integrations")
+
 	db.RegisterKind(LinkKind, "links")
 
 	db.RegisterKind(LocationKind, "locations")
@@ -43,6 +50,8 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(ModelKind, "models")
 
 	db.RegisterKind(NoteKind, "notes")
+
+	db.RegisterKind(OauthKind, "oauths")
 
 	db.RegisterKind(ObjectKind, "objects")
 
@@ -71,6 +80,24 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(TraitKind, "traits")
 
 	db.RegisterKind(UserKind, "users")
+
+	// manaully added (singular to not coincide)
+	db.RegisterKind(data.Kind(xmodels.Kind_USER.String()), "user")
+	db.RegisterKind(data.Kind(xmodels.Kind_CREDENTIAL.String()), "credential")
+	db.RegisterKind(data.Kind(xmodels.Kind_SESSION.String()), "session")
+	db.RegisterKind(data.Kind(xmodels.Kind_EVENT.String()), "event")
+	db.RegisterKind(data.Kind(xmodels.Kind_GRANT.String()), "grant")
+	db.RegisterKind(data.Kind(xmodels.Kind_SERVICE.String()), "service")
+	db.RegisterKind(data.Kind(xmodels.Kind_INTEGRATION.String()), "integration")
+	db.RegisterKind(data.Kind(xmodels.Kind_PROFILE.String()), "profile")
+	db.RegisterKind(data.Kind(xmodels.Kind_PERSON.String()), "person")
+	db.RegisterKind(data.Kind(xmodels.Kind_CONTACT.String()), "contact")
+	db.RegisterKind(data.Kind(xmodels.Kind_FIXTURE.String()), "fixture")
+	db.RegisterKind(data.Kind(xmodels.Kind_CALENDAR.String()), "calendar")
+	db.RegisterKind(data.Kind(xmodels.Kind_FEATURE.String()), "feature")
+	db.RegisterKind(data.Kind(xmodels.Kind_BOUNTY.String()), "bounty")
+	db.RegisterKind(data.Kind(xmodels.Kind_REWARD.String()), "reward")
+	db.RegisterKind(data.Kind(xmodels.Kind_ACTION.String()), "action")
 
 	return db, nil
 }
