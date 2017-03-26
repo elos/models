@@ -82,6 +82,7 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(UserKind, "users")
 
 	// manaully added (singular to not coincide)
+	// INSERTKIND
 	db.RegisterKind(data.Kind(xmodels.Kind_USER.String()), "user")
 	db.RegisterKind(data.Kind(xmodels.Kind_CREDENTIAL.String()), "credential")
 	db.RegisterKind(data.Kind(xmodels.Kind_SESSION.String()), "session")
@@ -98,6 +99,9 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(data.Kind(xmodels.Kind_BOUNTY.String()), "bounty")
 	db.RegisterKind(data.Kind(xmodels.Kind_REWARD.String()), "reward")
 	db.RegisterKind(data.Kind(xmodels.Kind_ACTION.String()), "action")
+	db.RegisterKind(data.Kind(xmodels.Kind_TASK.String()), "task")
+	db.RegisterKind(data.Kind(xmodels.Kind_STRUCTURE.String()), "structure")
+	db.RegisterKind(data.Kind(xmodels.Kind_TAG.String()), "tag")
 
 	return db, nil
 }
