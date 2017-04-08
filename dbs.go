@@ -102,6 +102,7 @@ func MongoDB(addr string) (data.DB, error) {
 	db.RegisterKind(data.Kind(xmodels.Kind_TASK.String()), "task")
 	db.RegisterKind(data.Kind(xmodels.Kind_STRUCTURE.String()), "structure")
 	db.RegisterKind(data.Kind(xmodels.Kind_TAG.String()), "tag")
+	db.RegisterKind(data.Kind(xmodels.Kind_CATEGORY.String()), "category")
 
 	return db, nil
 }
