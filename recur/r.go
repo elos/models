@@ -6,17 +6,19 @@ import (
 	"github.com/elos/models"
 )
 
+type Frequency string
+
 const (
-	Secondly = "SECONDLY"
-	Minutely = "MINUTELY"
-	Hourly   = "HOURLY"
-	Daily    = "DAILY"
-	Weekly   = "WEEKLY"
-	Monthly  = "MONTHLY"
-	Yearly   = "YEARLY"
+	Secondly Frequency = "SECONDLY"
+	Minutely           = "MINUTELY"
+	Hourly             = "HOURLY"
+	Daily              = "DAILY"
+	Weekly             = "WEEKLY"
+	Monthly            = "MONTHLY"
+	Yearly             = "YEARLY"
 )
 
-var FreqDurations = map[string]time.Duration{
+var Durations = map[Frequency]time.Duration{
 	Secondly: time.Second,
 	Minutely: time.Minute,
 	Hourly:   time.Hour,

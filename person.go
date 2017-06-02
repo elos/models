@@ -227,10 +227,6 @@ func (person *Person) SetBSON(raw bson.Raw) error {
 
 func (person *Person) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["last_name"]; ok {
-		person.LastName = val.(string)
-	}
-
 	if val, ok := structure["name"]; ok {
 		person.Name = val.(string)
 	}
@@ -251,6 +247,10 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 		person.FirstName = val.(string)
 	}
 
+	if val, ok := structure["last_name"]; ok {
+		person.LastName = val.(string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		person.OwnerId = val.(string)
 	}
@@ -263,19 +263,19 @@ func (person *Person) FromStructure(structure map[string]interface{}) {
 
 var PersonStructure = map[string]metis.Primitive{
 
-	"id": 9,
-
-	"created_at": 4,
-
-	"updated_at": 4,
-
 	"first_name": 3,
 
 	"last_name": 3,
 
 	"name": 3,
 
-	"owner_id": 9,
+	"id": 9,
+
+	"created_at": 4,
+
+	"updated_at": 4,
 
 	"notes_ids": 10,
+
+	"owner_id": 9,
 }

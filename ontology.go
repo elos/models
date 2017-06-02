@@ -260,10 +260,6 @@ func (ontology *Ontology) SetBSON(raw bson.Raw) error {
 
 func (ontology *Ontology) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["id"]; ok {
-		ontology.Id = val.(string)
-	}
-
 	if val, ok := structure["created_at"]; ok {
 		ontology.CreatedAt = val.(time.Time)
 	}
@@ -276,16 +272,20 @@ func (ontology *Ontology) FromStructure(structure map[string]interface{}) {
 		ontology.DeletedAt = val.(time.Time)
 	}
 
+	if val, ok := structure["id"]; ok {
+		ontology.Id = val.(string)
+	}
+
+	if val, ok := structure["objects_ids"]; ok {
+		ontology.ObjectsIds = val.([]string)
+	}
+
 	if val, ok := structure["owner_id"]; ok {
 		ontology.OwnerId = val.(string)
 	}
 
 	if val, ok := structure["models_ids"]; ok {
 		ontology.ModelsIds = val.([]string)
-	}
-
-	if val, ok := structure["objects_ids"]; ok {
-		ontology.ObjectsIds = val.([]string)
 	}
 
 }

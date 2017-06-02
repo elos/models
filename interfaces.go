@@ -45,3 +45,7 @@ type Eventable interface {
 	data.Record
 	EventableOps
 }
+
+type IntegrationCredentials interface {
+	data.Record
+}

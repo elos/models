@@ -26,6 +26,8 @@ const (
 
 	HabitKind data.Kind = "habit"
 
+	IntegrationKind data.Kind = "integration"
+
 	LinkKind data.Kind = "link"
 
 	LocationKind data.Kind = "location"
@@ -35,6 +37,8 @@ const (
 	ModelKind data.Kind = "model"
 
 	NoteKind data.Kind = "note"
+
+	OauthKind data.Kind = "oauth"
 
 	ObjectKind data.Kind = "object"
 
@@ -87,6 +91,8 @@ var Kinds = map[data.Kind]bool{
 
 	HabitKind: true,
 
+	IntegrationKind: true,
+
 	LinkKind: true,
 
 	LocationKind: true,
@@ -96,6 +102,8 @@ var Kinds = map[data.Kind]bool{
 	ModelKind: true,
 
 	NoteKind: true,
+
+	OauthKind: true,
 
 	ObjectKind: true,
 
@@ -132,13 +140,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "action",
 		Space:   "actions",
 		Domains: []string{"actions"},
-		Traits: map[string]*metis.Trait{"completed": &metis.Trait{
-			Name: "completed",
-			Type: metis.Primitive(0),
-		}, "id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
 		}, "updated_at": &metis.Trait{
@@ -153,8 +155,20 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "end_time": &metis.Trait{
 			Name: "end_time",
 			Type: metis.Primitive(4),
+		}, "completed": &metis.Trait{
+			Name: "completed",
+			Type: metis.Primitive(0),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
 		}},
-		Relations: map[string]*metis.Relation{"task": &metis.Relation{
+		Relations: map[string]*metis.Relation{"actionable": &metis.Relation{
+			Name:         "actionable",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "actionable",
+			Inverse:      "",
+		}, "task": &metis.Relation{
 			Name:         "task",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -172,12 +186,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "",
 			Codomain:     "persons",
 			Inverse:      "",
-		}, "actionable": &metis.Relation{
-			Name:         "actionable",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "actionable",
-			Inverse:      "",
 		}},
 	},
 
@@ -185,7 +193,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "attribute",
 		Space:   "attributes",
 		Domains: []string{"attributes"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"value": &metis.Trait{
+			Name: "value",
+			Type: metis.Primitive(3),
+		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -197,9 +208,6 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
-		}, "value": &metis.Trait{
-			Name: "value",
-			Type: metis.Primitive(3),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -226,10 +234,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "calendar",
 		Space:   "calendars",
 		Domains: []string{"calendars"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
 		}, "updated_at": &metis.Trait{
@@ -247,9 +252,12 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "yearday_schedules": &metis.Trait{
 			Name: "yearday_schedules",
 			Type: metis.Primitive(11),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
 		}},
-		Relations: map[string]*metis.Relation{"daily_schedule": &metis.Relation{
-			Name:         "daily_schedule",
+		Relations: map[string]*metis.Relation{"monthly_schedule": &metis.Relation{
+			Name:         "monthly_schedule",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
 			Codomain:     "schedules",
@@ -260,17 +268,11 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "",
 			Codomain:     "schedules",
 			Inverse:      "",
-		}, "fixtures": &metis.Relation{
-			Name:         "fixtures",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "fixture",
-			Codomain:     "fixtures",
-			Inverse:      "",
-		}, "owner": &metis.Relation{
-			Name:         "owner",
+		}, "daily_schedule": &metis.Relation{
+			Name:         "daily_schedule",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
-			Codomain:     "users",
+			Codomain:     "schedules",
 			Inverse:      "",
 		}, "base_schedule": &metis.Relation{
 			Name:         "base_schedule",
@@ -280,12 +282,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Inverse:      "",
 		}, "weekly_schedule": &metis.Relation{
 			Name:         "weekly_schedule",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "schedules",
-			Inverse:      "",
-		}, "monthly_schedule": &metis.Relation{
-			Name:         "monthly_schedule",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
 			Codomain:     "schedules",
@@ -302,6 +298,18 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "",
 			Codomain:     "fixtures",
 			Inverse:      "",
+		}, "fixtures": &metis.Relation{
+			Name:         "fixtures",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "fixture",
+			Codomain:     "fixtures",
+			Inverse:      "",
+		}, "owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
+			Inverse:      "",
 		}},
 	},
 
@@ -309,7 +317,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "context",
 		Space:   "contexts",
 		Domains: []string{"contexts"},
-		Traits: map[string]*metis.Trait{"domain": &metis.Trait{
+		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "domain": &metis.Trait{
 			Name: "domain",
 			Type: metis.Primitive(3),
 		}, "ids": &metis.Trait{
@@ -323,9 +334,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Type: metis.Primitive(4),
 		}, "updated_at": &metis.Trait{
 			Name: "updated_at",
-			Type: metis.Primitive(4),
-		}, "deleted_at": &metis.Trait{
-			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
@@ -341,13 +349,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "credential",
 		Space:   "credentials",
 		Domains: []string{"credentials"},
-		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
-			Name: "created_at",
-			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
-			Name: "updated_at",
-			Type: metis.Primitive(4),
-		}, "deleted_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}, "public": &metis.Trait{
@@ -365,6 +367,12 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -451,7 +459,19 @@ var Metis = map[data.Kind]*metis.Model{
 			Name: "updated_at",
 			Type: metis.Primitive(4),
 		}},
-		Relations: map[string]*metis.Relation{"prior": &metis.Relation{
+		Relations: map[string]*metis.Relation{"media": &metis.Relation{
+			Name:         "media",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "medias",
+			Inverse:      "",
+		}, "owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
+			Inverse:      "",
+		}, "prior": &metis.Relation{
 			Name:         "prior",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -481,18 +501,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "tag",
 			Codomain:     "tags",
 			Inverse:      "",
-		}, "media": &metis.Relation{
-			Name:         "media",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "medias",
-			Inverse:      "",
-		}, "owner": &metis.Relation{
-			Name:         "owner",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "users",
-			Inverse:      "",
 		}},
 	},
 
@@ -500,18 +508,21 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "fixture",
 		Space:   "fixtures",
 		Domains: []string{"fixtures", "actionable", "eventable"},
-		Traits: map[string]*metis.Trait{"end_time": &metis.Trait{
-			Name: "end_time",
-			Type: metis.Primitive(4),
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
 		}, "start_offset": &metis.Trait{
 			Name: "start_offset",
-			Type: metis.Primitive(1),
-		}, "end_offset": &metis.Trait{
-			Name: "end_offset",
 			Type: metis.Primitive(1),
 		}, "exceptions": &metis.Trait{
 			Name: "exceptions",
 			Type: metis.Primitive(8),
+		}, "end_offset": &metis.Trait{
+			Name: "end_offset",
+			Type: metis.Primitive(1),
+		}, "rank": &metis.Trait{
+			Name: "rank",
+			Type: metis.Primitive(1),
 		}, "created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
@@ -527,32 +538,17 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "start_time": &metis.Trait{
 			Name: "start_time",
 			Type: metis.Primitive(4),
-		}, "rank": &metis.Trait{
-			Name: "rank",
-			Type: metis.Primitive(1),
+		}, "end_time": &metis.Trait{
+			Name: "end_time",
+			Type: metis.Primitive(4),
 		}, "label": &metis.Trait{
 			Name: "label",
 			Type: metis.Primitive(0),
 		}, "expires_at": &metis.Trait{
 			Name: "expires_at",
 			Type: metis.Primitive(4),
-		}, "id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
 		}},
-		Relations: map[string]*metis.Relation{"actions": &metis.Relation{
-			Name:         "actions",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "action",
-			Codomain:     "actions",
-			Inverse:      "",
-		}, "events": &metis.Relation{
-			Name:         "events",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "event",
-			Codomain:     "events",
-			Inverse:      "",
-		}, "owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -569,6 +565,18 @@ var Metis = map[data.Kind]*metis.Model{
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
 			Codomain:     "eventable",
+			Inverse:      "",
+		}, "actions": &metis.Relation{
+			Name:         "actions",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "action",
+			Codomain:     "actions",
+			Inverse:      "",
+		}, "events": &metis.Relation{
+			Name:         "events",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "event",
+			Codomain:     "events",
 			Inverse:      "",
 		}},
 	},
@@ -637,13 +645,7 @@ var Metis = map[data.Kind]*metis.Model{
 			Name: "name",
 			Type: metis.Primitive(3),
 		}},
-		Relations: map[string]*metis.Relation{"checkins": &metis.Relation{
-			Name:         "checkins",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "checkin",
-			Codomain:     "events",
-			Inverse:      "",
-		}, "owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -655,6 +657,53 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "",
 			Codomain:     "tags",
 			Inverse:      "",
+		}, "checkins": &metis.Relation{
+			Name:         "checkins",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "checkin",
+			Codomain:     "events",
+			Inverse:      "",
+		}},
+	},
+
+	IntegrationKind: &metis.Model{
+		Kind:    "integration",
+		Space:   "integrations",
+		Domains: []string{"integrations"},
+		Traits: map[string]*metis.Trait{"domain": &metis.Trait{
+			Name: "domain",
+			Type: metis.Primitive(3),
+		}, "vendor": &metis.Trait{
+			Name: "vendor",
+			Type: metis.Primitive(3),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "name": &metis.Trait{
+			Name: "name",
+			Type: metis.Primitive(3),
+		}},
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
+			Inverse:      "",
+		}, "integration_credential": &metis.Relation{
+			Name:         "integration_credential",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "integration_credentials",
+			Inverse:      "",
 		}},
 	},
 
@@ -662,7 +711,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "link",
 		Space:   "links",
 		Domains: []string{"links"},
-		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}, "ids": &metis.Trait{
@@ -673,9 +725,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
 			Name: "created_at",
-			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
-			Name: "updated_at",
 			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
@@ -703,7 +752,16 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "location",
 		Space:   "locations",
 		Domains: []string{"locations"},
-		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}, "latitude": &metis.Trait{
@@ -715,15 +773,6 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "altitude": &metis.Trait{
 			Name: "altitude",
 			Type: metis.Primitive(2),
-		}, "id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
-			Name: "created_at",
-			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
-			Name: "updated_at",
-			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -738,7 +787,13 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "media",
 		Space:   "medias",
 		Domains: []string{"medias"},
-		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}, "content": &metis.Trait{
@@ -750,12 +805,6 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
-			Name: "created_at",
-			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
-			Name: "updated_at",
-			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -770,7 +819,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "model",
 		Space:   "models",
 		Domains: []string{"models"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"name": &metis.Trait{
+			Name: "name",
+			Type: metis.Primitive(3),
+		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -782,9 +834,6 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
-		}, "name": &metis.Trait{
-			Name: "name",
-			Type: metis.Primitive(3),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -823,7 +872,13 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "note",
 		Space:   "notes",
 		Domains: []string{"notes"},
-		Traits: map[string]*metis.Trait{"updated_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
 			Name: "updated_at",
 			Type: metis.Primitive(4),
 		}, "deleted_at": &metis.Trait{
@@ -832,11 +887,43 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "text": &metis.Trait{
 			Name: "text",
 			Type: metis.Primitive(3),
-		}, "id": &metis.Trait{
+		}},
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
+			Inverse:      "",
+		}},
+	},
+
+	OauthKind: &metis.Model{
+		Kind:    "oauth",
+		Space:   "oauths",
+		Domains: []string{"oauths", "integration_credentials"},
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
 			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "access_token": &metis.Trait{
+			Name: "access_token",
+			Type: metis.Primitive(3),
+		}, "token_type": &metis.Trait{
+			Name: "token_type",
+			Type: metis.Primitive(3),
+		}, "refresh_token": &metis.Trait{
+			Name: "refresh_token",
+			Type: metis.Primitive(3),
+		}, "expiry": &metis.Trait{
+			Name: "expiry",
 			Type: metis.Primitive(4),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
@@ -865,19 +952,7 @@ var Metis = map[data.Kind]*metis.Model{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
 		}},
-		Relations: map[string]*metis.Relation{"attributes": &metis.Relation{
-			Name:         "attributes",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "attribute",
-			Codomain:     "attributes",
-			Inverse:      "object",
-		}, "links": &metis.Relation{
-			Name:         "links",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "link",
-			Codomain:     "links",
-			Inverse:      "object",
-		}, "model": &metis.Relation{
+		Relations: map[string]*metis.Relation{"model": &metis.Relation{
 			Name:         "model",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -895,6 +970,18 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "",
 			Codomain:     "users",
 			Inverse:      "",
+		}, "attributes": &metis.Relation{
+			Name:         "attributes",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "attribute",
+			Codomain:     "attributes",
+			Inverse:      "object",
+		}, "links": &metis.Relation{
+			Name:         "links",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "link",
+			Codomain:     "links",
+			Inverse:      "object",
 		}},
 	},
 
@@ -902,10 +989,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "ontology",
 		Space:   "ontologies",
 		Domains: []string{"ontologies"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
 		}, "updated_at": &metis.Trait{
@@ -914,14 +998,11 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "deleted_at": &metis.Trait{
 			Name: "deleted_at",
 			Type: metis.Primitive(4),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
 		}},
-		Relations: map[string]*metis.Relation{"objects": &metis.Relation{
-			Name:         "objects",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "object",
-			Codomain:     "objects",
-			Inverse:      "ontology",
-		}, "owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -933,6 +1014,12 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "model",
 			Codomain:     "models",
 			Inverse:      "ontology",
+		}, "objects": &metis.Relation{
+			Name:         "objects",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "object",
+			Codomain:     "objects",
+			Inverse:      "ontology",
 		}},
 	},
 
@@ -940,13 +1027,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "person",
 		Space:   "persons",
 		Domains: []string{"persons"},
-		Traits: map[string]*metis.Trait{"first_name": &metis.Trait{
-			Name: "first_name",
-			Type: metis.Primitive(3),
-		}, "last_name": &metis.Trait{
-			Name: "last_name",
-			Type: metis.Primitive(3),
-		}, "name": &metis.Trait{
+		Traits: map[string]*metis.Trait{"name": &metis.Trait{
 			Name: "name",
 			Type: metis.Primitive(3),
 		}, "id": &metis.Trait{
@@ -958,18 +1039,24 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "updated_at": &metis.Trait{
 			Name: "updated_at",
 			Type: metis.Primitive(4),
+		}, "first_name": &metis.Trait{
+			Name: "first_name",
+			Type: metis.Primitive(3),
+		}, "last_name": &metis.Trait{
+			Name: "last_name",
+			Type: metis.Primitive(3),
 		}},
-		Relations: map[string]*metis.Relation{"notes": &metis.Relation{
-			Name:         "notes",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "note",
-			Codomain:     "notes",
-			Inverse:      "",
-		}, "owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
 			Codomain:     "users",
+			Inverse:      "",
+		}, "notes": &metis.Relation{
+			Name:         "notes",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "note",
+			Codomain:     "notes",
 			Inverse:      "",
 		}},
 	},
@@ -978,7 +1065,16 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "profile",
 		Space:   "profiles",
 		Domains: []string{"profiles"},
-		Traits: map[string]*metis.Trait{"phone": &metis.Trait{
+		Traits: map[string]*metis.Trait{"updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "name": &metis.Trait{
+			Name: "name",
+			Type: metis.Primitive(3),
+		}, "phone": &metis.Trait{
 			Name: "phone",
 			Type: metis.Primitive(3),
 		}, "email": &metis.Trait{
@@ -990,27 +1086,24 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
-			Name: "updated_at",
-			Type: metis.Primitive(4),
-		}, "deleted_at": &metis.Trait{
-			Name: "deleted_at",
-			Type: metis.Primitive(4),
-		}, "name": &metis.Trait{
-			Name: "name",
-			Type: metis.Primitive(3),
 		}},
-		Relations: map[string]*metis.Relation{"calendar": &metis.Relation{
+		Relations: map[string]*metis.Relation{"ontology": &metis.Relation{
+			Name:         "ontology",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "ontologies",
+			Inverse:      "",
+		}, "current_actionable": &metis.Relation{
+			Name:         "current_actionable",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "actionable",
+			Inverse:      "",
+		}, "calendar": &metis.Relation{
 			Name:         "calendar",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
 			Codomain:     "calendars",
-			Inverse:      "",
-		}, "location": &metis.Relation{
-			Name:         "location",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "locations",
 			Inverse:      "",
 		}, "owner": &metis.Relation{
 			Name:         "owner",
@@ -1023,24 +1116,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Multiplicity: metis.Multiplicity(0),
 			Singular:     "datum",
 			Codomain:     "data",
-			Inverse:      "",
-		}, "events": &metis.Relation{
-			Name:         "events",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "event",
-			Codomain:     "events",
-			Inverse:      "",
-		}, "current_action": &metis.Relation{
-			Name:         "current_action",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "actions",
-			Inverse:      "",
-		}, "current_actionable": &metis.Relation{
-			Name:         "current_actionable",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "actionable",
 			Inverse:      "",
 		}, "actions": &metis.Relation{
 			Name:         "actions",
@@ -1060,11 +1135,23 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "routine",
 			Codomain:     "routines",
 			Inverse:      "",
-		}, "ontology": &metis.Relation{
-			Name:         "ontology",
+		}, "location": &metis.Relation{
+			Name:         "location",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
-			Codomain:     "ontologies",
+			Codomain:     "locations",
+			Inverse:      "",
+		}, "events": &metis.Relation{
+			Name:         "events",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "event",
+			Codomain:     "events",
+			Inverse:      "",
+		}, "current_action": &metis.Relation{
+			Name:         "current_action",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "actions",
 			Inverse:      "",
 		}},
 	},
@@ -1073,16 +1160,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "quantity",
 		Space:   "quantities",
 		Domains: []string{"quantities"},
-		Traits: map[string]*metis.Trait{"deleted_at": &metis.Trait{
-			Name: "deleted_at",
-			Type: metis.Primitive(4),
-		}, "value": &metis.Trait{
-			Name: "value",
-			Type: metis.Primitive(2),
-		}, "unit": &metis.Trait{
-			Name: "unit",
-			Type: metis.Primitive(3),
-		}, "id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -1091,6 +1169,15 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "updated_at": &metis.Trait{
 			Name: "updated_at",
 			Type: metis.Primitive(4),
+		}, "deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "value": &metis.Trait{
+			Name: "value",
+			Type: metis.Primitive(2),
+		}, "unit": &metis.Trait{
+			Name: "unit",
+			Type: metis.Primitive(3),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -1105,69 +1192,69 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "recurrence",
 		Space:   "recurrences",
 		Domains: []string{"recurrences"},
-		Traits: map[string]*metis.Trait{"updated_at": &metis.Trait{
-			Name: "updated_at",
-			Type: metis.Primitive(4),
-		}, "deleted_at": &metis.Trait{
-			Name: "deleted_at",
-			Type: metis.Primitive(4),
-		}, "week_start": &metis.Trait{
-			Name: "week_start",
-			Type: metis.Primitive(1),
-		}, "by_set_pos": &metis.Trait{
-			Name: "by_set_pos",
-			Type: metis.Primitive(6),
-		}, "inclusions": &metis.Trait{
+		Traits: map[string]*metis.Trait{"inclusions": &metis.Trait{
 			Name: "inclusions",
 			Type: metis.Primitive(8),
-		}, "created_at": &metis.Trait{
-			Name: "created_at",
+		}, "limit": &metis.Trait{
+			Name: "limit",
 			Type: metis.Primitive(4),
-		}, "until": &metis.Trait{
-			Name: "until",
-			Type: metis.Primitive(4),
-		}, "by_hour": &metis.Trait{
-			Name: "by_hour",
-			Type: metis.Primitive(6),
-		}, "by_year_day": &metis.Trait{
-			Name: "by_year_day",
-			Type: metis.Primitive(6),
-		}, "by_month_num": &metis.Trait{
-			Name: "by_month_num",
-			Type: metis.Primitive(6),
 		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "frequency": &metis.Trait{
 			Name: "frequency",
 			Type: metis.Primitive(3),
-		}, "count": &metis.Trait{
-			Name: "count",
-			Type: metis.Primitive(1),
-		}, "by_week_num": &metis.Trait{
-			Name: "by_week_num",
-			Type: metis.Primitive(6),
-		}, "by_month_day": &metis.Trait{
-			Name: "by_month_day",
-			Type: metis.Primitive(6),
-		}, "exclusions": &metis.Trait{
-			Name: "exclusions",
-			Type: metis.Primitive(8),
-		}, "limit": &metis.Trait{
-			Name: "limit",
-			Type: metis.Primitive(4),
-		}, "start": &metis.Trait{
-			Name: "start",
-			Type: metis.Primitive(4),
 		}, "interval": &metis.Trait{
 			Name: "interval",
 			Type: metis.Primitive(1),
+		}, "by_month_day": &metis.Trait{
+			Name: "by_month_day",
+			Type: metis.Primitive(6),
+		}, "by_week_num": &metis.Trait{
+			Name: "by_week_num",
+			Type: metis.Primitive(6),
+		}, "by_month_num": &metis.Trait{
+			Name: "by_month_num",
+			Type: metis.Primitive(6),
+		}, "deleted_at": &metis.Trait{
+			Name: "deleted_at",
+			Type: metis.Primitive(4),
+		}, "exclusions": &metis.Trait{
+			Name: "exclusions",
+			Type: metis.Primitive(8),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
+		}, "updated_at": &metis.Trait{
+			Name: "updated_at",
+			Type: metis.Primitive(4),
+		}, "until": &metis.Trait{
+			Name: "until",
+			Type: metis.Primitive(4),
+		}, "count": &metis.Trait{
+			Name: "count",
+			Type: metis.Primitive(1),
+		}, "by_hour": &metis.Trait{
+			Name: "by_hour",
+			Type: metis.Primitive(6),
+		}, "start": &metis.Trait{
+			Name: "start",
+			Type: metis.Primitive(4),
 		}, "by_second": &metis.Trait{
 			Name: "by_second",
 			Type: metis.Primitive(6),
 		}, "by_day": &metis.Trait{
 			Name: "by_day",
 			Type: metis.Primitive(6),
+		}, "by_year_day": &metis.Trait{
+			Name: "by_year_day",
+			Type: metis.Primitive(6),
+		}, "by_set_pos": &metis.Trait{
+			Name: "by_set_pos",
+			Type: metis.Primitive(6),
+		}, "week_start": &metis.Trait{
+			Name: "week_start",
+			Type: metis.Primitive(1),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -1182,7 +1269,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "relation",
 		Space:   "relations",
 		Domains: []string{"relations"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"inverse": &metis.Trait{
+			Name: "inverse",
+			Type: metis.Primitive(3),
+		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -1203,17 +1293,8 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "codomain": &metis.Trait{
 			Name: "codomain",
 			Type: metis.Primitive(3),
-		}, "inverse": &metis.Trait{
-			Name: "inverse",
-			Type: metis.Primitive(3),
 		}},
-		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
-			Name:         "owner",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "users",
-			Inverse:      "",
-		}, "model": &metis.Relation{
+		Relations: map[string]*metis.Relation{"model": &metis.Relation{
 			Name:         "model",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -1225,6 +1306,12 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "link",
 			Codomain:     "links",
 			Inverse:      "relation",
+		}, "owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
+			Inverse:      "",
 		}},
 	},
 
@@ -1232,13 +1319,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "routine",
 		Space:   "routines",
 		Domains: []string{"routines", "actionable"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
-			Name: "created_at",
-			Type: metis.Primitive(4),
-		}, "updated_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"updated_at": &metis.Trait{
 			Name: "updated_at",
 			Type: metis.Primitive(4),
 		}, "name": &metis.Trait{
@@ -1250,8 +1331,20 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "end_time": &metis.Trait{
 			Name: "end_time",
 			Type: metis.Primitive(4),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
+		}, "created_at": &metis.Trait{
+			Name: "created_at",
+			Type: metis.Primitive(4),
 		}},
-		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"current_action": &metis.Relation{
+			Name:         "current_action",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "actions",
+			Inverse:      "",
+		}, "owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -1275,12 +1368,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Singular:     "action",
 			Codomain:     "actions",
 			Inverse:      "",
-		}, "current_action": &metis.Relation{
-			Name:         "current_action",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "actions",
-			Inverse:      "",
 		}},
 	},
 
@@ -1288,10 +1375,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "schedule",
 		Space:   "schedules",
 		Domains: []string{"schedules"},
-		Traits: map[string]*metis.Trait{"end_time": &metis.Trait{
-			Name: "end_time",
-			Type: metis.Primitive(4),
-		}, "id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -1309,18 +1393,21 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "start_time": &metis.Trait{
 			Name: "start_time",
 			Type: metis.Primitive(4),
+		}, "end_time": &metis.Trait{
+			Name: "end_time",
+			Type: metis.Primitive(4),
 		}},
-		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
-			Name:         "owner",
-			Multiplicity: metis.Multiplicity(1),
-			Singular:     "",
-			Codomain:     "users",
-			Inverse:      "",
-		}, "fixtures": &metis.Relation{
+		Relations: map[string]*metis.Relation{"fixtures": &metis.Relation{
 			Name:         "fixtures",
 			Multiplicity: metis.Multiplicity(0),
 			Singular:     "fixture",
 			Codomain:     "fixtures",
+			Inverse:      "",
+		}, "owner": &metis.Relation{
+			Name:         "owner",
+			Multiplicity: metis.Multiplicity(1),
+			Singular:     "",
+			Codomain:     "users",
 			Inverse:      "",
 		}},
 	},
@@ -1329,7 +1416,10 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "session",
 		Space:   "sessions",
 		Domains: []string{"sessions"},
-		Traits: map[string]*metis.Trait{"id": &metis.Trait{
+		Traits: map[string]*metis.Trait{"expires_after": &metis.Trait{
+			Name: "expires_after",
+			Type: metis.Primitive(1),
+		}, "id": &metis.Trait{
 			Name: "id",
 			Type: metis.Primitive(9),
 		}, "created_at": &metis.Trait{
@@ -1344,9 +1434,6 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "token": &metis.Trait{
 			Name: "token",
 			Type: metis.Primitive(3),
-		}, "expires_after": &metis.Trait{
-			Name: "expires_after",
-			Type: metis.Primitive(1),
 		}},
 		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
 			Name:         "owner",
@@ -1396,13 +1483,7 @@ var Metis = map[data.Kind]*metis.Model{
 		Kind:    "task",
 		Space:   "tasks",
 		Domains: []string{"tasks"},
-		Traits: map[string]*metis.Trait{"completed_at": &metis.Trait{
-			Name: "completed_at",
-			Type: metis.Primitive(4),
-		}, "id": &metis.Trait{
-			Name: "id",
-			Type: metis.Primitive(9),
-		}, "created_at": &metis.Trait{
+		Traits: map[string]*metis.Trait{"created_at": &metis.Trait{
 			Name: "created_at",
 			Type: metis.Primitive(4),
 		}, "updated_at": &metis.Trait{
@@ -1420,8 +1501,20 @@ var Metis = map[data.Kind]*metis.Model{
 		}, "stages": &metis.Trait{
 			Name: "stages",
 			Type: metis.Primitive(8),
+		}, "completed_at": &metis.Trait{
+			Name: "completed_at",
+			Type: metis.Primitive(4),
+		}, "id": &metis.Trait{
+			Name: "id",
+			Type: metis.Primitive(9),
 		}},
-		Relations: map[string]*metis.Relation{"owner": &metis.Relation{
+		Relations: map[string]*metis.Relation{"tags": &metis.Relation{
+			Name:         "tags",
+			Multiplicity: metis.Multiplicity(0),
+			Singular:     "tag",
+			Codomain:     "tags",
+			Inverse:      "",
+		}, "owner": &metis.Relation{
 			Name:         "owner",
 			Multiplicity: metis.Multiplicity(1),
 			Singular:     "",
@@ -1432,12 +1525,6 @@ var Metis = map[data.Kind]*metis.Model{
 			Multiplicity: metis.Multiplicity(0),
 			Singular:     "prerequisite",
 			Codomain:     "tasks",
-			Inverse:      "",
-		}, "tags": &metis.Relation{
-			Name:         "tags",
-			Multiplicity: metis.Multiplicity(0),
-			Singular:     "tag",
-			Codomain:     "tags",
 			Inverse:      "",
 		}},
 	},

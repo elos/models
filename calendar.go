@@ -586,6 +586,10 @@ func (calendar *Calendar) SetBSON(raw bson.Raw) error {
 
 func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["updated_at"]; ok {
+		calendar.UpdatedAt = val.(time.Time)
+	}
+
 	if val, ok := structure["deleted_at"]; ok {
 		calendar.DeletedAt = val.(time.Time)
 	}
@@ -610,32 +614,8 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.CreatedAt = val.(time.Time)
 	}
 
-	if val, ok := structure["updated_at"]; ok {
-		calendar.UpdatedAt = val.(time.Time)
-	}
-
-	if val, ok := structure["daily_schedule_id"]; ok {
-		calendar.DailyScheduleId = val.(string)
-	}
-
-	if val, ok := structure["schedule_id"]; ok {
-		calendar.ScheduleId = val.(string)
-	}
-
 	if val, ok := structure["fixtures_ids"]; ok {
 		calendar.FixturesIds = val.([]string)
-	}
-
-	if val, ok := structure["monthly_schedule_id"]; ok {
-		calendar.MonthlyScheduleId = val.(string)
-	}
-
-	if val, ok := structure["yearly_schedule_id"]; ok {
-		calendar.YearlyScheduleId = val.(string)
-	}
-
-	if val, ok := structure["manifest_fixture_id"]; ok {
-		calendar.ManifestFixtureId = val.(string)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -650,15 +630,29 @@ func (calendar *Calendar) FromStructure(structure map[string]interface{}) {
 		calendar.WeeklyScheduleId = val.(string)
 	}
 
+	if val, ok := structure["yearly_schedule_id"]; ok {
+		calendar.YearlyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["manifest_fixture_id"]; ok {
+		calendar.ManifestFixtureId = val.(string)
+	}
+
+	if val, ok := structure["daily_schedule_id"]; ok {
+		calendar.DailyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["monthly_schedule_id"]; ok {
+		calendar.MonthlyScheduleId = val.(string)
+	}
+
+	if val, ok := structure["schedule_id"]; ok {
+		calendar.ScheduleId = val.(string)
+	}
+
 }
 
 var CalendarStructure = map[string]metis.Primitive{
-
-	"deleted_at": 4,
-
-	"name": 3,
-
-	"weekday_schedules": 11,
 
 	"yearday_schedules": 11,
 
@@ -668,9 +662,17 @@ var CalendarStructure = map[string]metis.Primitive{
 
 	"updated_at": 4,
 
-	"yearly_schedule_id": 9,
+	"deleted_at": 4,
 
-	"manifest_fixture_id": 9,
+	"name": 3,
+
+	"weekday_schedules": 11,
+
+	"daily_schedule_id": 9,
+
+	"monthly_schedule_id": 9,
+
+	"schedule_id": 9,
 
 	"owner_id": 9,
 
@@ -678,11 +680,9 @@ var CalendarStructure = map[string]metis.Primitive{
 
 	"weekly_schedule_id": 9,
 
-	"monthly_schedule_id": 9,
+	"yearly_schedule_id": 9,
 
-	"daily_schedule_id": 9,
-
-	"schedule_id": 9,
+	"manifest_fixture_id": 9,
 
 	"fixtures_ids": 10,
 }

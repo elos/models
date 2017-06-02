@@ -390,6 +390,10 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 		model.Name = val.(string)
 	}
 
+	if val, ok := structure["owner_id"]; ok {
+		model.OwnerId = val.(string)
+	}
+
 	if val, ok := structure["traits_ids"]; ok {
 		model.TraitsIds = val.([]string)
 	}
@@ -404,10 +408,6 @@ func (model *Model) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["objects_ids"]; ok {
 		model.ObjectsIds = val.([]string)
-	}
-
-	if val, ok := structure["owner_id"]; ok {
-		model.OwnerId = val.(string)
 	}
 
 }

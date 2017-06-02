@@ -310,56 +310,36 @@ func (recurrence *Recurrence) SetBSON(raw bson.Raw) error {
 
 func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 
+	if val, ok := structure["deleted_at"]; ok {
+		recurrence.DeletedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["exclusions"]; ok {
+		recurrence.Exclusions = val.([]time.Time)
+	}
+
 	if val, ok := structure["created_at"]; ok {
 		recurrence.CreatedAt = val.(time.Time)
+	}
+
+	if val, ok := structure["updated_at"]; ok {
+		recurrence.UpdatedAt = val.(time.Time)
 	}
 
 	if val, ok := structure["until"]; ok {
 		recurrence.Until = val.(time.Time)
 	}
 
-	if val, ok := structure["by_hour"]; ok {
-		recurrence.ByHour = val.([]int)
-	}
-
-	if val, ok := structure["by_year_day"]; ok {
-		recurrence.ByYearDay = val.([]int)
-	}
-
-	if val, ok := structure["by_set_pos"]; ok {
-		recurrence.BySetPos = val.([]int)
-	}
-
-	if val, ok := structure["inclusions"]; ok {
-		recurrence.Inclusions = val.([]time.Time)
-	}
-
-	if val, ok := structure["id"]; ok {
-		recurrence.Id = val.(string)
-	}
-
-	if val, ok := structure["frequency"]; ok {
-		recurrence.Frequency = val.(string)
-	}
-
 	if val, ok := structure["count"]; ok {
 		recurrence.Count = val.(int)
 	}
 
-	if val, ok := structure["by_week_num"]; ok {
-		recurrence.ByWeekNum = val.([]int)
-	}
-
-	if val, ok := structure["by_month_num"]; ok {
-		recurrence.ByMonthNum = val.([]int)
+	if val, ok := structure["by_hour"]; ok {
+		recurrence.ByHour = val.([]int)
 	}
 
 	if val, ok := structure["start"]; ok {
 		recurrence.Start = val.(time.Time)
-	}
-
-	if val, ok := structure["interval"]; ok {
-		recurrence.Interval = val.(int)
 	}
 
 	if val, ok := structure["by_second"]; ok {
@@ -370,28 +350,48 @@ func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 		recurrence.ByDay = val.([]int)
 	}
 
-	if val, ok := structure["by_month_day"]; ok {
-		recurrence.ByMonthDay = val.([]int)
+	if val, ok := structure["by_year_day"]; ok {
+		recurrence.ByYearDay = val.([]int)
 	}
 
-	if val, ok := structure["exclusions"]; ok {
-		recurrence.Exclusions = val.([]time.Time)
+	if val, ok := structure["by_set_pos"]; ok {
+		recurrence.BySetPos = val.([]int)
+	}
+
+	if val, ok := structure["week_start"]; ok {
+		recurrence.WeekStart = val.(int)
 	}
 
 	if val, ok := structure["limit"]; ok {
 		recurrence.Limit = val.(time.Time)
 	}
 
-	if val, ok := structure["updated_at"]; ok {
-		recurrence.UpdatedAt = val.(time.Time)
+	if val, ok := structure["id"]; ok {
+		recurrence.Id = val.(string)
 	}
 
-	if val, ok := structure["deleted_at"]; ok {
-		recurrence.DeletedAt = val.(time.Time)
+	if val, ok := structure["frequency"]; ok {
+		recurrence.Frequency = val.(string)
 	}
 
-	if val, ok := structure["week_start"]; ok {
-		recurrence.WeekStart = val.(int)
+	if val, ok := structure["interval"]; ok {
+		recurrence.Interval = val.(int)
+	}
+
+	if val, ok := structure["by_month_day"]; ok {
+		recurrence.ByMonthDay = val.([]int)
+	}
+
+	if val, ok := structure["by_week_num"]; ok {
+		recurrence.ByWeekNum = val.([]int)
+	}
+
+	if val, ok := structure["by_month_num"]; ok {
+		recurrence.ByMonthNum = val.([]int)
+	}
+
+	if val, ok := structure["inclusions"]; ok {
+		recurrence.Inclusions = val.([]time.Time)
 	}
 
 	if val, ok := structure["owner_id"]; ok {
@@ -402,47 +402,47 @@ func (recurrence *Recurrence) FromStructure(structure map[string]interface{}) {
 
 var RecurrenceStructure = map[string]metis.Primitive{
 
-	"by_set_pos": 6,
-
-	"inclusions": 8,
-
-	"created_at": 4,
-
-	"until": 4,
-
-	"by_hour": 6,
-
-	"by_year_day": 6,
-
-	"by_month_num": 6,
-
-	"id": 9,
-
-	"frequency": 3,
-
-	"count": 1,
-
-	"by_week_num": 6,
-
-	"by_month_day": 6,
-
-	"exclusions": 8,
-
-	"limit": 4,
-
 	"start": 4,
-
-	"interval": 1,
 
 	"by_second": 6,
 
 	"by_day": 6,
 
-	"updated_at": 4,
+	"by_year_day": 6,
+
+	"by_set_pos": 6,
+
+	"week_start": 1,
+
+	"inclusions": 8,
+
+	"limit": 4,
+
+	"id": 9,
+
+	"frequency": 3,
+
+	"interval": 1,
+
+	"by_month_day": 6,
+
+	"by_week_num": 6,
+
+	"by_month_num": 6,
 
 	"deleted_at": 4,
 
-	"week_start": 1,
+	"exclusions": 8,
+
+	"created_at": 4,
+
+	"updated_at": 4,
+
+	"until": 4,
+
+	"count": 1,
+
+	"by_hour": 6,
 
 	"owner_id": 9,
 }

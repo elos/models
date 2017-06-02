@@ -184,14 +184,6 @@ func (location *Location) SetBSON(raw bson.Raw) error {
 
 func (location *Location) FromStructure(structure map[string]interface{}) {
 
-	if val, ok := structure["longitude"]; ok {
-		location.Longitude = val.(float64)
-	}
-
-	if val, ok := structure["altitude"]; ok {
-		location.Altitude = val.(float64)
-	}
-
 	if val, ok := structure["id"]; ok {
 		location.Id = val.(string)
 	}
@@ -210,6 +202,14 @@ func (location *Location) FromStructure(structure map[string]interface{}) {
 
 	if val, ok := structure["latitude"]; ok {
 		location.Latitude = val.(float64)
+	}
+
+	if val, ok := structure["longitude"]; ok {
+		location.Longitude = val.(float64)
+	}
+
+	if val, ok := structure["altitude"]; ok {
+		location.Altitude = val.(float64)
 	}
 
 	if val, ok := structure["owner_id"]; ok {

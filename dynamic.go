@@ -39,6 +39,9 @@ func ModelFor(k data.Kind) data.Record {
 	case HabitKind:
 		return NewHabit()
 
+	case IntegrationKind:
+		return NewIntegration()
+
 	case LinkKind:
 		return NewLink()
 
@@ -53,6 +56,9 @@ func ModelFor(k data.Kind) data.Record {
 
 	case NoteKind:
 		return NewNote()
+
+	case OauthKind:
+		return NewOauth()
 
 	case ObjectKind:
 		return NewObject()
