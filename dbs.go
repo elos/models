@@ -4,7 +4,7 @@ import (
 	"github.com/elos/data"
 	"github.com/elos/data/builtin/mongo"
 
-	xmodels "github.com/elos/x/models"
+	xmodels "github.com/elos/x/models/proto"
 )
 
 func MongoDB(addr string) (data.DB, error) {
